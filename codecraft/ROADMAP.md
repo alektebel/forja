@@ -4,7 +4,8 @@ The order to build this repository in, and the review it is based on.
 `python3 codecraft/cli.py path` renders this with your live progress.
 
 The order is the one you set: **AWS → LLM internals → RAG → evals + agents → MCP
-→ harness → benchmark → eval → the machine stack (GPU, CPU, OS) → the rest.**
+→ harness → benchmark → eval → the machine stack (GPU, CPU, OS) → agent infra →
+the rest.**
 
 ---
 
@@ -65,6 +66,9 @@ from scratch, not just a checker.
 
 No `CPU` or `OS`; the benchmark and the eval runner are now
 `benchmark-from-scratch` (phase F1) and `eval-framework-from-scratch` (phase F2).
+No task queue, no multi-agent orchestration, no durable execution across a killed
+worker, no capability sandbox and no serving-side metrics — phase J, below,
+is those five, from the Agent Infra list kept in `AGENT-INFRA.md`.
 `rag-from-scratch/` (phase B1), `vector-index-from-scratch/` (phase B2),
 `evals-from-scratch/` (phase C1), `agents-from-scratch/` (phase C2),
 `mcp-from-scratch/` (phase D1) and `agent-harness-from-scratch` (phase E1) now
@@ -313,6 +317,34 @@ The honest sequence: I1–I2 before I3 (the cost model is what makes a scheduler
 decision checkable), I9 before I7 (you cannot shard without knowing what a link
 costs), and I4/I5 before I11 (a gateway routes to what exists). Everything else is
 parallel.
+
+---
+
+## Agent infrastructure (phase J) — a twelve-item list, as five courses
+
+`AGENT-INFRA.md` keeps a skill list for Agent Infra — the infrastructure an agent
+runs *on*, as opposed to the model or the prompt. Twelve items. Four of them this
+repo already teaches end to end: the runtime loop (`agents-from-scratch`), retries
+with idempotent effects (that course plus `agent-harness-from-scratch`), the tool
+and MCP layer (`mcp-from-scratch`), and evaluation with replay
+(`evals-from-scratch` + `eval-framework-from-scratch`). Six more it reaches in
+part: context and state, checkpointing, distributed state, the filesystem sandbox,
+permissions, and traces. The five below are the parts nothing here touches at all,
+in the order they build on each other:
+
+| Slot | Course to author | The mechanism | After |
+|---|---|---|---|
+| J1 | `queue-and-workers-from-scratch` | Concurrency limits, priority, backpressure and a worker pool — deterministic and in-process, with the clock injected, so the scheduler is a data structure and not a thread pool | C2, A7 |
+| J2 | `orchestration-from-scratch` | A DAG of subtasks, a reviewer that can reject, a handoff that must carry its own context, and a human-in-the-loop that stops before the effect instead of after it | J1, C2 |
+| J3 | `durable-execution-from-scratch` | Leases and heartbeats, a write-ahead log, replay, resume and recovery after a worker is killed holding the lease, and effects that happen exactly once | J1 |
+| J4 | `sandbox-capabilities-from-scratch` | A capability set per tool, a path jail, a modelled network policy, CPU/memory/time limits as counters, secrets that never reach the model, and an audit line | C2, D1 |
+| J5 | `agent-metrics-from-scratch` | Queue depth, latency percentiles, tokens, cost per task, failure and retry rates, and the aggregation windows that make those numbers stable | J1, A7 |
+
+All five follow the shape of every authored course here: a provided simulator,
+ten graded stages, DESIGN DECISION docstrings, and a check per stage with planted
+mutations behind it. None of them needs a network, a real server or a thread: the
+whole point is that a queue, a lease and a percentile are data structures whose
+failures are reproducible, which is what makes them checkable at all.
 
 ---
 

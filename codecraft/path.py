@@ -267,6 +267,47 @@ PHASES = [
                 "config, sweep the knobs, plot the frontier, pin cost per token to a "
                 "price, and fail the run when a config is missing."},
     ]),
+    ("J", "Agent infrastructure", [
+        {"id": "J1", "title": "Queue & Workers", "course": None,
+         "kind": "author", "prereq": ["C2", "A7"],
+         "why": "Distribute tasks through a queue to workers: concurrency limits, "
+                "priority, backpressure and a worker pool. Author "
+                "queue-and-workers-from-scratch: deterministic and in-process, "
+                "with the clock injected, so the scheduler is a data structure "
+                "and not a thread pool — and a check can prove that priority is "
+                "honoured, that a full queue refuses instead of growing, and that "
+                "a worker which dies gives its task back."},
+        {"id": "J2", "title": "Multi-Agent Orchestration", "course": None,
+         "kind": "author", "prereq": ["J1", "C2"],
+         "why": "Decompose a task into subtasks: a DAG, a reviewer that can "
+                "reject, a handoff that must carry its own context (and does the "
+                "wrong thing when it does not), and a human-in-the-loop that "
+                "stops BEFORE the effect rather than after it. Author "
+                "orchestration-from-scratch; C2's approval gate is the "
+                "single-agent half of exactly this."},
+        {"id": "J3", "title": "Durable Execution", "course": None,
+         "kind": "author", "prereq": ["J1"],
+         "why": "Survive a process restart in the middle of an hour-long task: "
+                "leases and heartbeats, a write-ahead log, replay, resume and "
+                "recovery, and effects that happen exactly once. F2's resume_run "
+                "is the one-process version; the course is the version with two "
+                "workers, one of which is killed holding the lease."},
+        {"id": "J4", "title": "Sandbox & Capabilities", "course": None,
+         "kind": "author", "prereq": ["C2", "D1"],
+         "why": "Control what an agent can touch: a capability set per tool, a "
+                "path jail, a modelled network policy, CPU/memory/time limits as "
+                "counters, secrets that never reach the model, and an audit line "
+                "complete enough to answer 'what did it touch'. Author "
+                "sandbox-capabilities-from-scratch; C2's filesystem jail and "
+                "D1's read-only-first policy are its parts."},
+        {"id": "J5", "title": "Observability & Metrics", "course": None,
+         "kind": "author", "prereq": ["J1", "A7"],
+         "why": "A trace is not a metric: author agent-metrics-from-scratch over "
+                "a simulated fleet — queue depth, latency percentiles, tokens, "
+                "cost per task, failure and retry rates, and the aggregation "
+                "windows that make those numbers stable. A7's percentile "
+                "pipeline and E1's six-key trace are its two halves."},
+    ]),
 ]
 
 _SYMBOL = {"ready": "\u25cb", "legacy": "\u00b7", "author": "\u270e", "salvage": "\u21bb"}
@@ -283,8 +324,8 @@ def render_path(profile, courses, ink):
     green, yellow, grey, cyan = ("\033[32m", "\033[33m", "\033[90m", "\033[36m")
     lines = ["", ink("  codecraft \u00b7 the path", "\033[1m"),
              ink("  your order: AWS, LLM internals, RAG, evals + agents, MCP, "
-                 "harness, benchmark, eval, the machine stack, and the inference "
-                 "spine", grey), ""]
+                 "harness, benchmark, eval, the machine stack, the inference "
+                 "spine, and agent infra", grey), ""]
     done = active = 0
     for code, title, items in PHASES:
         lines.append(ink(f"  PHASE {code} \u2014 {title}", cyan))

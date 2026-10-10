@@ -6,6 +6,8 @@ A collection of from-scratch implementations of various systems and projects for
 principles every directory follows: design choices named as problem-solving decisions,
 MVP-then-complicate driven by limit cases, and verification you can run.
 
+**Learning Agent Infra? Read [AGENT-INFRA.md](AGENT-INFRA.md)** — the twelve-area skill list this repo's phase J is being built from.
+
 ## codecraft — the adaptive course runner
 
 **[codecraft/](codecraft/)** turns this repo into your own CodeCrafters. It runs any
