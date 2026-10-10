@@ -145,10 +145,23 @@ PHASES = [
          "kind": "legacy", "prereq": ["G1"],
          "why": "Kernels from vector add to a network. Needs a GPU and a checker "
                 "wrapper to join codecraft."},
-        {"id": "G3", "title": "CPU From Scratch", "course": None,
-         "kind": "author", "prereq": ["G1"],
-         "why": "A real datapath: decoder, register file, ALU, control unit, memory "
-                "and pipelining, simulated and tested. Missing from the repo."},
+        {"id": "G3", "title": "CPU From Scratch", "course": "cpu-from-scratch",
+         "kind": "ready", "prereq": ["G1"],
+         "why": "Ten stages, all graded, on a provided ISA and assembler "
+                "(`isa.py`: 29 opcodes in the same family as G1's \u2014 32-bit words, "
+                "16 registers, [opcode:6][rd:4][rs1:4][rs2:4][imm:14], plus the "
+                "memory sizes, the compares and the flags a datapath needs). Mask a "
+                "word and derive the flags; decode an encoding whose unused fields "
+                "must not become operands; keep a register file whose zero register "
+                "cannot be written and whose snapshots are copies; divide and take "
+                "remainders the way hardware does rather than the way Python does; "
+                "address bytes with alignment and bounds checked before anything is "
+                "stored; fetch and execute with a fault as data and a trace of "
+                "effects; then run the same programs on a five-stage pipeline that "
+                "must retire the identical trace \u2014 stalling at first, then "
+                "forwarding with the one-cycle load-use stall and a branch flush "
+                "\u2014 before measuring both machines and reporting the CPI. One "
+                "program, two machines, one result."},
         {"id": "G4", "title": "OS From Scratch", "course": None,
          "kind": "salvage", "prereq": ["G3"],
          "why": "A linux-from-scratch curriculum exists on a branch; port it, then "
