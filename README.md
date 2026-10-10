@@ -189,6 +189,7 @@ To complement the hands-on projects in this repository, we've curated relevant v
 - [Video: youtu.be/_xM8scs4_x4](https://youtu.be/_xM8scs4_x4)
 - [Video: youtu.be/uqUZ_H_m2Yg](https://youtu.be/uqUZ_H_m2Yg)
 - [learn-inference.com](https://learn-inference.com)
+- [Harvard CS 2680](https://cs2680.seas.harvard.edu/)
 
 ### LLM Agents & Retrieval
 *Relevant for: agents-from-scratch, mcp-from-scratch, rag-from-scratch, vector-index-from-scratch, evals-from-scratch*
