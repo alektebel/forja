@@ -185,11 +185,45 @@ To complement the hands-on projects in this repository, we've curated relevant v
 - [Machine Learning Systems Design](https://github.com/Developer-Y/cs-video-courses#machine-learning)
 
 ### ML Infrastructure & Inference
-*Relevant for: sgl-lang, tensorrt-inference, vllm-engine, context-caching, ml-inference, deploy-and-debug*
+*Relevant for: sgl-lang, tensorrt-inference, vllm-engine, context-caching, ml-inference, deploy-and-debug, cuda-from-scratch, compiler-and-vgpu, distributed-training*
+
+What actually happens inside a GPU when a model responds, from the memory hierarchy up to the serving engine.
+
+**General**
 - [Video: youtu.be/_xM8scs4_x4](https://youtu.be/_xM8scs4_x4)
 - [Video: youtu.be/uqUZ_H_m2Yg](https://youtu.be/uqUZ_H_m2Yg)
 - [learn-inference.com](https://learn-inference.com)
 - [Harvard CS 2680](https://cs2680.seas.harvard.edu/)
+
+**Hardware & Memory**
+- [ETH Zürich Computer Architecture (Onur Mutlu)](https://safari.ethz.ch/architecture/)
+- [What Every Programmer Should Know About Memory (Ulrich Drepper)](https://www.akkadia.org/drepper/cpumemory.pdf)
+- [Latency Numbers Every Programmer Should Know](https://gist.github.com/jboner/2841832)
+
+**Parallelism & GPUs**
+- [Stanford CS149 - Parallel Computing](https://gfxcourses.stanford.edu/cs149/)
+- [CUDA Programming Course - freeCodeCamp](https://github.com/Infatoshi/cuda-course)
+- [An Even Easier Introduction to CUDA - NVIDIA](https://developer.nvidia.com/blog/even-easier-introduction-cuda/)
+- [CUDA Programming for NVIDIA H100s](https://lnkd.in/gCh8dg2N)
+- [GPU MODE Lectures](https://github.com/gpu-mode/lectures)
+- [How to Optimize a CUDA Matmul Kernel (Simon Boehm)](https://siboehm.com/articles/22/CUDA-MMM)
+- [Making Deep Learning Go Brrrr From First Principles (Horace He)](https://horace.io/brrr_intro.html)
+
+**ML Systems**
+- [CMU 10-414/714 Deep Learning Systems](https://dlsyscourse.org/)
+- [MIT 6.5940 EfficientML](https://efficientml.ai/)
+- [llm.c - Andrej Karpathy](https://github.com/karpathy/llm.c)
+
+**Training at Scale**
+- [The Ultra-Scale Playbook - Hugging Face](https://huggingface.co/spaces/nanotron/ultrascale-playbook)
+- [How to Scale Your Model - Google DeepMind](https://jax-ml.github.io/scaling-book/)
+- [Machine Learning Engineering Open Book (Stas Bekman)](https://github.com/stas00/ml-engineering)
+
+**LLM Inference**
+- [FlashAttention (paper)](https://arxiv.org/abs/2205.14135)
+- [PagedAttention / vLLM (paper)](https://arxiv.org/abs/2309.06180)
+- [Fast LLM Serving with vLLM and PagedAttention](https://blog.vllm.ai/2023/06/20/vllm.html)
+- [Large Transformer Model Inference Optimization (Lilian Weng)](https://lilianweng.github.io/posts/2023-01-10-inference-optimization/)
 
 ### LLM Agents & Retrieval
 *Relevant for: agents-from-scratch, mcp-from-scratch, rag-from-scratch, vector-index-from-scratch, evals-from-scratch*
