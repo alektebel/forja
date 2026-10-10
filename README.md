@@ -177,11 +177,18 @@ To complement the hands-on projects in this repository, we've curated relevant v
 - [Deep Learning Specialization - Various Universities](https://github.com/Developer-Y/cs-video-courses#deep-learning)
 - [Computer Vision Courses](https://github.com/Developer-Y/cs-video-courses#computer-vision)
 - [Generative AI and LLMs](https://github.com/Developer-Y/cs-video-courses#generative-ai-and-llms)
+- [Easy RL - Datawhale](https://datawhalechina.github.io/easy-rl/#/) — reinforcement learning tutorial in Chinese (MDPs, Q-learning, DQN, policy gradient, PPO); background for the RL agents in quantitative-trading and world-models
 
 ### MLOps & Production ML
 *Relevant for: sgl-lang, tensorrt-inference, vllm-engine*
 - [Full Stack Deep Learning](https://fullstackdeeplearning.com/)
 - [Machine Learning Systems Design](https://github.com/Developer-Y/cs-video-courses#machine-learning)
+
+### ML Infrastructure & Inference
+*Relevant for: sgl-lang, tensorrt-inference, vllm-engine, context-caching, ml-inference, deploy-and-debug*
+- [Video: youtu.be/_xM8scs4_x4](https://youtu.be/_xM8scs4_x4)
+- [Video: youtu.be/uqUZ_H_m2Yg](https://youtu.be/uqUZ_H_m2Yg)
+- [learn-inference.com](https://learn-inference.com)
 
 ### LLM Agents & Retrieval
 *Relevant for: agents-from-scratch, mcp-from-scratch, rag-from-scratch, vector-index-from-scratch, evals-from-scratch*
