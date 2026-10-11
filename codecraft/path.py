@@ -256,14 +256,21 @@ PHASES = [
                 "speculative-decoding-from-scratch: pure Python, offline, with the "
                 "acceptance-rate math and the '2x at zero quality cost' claim made "
                 "checkable rather than repeated."},
-        {"id": "I9", "title": "Multi-Node & Hardware Interconnects", "course": None,
-         "kind": "author", "prereq": ["I1"],
-         "why": "NCCL, RDMA, InfiniBand, NVLink, and disaggregated prefill/decode. "
-                "Author interconnects-from-scratch: ring and tree all-reduce with a "
-                "latency/bandwidth model, an RDMA-semantics simulator (one-sided, "
-                "completion queues), and the topology that decides whether "
-                "disaggregation pays. Same mechanism as AWS's networking, different "
-                "wire. Ten stages worked out in DISTRIBUTED.md — and the "
+        {"id": "I9", "title": "Multi-Node & Hardware Interconnects",
+         "course": "interconnects-from-scratch",
+         "kind": "ready", "prereq": ["G3", "J1"],
+         "why": "Built and ready: NCCL's model in code — what a byte costs on a "
+                "link, the ring and the tree all-reduce and the size where each "
+                "wins, recursive doubling with the one-hop partners it actually "
+                "needs, all-gather and reduce-scatter as first-class collectives, "
+                "the all-to-all whose offsets depend on the data, group semantics "
+                "and full-duplex links, the lower bound that decides an algorithm, "
+                "and one training step's collectives laid over four parallelism "
+                "axes and overlapped with compute as a max. Deterministic and "
+                "in-process over a provided fabric (links with bandwidth and "
+                "latency, four topologies, an executor): a collective is a plan "
+                "whose correctness and whose price are checked separately, with "
+                "438 planted mutations behind the ten checks. The "
                 "prerequisite for H1, the distributed-training course."},
         {"id": "I10", "title": "Cluster Orchestration & GPU Scheduling", "course": None,
          "kind": "author", "prereq": ["A7", "I3"],

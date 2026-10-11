@@ -13,7 +13,7 @@ the rest.**
 
 ### Ready now — checker-driven, pure Python, `codecraft` runs them as-is
 
-Seventeen courses, 201 graded checks between them, no dependencies.
+Eighteen courses, 211 graded checks between them, no dependencies.
 
 | Course | Checks | What it teaches |
 |---|---|---|
@@ -33,6 +33,7 @@ Seventeen courses, 201 graded checks between them, no dependencies.
 | `eval-framework-from-scratch` | 10 | The runner under an eval, with the task set, the actors and the clock provided: a suite config that refuses a typo and materialises its defaults into the hashed form, metric plugins resolved before the first call, one record per case with the error taxonomy of a budgeted call, budgets checked before the call, an aggregation whose unit is the case and whose weights travel in the record, a judge session that caches by prompt/answer/reference and asks both orders, canonical records whose bytes two runs share, a gate ordered invalid-run-before-failed-gate with four exit codes, a baseline diff that needs the difference to beat the noise, and a resume that repairs a half-written tail and leaves the log of an uninterrupted run |
 | `benchmark-from-scratch` | 10 | The measurement machinery around a provided mus engine: a turn gate where a refusal is data and not a turn, a match loop with as-dealt snapshots and two rails, one ground-truth record per decision taken before the action, the link from an aggression to the answer it got, the strength reference drawn from the hands that could bet, a risk scorecard where a bluff is a weak hand and not a lost bet, an outcome that survives the 40-point vaca reset, Brier/log-loss/AUC/calibration probes with their degenerate cases, the publishability gate and its leaderboard, and the mirrored pair that cancels the seat advantage |
 | `queue-and-workers-from-scratch` | 10 | A scheduler as a data structure, not a thread pool, on a provided clock and worker fleet: typed specs that refuse a typo instead of defaulting it, admission that counts running work and refuses with `QueueFull` instead of growing, priority as a total order with the tie that makes two runs differ, the concurrency limit checked before a worker runs, leases that expire and hand the task and the slot back, retries with a growing backoff on the injected clock and dead letters at the attempt budget, the water mark with refuse/shed/block and nothing lost, ageing capped so the interactive tenant survives, a record whose every number is rebuilt from the run's own log, and two runs that print identical bytes |
+| `interconnects-from-scratch` | 10 | NCCL's model on a provided fabric (links, four topologies, an executor): a cost model you write yourself — per hop `latency + ceil(bytes / bandwidth)`, a step priced by its slowest transfer, a plan by the sum of its steps — ring and tree broadcast and reduce with the accumulator that travels, the ring all-reduce's `2(N-1)` steps and its chunks, recursive doubling with the one-hop XOR partners it actually needs, all-gather and reduce-scatter composed back into stage 4 transfer for transfer, the all-to-all whose per-destination offsets make the receiver's buffer a transpose, send/recv and group semantics on full-duplex links, choosing an algorithm by ticking every candidate against a per-direction lower bound (SHARP as a plan the executor can run), and one training step's four parallelism axes with the communication hidden behind the compute |
 | `rag-from-scratch` | 9 | Chunking, TF-IDF, exact index, BM25, rank fusion, reranking, citations, tenants |
 
 ### Legacy — templates and solutions, but no checker (needs a `course.py`)
@@ -119,15 +120,16 @@ python3 codecraft/cli.py run aws-from-scratch # stage 1: iam.py
 ```
 
 Work one stage at a time; the coach and the mentor handle the rest. Phases B1,
-B2, C1, C2, D1, E1, F1, F2 and J1 are built (`rag-from-scratch`,
+B2, C1, C2, D1, E1, F1, F2, J1 and I9 are built (`rag-from-scratch`,
 `vector-index-from-scratch`, `evals-from-scratch`, `agents-from-scratch`,
 `mcp-from-scratch`, `agent-harness-from-scratch`, `benchmark-from-scratch`,
 `eval-framework-from-scratch`, `cpu-from-scratch`,
-`queue-and-workers-from-scratch`); the next course to author is J2,
-`orchestration-from-scratch` — the DAG, the reviewer that can reject and the
-handoff that must carry its own context — with the I9/H1 interconnects and
-distributed-training pair (the plan further down) as the parallel priority, since
-that is the one a training run's wall clock is decided by.
+`queue-and-workers-from-scratch`, `interconnects-from-scratch`); the next course
+to author is J2, `orchestration-from-scratch` — the DAG, the reviewer that can
+reject and the handoff that must carry its own context — with H1
+(`distributed-training-from-scratch`), the second half of the I9/H1 pair, as the
+parallel priority, since that is the one a training run's wall clock is decided
+by.
 
 ```bash
 python3 codecraft/cli.py new orchestration-from-scratch \
@@ -363,12 +365,13 @@ slots the roadmap already carries.
 
 | Slot | Course to author | The mechanism | After |
 |---|---|---|---|
-| I9 | `interconnects-from-scratch` | A provided fabric (links with bandwidth and latency, a topology) and the collectives authored over it: ring reduce-scatter + all-gather with the `2S(N−1)/N` accounting, recursive doubling and trees, all-to-all, send/recv with group semantics, and the message size at which the tree beats the ring — plus a training step's end-to-end time with comms hidden behind compute | G3, J1 |
+| I9 | **built** — `interconnects-from-scratch` (10 checks) | A provided fabric (links with bandwidth and latency, a topology) and the collectives authored over it: ring reduce-scatter + all-gather with the `2S(N−1)/N` accounting, recursive doubling and trees (and the one-hop partners doubling really needs), all-to-all, send/recv with group semantics, the lower bound that picks an algorithm — and one training step's collectives over four parallelism axes, with comms hidden behind compute as a max | G3, J1 |
 | H1 | `distributed-training-from-scratch` | The plans on top: DDP's bucketed gradient all-reduce, ZeRO-1/2/3 and FSDP, tensor parallel's two all-reduces per block, pipeline bubbles (GPipe vs 1F1B), expert all-to-all, ring attention, and the memory ledger per rank — every axis chosen by bytes per step against the interconnect | I9 |
 
-I9 comes first: H1's every stage is a byte count, and I9 decides what a byte
-costs. Both are deterministic and offline in the house style — no GPU, no
-network, no `time` — and I7 (`distributed-inference-from-scratch`) is the same
+I9 is built, and it is the floor H1 stands on: every H1 stage is a byte count,
+and I9 decides what a byte costs. Both are deterministic and offline in the
+house style — no GPU, no network, no `time` — and I7
+(`distributed-inference-from-scratch`) is the same
 axes with latency instead of throughput, so it should reference I9's fabric
 rather than re-deriving it.
 
