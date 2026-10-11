@@ -100,3 +100,9 @@ codecraft/profile.json
 codecraft/history.jsonl
 codecraft/*.tmp
 codecraft/mentor_cache.json
+
+# profiling-pytorch — the blog posts are third-party material without an explicit
+# license: kept locally for offline reading, not redistributed (see the README)
+profiling-pytorch/torch-profiler.md
+profiling-pytorch/torch-mlp-fusion.md
+profiling-pytorch/torch-attention-profile.md
