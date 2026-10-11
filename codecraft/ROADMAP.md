@@ -13,7 +13,7 @@ the rest.**
 
 ### Ready now — checker-driven, pure Python, `codecraft` runs them as-is
 
-Eighteen courses, 211 graded checks between them, no dependencies.
+Nineteen courses, 221 graded checks between them, no dependencies.
 
 | Course | Checks | What it teaches |
 |---|---|---|
@@ -34,6 +34,7 @@ Eighteen courses, 211 graded checks between them, no dependencies.
 | `benchmark-from-scratch` | 10 | The measurement machinery around a provided mus engine: a turn gate where a refusal is data and not a turn, a match loop with as-dealt snapshots and two rails, one ground-truth record per decision taken before the action, the link from an aggression to the answer it got, the strength reference drawn from the hands that could bet, a risk scorecard where a bluff is a weak hand and not a lost bet, an outcome that survives the 40-point vaca reset, Brier/log-loss/AUC/calibration probes with their degenerate cases, the publishability gate and its leaderboard, and the mirrored pair that cancels the seat advantage |
 | `queue-and-workers-from-scratch` | 10 | A scheduler as a data structure, not a thread pool, on a provided clock and worker fleet: typed specs that refuse a typo instead of defaulting it, admission that counts running work and refuses with `QueueFull` instead of growing, priority as a total order with the tie that makes two runs differ, the concurrency limit checked before a worker runs, leases that expire and hand the task and the slot back, retries with a growing backoff on the injected clock and dead letters at the attempt budget, the water mark with refuse/shed/block and nothing lost, ageing capped so the interactive tenant survives, a record whose every number is rebuilt from the run's own log, and two runs that print identical bytes |
 | `interconnects-from-scratch` | 10 | NCCL's model on a provided fabric (links, four topologies, an executor): a cost model you write yourself — per hop `latency + ceil(bytes / bandwidth)`, a step priced by its slowest transfer, a plan by the sum of its steps — ring and tree broadcast and reduce with the accumulator that travels, the ring all-reduce's `2(N-1)` steps and its chunks, recursive doubling with the one-hop XOR partners it actually needs, all-gather and reduce-scatter composed back into stage 4 transfer for transfer, the all-to-all whose per-destination offsets make the receiver's buffer a transpose, send/recv and group semantics on full-duplex links, choosing an algorithm by ticking every candidate against a per-direction lower bound (SHARP as a plan the executor can run), and one training step's four parallelism axes with the communication hidden behind the compute |
+| `distributed-training-from-scratch` | 10 | The plans on top of I9's collectives, with a model handed over: DDP's bucketed all-reduce hidden behind the compute, ZeRO's ladder (`4 + 12/N`, then `2 + 2/N + 12/N`), FSDP's per-unit gather and scatter and its `4P(N−1)/N` peak, tensor parallel's two all-reduces per block, GPipe vs 1F1B and the bubble replayed from the slots, interleaving's `(p−1)/(m·v+p−1)`, the expert all-to-all with its capacity cap, ring attention's exact running pivot, and the configuration whose report is recomputed from the plan it chose |
 | `rag-from-scratch` | 9 | Chunking, TF-IDF, exact index, BM25, rank fusion, reranking, citations, tenants |
 
 ### Legacy — templates and solutions, but no checker (needs a `course.py`)
@@ -54,7 +55,7 @@ just as well as a Python one — its check functions may shell out to `make`.
 | `communication-protocols`, `cryptographic-library`, `quantum-computing-lang` | C |
 | `cuda-from-scratch` | 14 `.cu` files; needs a GPU |
 | `diffusion-models`, `deepfake-creation`, `deepfake-detection` | PyTorch |
-| `distributed-training`, `ml-in-production`, `ml-inference` | Thin (~210–280 lines). `distributed-training` is the H1 slot and now has a real plan: `DISTRIBUTED.md`, with I9's collectives course as its prerequisite |
+| `distributed-training`, `ml-in-production`, `ml-inference` | Thin (~210–280 lines). `distributed-training` was the H1 slot and is now **superseded by the built `distributed-training-from-scratch`**; the two-course plan is `DISTRIBUTED.md`, with I9's collectives course as its prerequisite |
 | `mlops` | 268 lines, and no `solutions/` at all |
 | `spectral-graphs` | 473 lines; numpy |
 | `sas-lineage-tool` | Python + SAS fixtures |
@@ -124,16 +125,21 @@ B2, C1, C2, D1, E1, F1, F2, J1 and I9 are built (`rag-from-scratch`,
 `vector-index-from-scratch`, `evals-from-scratch`, `agents-from-scratch`,
 `mcp-from-scratch`, `agent-harness-from-scratch`, `benchmark-from-scratch`,
 `eval-framework-from-scratch`, `cpu-from-scratch`,
-`queue-and-workers-from-scratch`, `interconnects-from-scratch`); the next course
-to author is J2, `orchestration-from-scratch` — the DAG, the reviewer that can
-reject and the handoff that must carry its own context — with H1
-(`distributed-training-from-scratch`), the second half of the I9/H1 pair, as the
-parallel priority, since that is the one a training run's wall clock is decided
-by.
+`queue-and-workers-from-scratch`, `interconnects-from-scratch`), and H1
+(`distributed-training-from-scratch`), the second half of the I9/H1 pair, is
+built — 10 checks and 554 mutations caught. The next course to author is the one
+you asked for: **A8, `autograd-from-scratch`** — reverse-mode automatic
+differentiation over exact rationals, the engine every training course here
+assumes. Its frozen plan (the ten stages, the two provided modules, the mistake
+catalogue) is in
+`.h2-dev/CONTRACT.md`; nothing in it is a float, so a gradient is an equal pair
+and the last stage reproduces a reference gradient exactly. J2
+(`orchestration-from-scratch`) follows it — the DAG, the reviewer that can reject
+and the handoff that must carry its own context.
 
 ```bash
-python3 codecraft/cli.py new orchestration-from-scratch \
-    --title "Multi-Agent Orchestration From Scratch" --stages 10
+python3 codecraft/cli.py new autograd-from-scratch \
+    --title "Autograd From Scratch" --stages 10
 ```
 
 F1 was a salvage, and it landed: `~/Desarrollo/mus-benchmark` had the turn-gated
@@ -366,7 +372,7 @@ slots the roadmap already carries.
 | Slot | Course to author | The mechanism | After |
 |---|---|---|---|
 | I9 | **built** — `interconnects-from-scratch` (10 checks) | A provided fabric (links with bandwidth and latency, a topology) and the collectives authored over it: ring reduce-scatter + all-gather with the `2S(N−1)/N` accounting, recursive doubling and trees (and the one-hop partners doubling really needs), all-to-all, send/recv with group semantics, the lower bound that picks an algorithm — and one training step's collectives over four parallelism axes, with comms hidden behind compute as a max | G3, J1 |
-| H1 | `distributed-training-from-scratch` | The plans on top: DDP's bucketed gradient all-reduce, ZeRO-1/2/3 and FSDP, tensor parallel's two all-reduces per block, pipeline bubbles (GPipe vs 1F1B), expert all-to-all, ring attention, and the memory ledger per rank — every axis chosen by bytes per step against the interconnect | I9 |
+| H1 | **built** — `distributed-training-from-scratch` (10 checks, 554 mutations caught) | The plans on top: DDP's bucketed gradient all-reduce, ZeRO-1/2/3 and FSDP, tensor parallel's two all-reduces per block, pipeline bubbles (GPipe vs 1F1B), expert all-to-all, ring attention, and the memory ledger per rank — every axis chosen by bytes per step against the interconnect | I9 |
 
 I9 is built, and it is the floor H1 stands on: every H1 stage is a byte count,
 and I9 decides what a byte costs. Both are deterministic and offline in the

@@ -46,6 +46,17 @@ PHASES = [
          "kind": "ready", "prereq": ["A1"],
          "why": "Capacity math, SLOs, root-causing faults from metrics. The "
                 "operations thread that every later course leans on. 12 checks."},
+        {"id": "A8", "title": "Autograd From Scratch",
+         "course": "autograd-from-scratch", "kind": "author", "prereq": [],
+         "why": "The engine every training course in this repository assumes: "
+                "reverse-mode automatic differentiation over exact rationals, "
+                "built on a provided forward algebra (`exact.py`) so the "
+                "gradients are yours — the graph and its topological order, the "
+                "local derivatives, the reduction of a broadcast gradient, "
+                "accumulation, the seed of a non-scalar output, detach, the kink "
+                "at a tie, the exact finite-difference oracle, and one training "
+                "step. Nothing is a float, so every gradient is an equal pair and "
+                "the last stage reproduces a reference gradient exactly."},
     ]),
     ("B", "RAG", [
         {"id": "B1", "title": "RAG From Scratch", "course": "rag-from-scratch",
@@ -177,15 +188,20 @@ PHASES = [
                 "quantum-computing-lang. One at a time; each needs a checker."},
     ]),
     ("H", "The rest", [
-        {"id": "H1", "title": "Distributed Training", "course": "distributed-training",
-         "kind": "author", "prereq": ["A2", "I9"],
-         "why": "Data and model parallelism, and the arithmetic that picks between "
-                "them: gradient all-reduce with buckets and overlap, ZeRO-1/2/3 and "
-                "FSDP, tensor parallel's two all-reduces per block, pipeline bubbles "
-                "(GPipe vs 1F1B), expert all-to-all, ring attention — every plan a "
-                "byte count and a memory ledger checked against the reference "
-                "single-device run. The spec and the ten stages are DISTRIBUTED.md; "
-                "the thin distributed-training/ directory is the salvage source."},
+        {"id": "H1", "title": "Distributed Training",
+         "course": "distributed-training-from-scratch",
+         "kind": "ready", "prereq": ["A2", "I9"],
+         "why": "Built: the plans on top of I9's collectives, on a fabric copied "
+                "verbatim and a model handed to you. A step as a plan with its bytes "
+                "per rank and its memory ledger, DDP's bucketed all-reduce hidden "
+                "behind the compute, ZeRO's ladder (4 + 12/N, then 2 + 2/N + 12/N), "
+                "FSDP's per-unit gather and scatter and its 4P(N-1)/N peak, tensor "
+                "parallel's two all-reduces per block, GPipe vs 1F1B and the bubble "
+                "replayed from the slots, interleaving's (p-1)/(m*v+p-1), the expert "
+                "all-to-all with its routing table and capacity cap, ring attention's "
+                "exact running pivot, and the configuration whose report is "
+                "recomputed from the plan it chose. 10 checks, 554 mutations caught, "
+                "no float anywhere."},
         {"id": "H2", "title": "Inference and serving", "course": None,
          "kind": "salvage", "prereq": ["A3"],
          "why": "Superseded by phase I, which is this list as a twelve-stage spine: "
