@@ -86,14 +86,15 @@ whole buffer — the planted mistake in stage 4 of I9.
 ## Part 2 — What the training algorithms do with it
 
 **Data parallel (DDP).** Replicate the model, split the batch, all-reduce the
-gradients. With `P` parameters, the steady-state cost per step is
-`2·P·(N−1)/N` bytes per rank — for `N` large, **2P** (bf16/fp32) — and the whole
-game is *overlap*: gradients become available layer by layer during the backward
-pass, so a framework buckets them (the classic 25 MB bucket) and starts a
-reduce-scatter per bucket as soon as it is full. Compute and comms then overlap,
-and the step time becomes `max(compute, comms)` instead of their sum. The reason
-DDP keeps working is arithmetic: ~`6·P` FLOPs per token forward+backward against
-`2·P` bytes of gradient per rank — the ratio that has to be large compared to the
+gradients. With `P` parameters and `S` gradient bytes (`S = 2P` in fp32, `P` in
+bf16), the steady-state cost per step is `2·S·(N−1)/N` bytes per rank — for `N`
+large, **2S** — and the whole game is *overlap*: gradients become available
+layer by layer during the backward pass, so a framework buckets them (the
+classic 25 MB bucket) and starts a reduce-scatter per bucket as soon as it is
+full. Compute and comms then overlap, and the step time becomes
+`max(compute, comms)` instead of their sum. The reason DDP keeps working is
+arithmetic: ~`6·P` FLOPs per token forward+backward against `2S` bytes of
+gradient per rank — the ratio that has to be large compared to the
 accelerator's FLOPs-per-byte of interconnect, which is why **gradient
 accumulation** (more compute per communication) is the first lever, and why
 faster interconnect is worth real money.
