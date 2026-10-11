@@ -10,22 +10,26 @@
     python3 codecraft/cli.py ask "why ..."        # ask the NAN mentor about this stage
     python3 codecraft/cli.py review               # concepts still unretired
     python3 codecraft/cli.py status [<course>]    # mastery map
-    python3 codecraft/cli.py new my-course --title "Build X" --stages 3
+    python3 codecraft/cli.py publish [<course>]   # push the last run to the live page
+    python3 codecraft/cli.py web                  # the skill tree in a browser
     python3 codecraft/cli.py config --style deep --mentor auto --model glm5.3
     python3 codecraft/cli.py self-test
 """
 
+import json
 import os
 import sys
+import urllib.error
+import urllib.request
 
 if __package__ in (None, ""):
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    from codecraft import (adapt, contract, manifests, mentor, patterns, render,
-                           scaffold, store, style)
+    from codecraft import (adapt, contract, manifests, mentor, patterns, progress,
+                           render, scaffold, serve, store, style)
     from codecraft import path as pathmod
 else:                                                          # pragma: no cover
-    from . import (adapt, contract, manifests, mentor, patterns, render, scaffold,
-                   store, style)
+    from . import (adapt, contract, manifests, mentor, patterns, progress, render,
+                   scaffold, serve, store, style)
     from . import path as pathmod
 
 HELP = __doc__
@@ -139,8 +143,52 @@ def cmd_run(profile, rest, ink, courses):
         _mentor(profile, course, failed_stage["id"],
                 failed_stage.get("detail", ""), ink)
 
+    _publish_attempt(profile, course, result)
     print(render.render_advice(advice, course["stages"].get(advice["stage"], {}), ink))
     return 0 if result["failed"] == 0 else 1
+
+
+def _publish_attempt(profile, course, result) -> None:
+    """Push one finished attempt to the live page, silently when it is not up."""
+    endpoint = profile["config"].get("publish", "").rstrip("/")
+    if not endpoint:
+        return
+    payload = json.dumps({
+        "course": course["name"], "title": course["title"],
+        "passed": result["passed"], "total": result["total"],
+        "failed": result["failed"], "todo": result["todo"],
+        "next_step": result.get("next_step"),
+        "stages": [{"id": s["id"], "file": s["file"], "title": s["title"],
+                    "status": s["status"]} for s in result["stages"]],
+    }).encode("utf-8")
+    req = urllib.request.Request(
+        endpoint + "/api/run", data=payload, method="POST",
+        headers={"Content-Type": "application/json"})
+    try:
+        with urllib.request.urlopen(req, timeout=3) as resp:
+            body = json.loads(resp.read().decode("utf-8"))
+            if body.get("ok"):
+                print(f"\n  \033[90m→ live on {endpoint}\033[0m")
+    except (urllib.error.URLError, OSError, ValueError):
+        pass        # no page listening; publishing is a bonus, never a failure
+
+
+def cmd_publish(profile, rest, ink, courses):
+    """Re-post a course's current state to the live page."""
+    endpoint = profile["config"].get("publish", "").rstrip("/")
+    if not endpoint:
+        print("  no publish endpoint configured. `codecraft config --publish <url>`")
+        return 2
+    name = next((a for a in rest if not a.startswith("-")), None)
+    target = _load_or_die(name) if name else _current_course(profile, courses)
+    if target is None:
+        print("  no course to publish. Run one first.")
+        return 2
+    outcome = contract.run_attempt(target, echo=False)
+    _publish_attempt(profile, target, outcome)
+    print(f"  {target['title']}: {outcome['passed']}/{outcome['total']} passing"
+          f" → {endpoint}")
+    return 0
 
 
 def _mentor_should_fire(profile, advice, no_mentor):
@@ -350,6 +398,11 @@ def cmd_config(profile, rest, ink):
         if i + 1 < len(rest):
             cfg["model"] = rest[i + 1]
             changed = True
+    if "--publish" in rest:
+        i = rest.index("--publish")
+        if i + 1 < len(rest):
+            cfg["publish"] = rest[i + 1]
+            changed = True
     if changed:
         store.save_profile(profile)
     usable, reason = mentor.available(profile)
@@ -359,6 +412,7 @@ def cmd_config(profile, rest, ink):
   mentor  {ink(cfg['mentor'], render.BOLD)}   auto = explain every failure; stuck = only when circling; manual | off
   model   {ink(cfg['model'], render.BOLD)}
   status  {status}{ink('  (NAN_API_KEY / ' + mentor.endpoint(profile) + ')', render.GREY)}
+  publish {ink(cfg.get('publish', '—'), render.BOLD)}   where `cz publish` POSTs run events (empty string = off)
 """)
     return 0
 
@@ -486,6 +540,13 @@ def main(argv) -> int:
         return cmd_dashboard(profile, courses, ink) or 0
     if cmd == "path":
         return cmd_path(profile, courses, ink) or 0
+    if cmd == "progress":
+        print(progress.render(courses, ink))
+        return 0
+    if cmd in ("web", "serve"):
+        return serve.serve(rest)
+    if cmd == "publish":
+        return cmd_publish(profile, rest, ink, courses) or 0
     if cmd == "new":
         return cmd_new(rest, ink)
     if cmd == "config":

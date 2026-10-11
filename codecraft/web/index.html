@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="auto">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark light">
+  <meta name="theme-color" content="#0d1117">
+  <title>codecraft · the path</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip" href="#tree">Skip to the skill tree</a>
+
+  <header class="mast">
+    <div class="mast-title">
+      <p class="eyebrow">codecraft · learn-stuff-from-scratch</p>
+      <h1>The path</h1>
+      <p class="lede" id="lede">Read where you are. Then run the command in your terminal.</p>
+    </div>
+    <div class="mast-side">
+      <button type="button" id="theme" class="icon-btn" aria-label="Switch colour theme" title="Switch colour theme">
+        <span aria-hidden="true" id="theme-glyph">◐</span>
+      </button>
+      <dl class="totals" id="totals" aria-label="Overall progress"></dl>
+    </div>
+  </header>
+
+  <main>
+    <section class="next" id="next" aria-labelledby="next-h" hidden>
+      <div class="next-head">
+        <p class="kicker">Next immediate thing to learn</p>
+        <h2 id="next-h"></h2>
+      </div>
+      <div class="next-body">
+        <p class="next-stage"><span class="mono" id="next-stage"></span> <span id="next-file" class="mono dim"></span></p>
+        <p class="next-what" id="next-what"></p>
+        <p class="next-predict" id="next-predict" hidden></p>
+        <div class="cmd">
+          <code id="next-cmd">cz run</code>
+          <button type="button" class="copy" data-copy="#next-cmd" aria-label="Copy the run command">Copy</button>
+          <span class="copied" role="status" aria-live="polite"></span>
+        </div>
+      </div>
+    </section>
+
+    <div class="split">
+      <section class="tree" id="tree" aria-labelledby="tree-h">
+        <h2 id="tree-h" class="sr-only">Skill tree</h2>
+        <div id="phases" class="phases"></div>
+      </section>
+
+      <aside class="detail" id="detail" aria-label="Node detail" aria-live="polite">
+        <div class="detail-empty" id="detail-empty">
+          <p class="kicker">Detail</p>
+          <h2 id="detail-h">Pick a node</h2>
+          <p class="dim">Select any item in the tree to see what it teaches, its prerequisites and every graded stage behind it.</p>
+        </div>
+        <div class="detail-body" id="detail-body" hidden></div>
+      </aside>
+    </div>
+  </main>
+
+  <footer class="foot">
+    <p>The engine is the CLI — this page only reads it.</p>
+    <ul>
+      <li><code>cz path</code><span>the ordered plan</span></li>
+      <li><code>cz progress</code><span>repo &amp; checks completion</span></li>
+      <li><code>cz next</code><span>the next action</span></li>
+      <li><code>cz run &lt;course&gt;</code><span>run it and get coached</span></li>
+    </ul>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

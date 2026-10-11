@@ -26,6 +26,7 @@ DEFAULT_CONFIG = {
     "mentor": "auto",               # auto (every failure) | stuck | manual | off
     "model": "deepseek-v4-flash",   # any NAN model id
     "endpoint": "https://api.nan.builders/v1",
+    "publish": "http://127.0.0.1:8766",   # where `cz publish` POSTs run events
 }
 
 CONCEPT_BOXES = 3   # Leitner-ish: box 0 fails soon, box 3 is retired
