@@ -168,7 +168,7 @@ PHASES = [
          "kind": "legacy", "prereq": ["A2"], "why": "Data and model parallelism."},
         {"id": "H2", "title": "Inference and serving", "course": None,
          "kind": "salvage", "prereq": ["A3"],
-         "why": "Superseded by phase I, which is this list as a twelve-stage spine: "
+         "why": "Superseded by phase I, which is this list as a fourteen-stage spine: "
                 "vllm-engine, sgl-lang and tensorrt-inference are I3, I6 and I5 there. "
                 "ml-inference lives here; three of the four are README-only on main, "
                 "and an inference-from-scratch set exists on a branch."},
@@ -266,6 +266,25 @@ PHASES = [
                 "inference-benchmark-from-scratch is the teardown: capture the full "
                 "config, sweep the knobs, plot the frontier, pin cost per token to a "
                 "price, and fail the run when a config is missing."},
+        {"id": "I13", "title": "Inference Fault Tolerance & Recovery", "course": None,
+         "kind": "author", "prereq": ["A7", "I4", "I10"],
+         "why": "At scale hardware fails daily: network partitions, GPU ECC errors, "
+                "OOMs mid-generation. A7 diagnoses injected faults; this stage "
+                "recovers from them. Author inference-resilience-from-scratch: a "
+                "fault injector over a simulated cluster, request retry that never "
+                "duplicates a stream already forwarded, KV-cache migration or "
+                "recompute when a replica dies, and checks that every request ends "
+                "exactly once with the SLO cost of the recovery accounted."},
+        {"id": "I14", "title": "Weight Loading & Cold Start", "course": None,
+         "kind": "author", "prereq": ["I1", "I10"],
+         "why": "Cold-start latency is what makes autoscaling slow. Author "
+                "weight-loading-from-scratch: stream weights from object storage to "
+                "device memory in chunks (ranged reads, pinned buffers, overlap of "
+                "download, host copy and H2D), a cold-start model that predicts "
+                "time-to-ready from size and bandwidths, and checks that the streamed "
+                "weights are byte-identical and that the pipeline beats disk-first "
+                "by the margin the model predicts. S3 and safetensors are the "
+                "runbook."},
     ]),
 ]
 

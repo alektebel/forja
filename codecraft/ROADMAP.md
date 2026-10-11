@@ -68,7 +68,7 @@ No `CPU` or `OS`; the benchmark and the eval runner are now
 `rag-from-scratch/` (phase B1), `vector-index-from-scratch/` (phase B2),
 `evals-from-scratch/` (phase C1), `agents-from-scratch/` (phase C2),
 `mcp-from-scratch/` (phase D1) and `agent-harness-from-scratch` (phase E1) now
-exist and are graded. Phase I adds eleven
+exist and are graded. Phase I adds thirteen
 more "to author" lines: the inference spine below names the artifact each stage
 builds on, and the SIROM/MUS benchmark work in phase F is its last stage.
 
@@ -148,7 +148,7 @@ of the standard: every check catches the stage's own characteristic error.
 
 ---
 
-## The inference spine (phase I) — twelve stages, silicon to serving
+## The inference spine (phase I) — fourteen stages, silicon to serving
 
 The serving track, in order. Each stage is a real piece of infrastructure
 knowledge; each one is graded the way the rest of this repo grades — by the
@@ -172,6 +172,8 @@ a cluster to be graded is a stage that will never be graded.
 | I10 Cluster orchestration & GPU scheduling | `gpu-scheduling-from-scratch` (+ A7) | to author |
 | I11 AI gateways, routing & observability | `ai-gateway-from-scratch` (+ A3's routing, A7's percentiles) | to author |
 | I12 Public benchmarks & teardowns | `inference-benchmark-from-scratch` (+ F1/F2) | to author |
+| I13 Fault tolerance & recovery | `inference-resilience-from-scratch` (+ A7's faults, A3's KV) | to author |
+| I14 Weight loading & cold start | `weight-loading-from-scratch` (+ I1's bandwidths) | to author |
 
 The stages, verbatim as they were set out, with what the offline course does about
 each:
@@ -309,9 +311,37 @@ price and a utilisation, and fail the comparison when two runs differ in a knob
 nobody recorded. F1 (`mus-benchmark`) and F2 own the measurement machinery it
 reuses, and the `benchmark-methodology` skill is the checklist behind it.
 
+**Stage 13 — Inference Fault Tolerance & Recovery.**
+*Build:* a harness that injects network partitions, simulated GPU ECC errors and
+OOMs to test the cluster's ability to migrate KV-caches and recover. *Why:* at
+scale, hardware fails daily; the architecture must heal itself.
+→ `inference-resilience-from-scratch`: a deterministic fault injector over a
+simulated cluster (replicas, a router, paged KV from A3), and the recovery paths
+graded on what they must never do: a retry that duplicates tokens already streamed
+to the client, a KV migration that resumes from a stale block, a drain that drops an
+in-flight request, a recovery that hides its cost from the SLO. The choice between
+migrating the KV and recomputing the prefill is a cost decision the check
+reproduces from bandwidths and context length. `deploy-and-debug` (A7) diagnoses
+faults from metrics; this stage acts on them. Real chaos tooling (fault injection
+on Kubernetes, `nvidia-smi` ECC counters) is the runbook.
+
+**Stage 14 — Weight Loading & Cold Start.**
+*Build:* a system that streams model weights directly from an S3 bucket to GPU VRAM
+on cold-start, bypassing local disk. *Why:* cold-start latency kills autoscaling.
+→ `weight-loading-from-scratch`: a tensor file format with a header and offsets
+(safetensors-shaped), ranged reads in chunks, a bounded pipeline that overlaps
+download, host copy and host-to-device transfer, and a cold-start model that
+predicts time-to-ready from model size and the bandwidth of each hop. The checks:
+the streamed weights are byte-identical to the source, memory stays under the
+buffer budget, a failed chunk is retried without corrupting the tensor, and
+streaming beats disk-first by the margin the model predicts — no more. I10's
+autoscaler consumes this cold-start number. Real S3 + `safetensors` + pinned memory
+is the runbook.
+
 The honest sequence: I1–I2 before I3 (the cost model is what makes a scheduler
 decision checkable), I9 before I7 (you cannot shard without knowing what a link
-costs), and I4/I5 before I11 (a gateway routes to what exists). Everything else is
+costs), I4/I5 before I11 (a gateway routes to what exists), and I4/I10 before I13 (you
+cannot recover a KV cache or a replica you have not modelled). Everything else is
 parallel.
 
 ---
