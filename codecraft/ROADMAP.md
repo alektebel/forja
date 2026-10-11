@@ -13,7 +13,7 @@ the rest.**
 
 ### Ready now — checker-driven, pure Python, `codecraft` runs them as-is
 
-Sixteen courses, 191 graded checks between them, no dependencies.
+Seventeen courses, 201 graded checks between them, no dependencies.
 
 | Course | Checks | What it teaches |
 |---|---|---|
@@ -32,6 +32,7 @@ Sixteen courses, 191 graded checks between them, no dependencies.
 | `cpu-from-scratch` | 10 | A real datapath on a provided ISA and assembler (`isa.py`): word algebra and the four flags, a decoder that ignores the fields a format does not use, a register file whose zero register cannot be written and whose snapshots are copies, an ALU whose division truncates and whose remainder takes the dividend's sign, byte-addressed memory with alignment and bounds checked before anything is stored, a control unit where a fault is data and a trace records every effect, and then the same programs on a five-stage pipeline that must retire the identical trace — stalls first, then forwarding with the one-cycle load-use stall and a branch flush — measured by CPI. One program, two machines, one result |
 | `eval-framework-from-scratch` | 10 | The runner under an eval, with the task set, the actors and the clock provided: a suite config that refuses a typo and materialises its defaults into the hashed form, metric plugins resolved before the first call, one record per case with the error taxonomy of a budgeted call, budgets checked before the call, an aggregation whose unit is the case and whose weights travel in the record, a judge session that caches by prompt/answer/reference and asks both orders, canonical records whose bytes two runs share, a gate ordered invalid-run-before-failed-gate with four exit codes, a baseline diff that needs the difference to beat the noise, and a resume that repairs a half-written tail and leaves the log of an uninterrupted run |
 | `benchmark-from-scratch` | 10 | The measurement machinery around a provided mus engine: a turn gate where a refusal is data and not a turn, a match loop with as-dealt snapshots and two rails, one ground-truth record per decision taken before the action, the link from an aggression to the answer it got, the strength reference drawn from the hands that could bet, a risk scorecard where a bluff is a weak hand and not a lost bet, an outcome that survives the 40-point vaca reset, Brier/log-loss/AUC/calibration probes with their degenerate cases, the publishability gate and its leaderboard, and the mirrored pair that cancels the seat advantage |
+| `queue-and-workers-from-scratch` | 10 | A scheduler as a data structure, not a thread pool, on a provided clock and worker fleet: typed specs that refuse a typo instead of defaulting it, admission that counts running work and refuses with `QueueFull` instead of growing, priority as a total order with the tie that makes two runs differ, the concurrency limit checked before a worker runs, leases that expire and hand the task and the slot back, retries with a growing backoff on the injected clock and dead letters at the attempt budget, the water mark with refuse/shed/block and nothing lost, ageing capped so the interactive tenant survives, a record whose every number is rebuilt from the run's own log, and two runs that print identical bytes |
 | `rag-from-scratch` | 9 | Chunking, TF-IDF, exact index, BM25, rank fusion, reranking, citations, tenants |
 
 ### Legacy — templates and solutions, but no checker (needs a `course.py`)
@@ -118,18 +119,19 @@ python3 codecraft/cli.py run aws-from-scratch # stage 1: iam.py
 ```
 
 Work one stage at a time; the coach and the mentor handle the rest. Phases B1,
-B2, C1, C2, D1, E1, F1 and F2 are built (`rag-from-scratch`,
+B2, C1, C2, D1, E1, F1, F2 and J1 are built (`rag-from-scratch`,
 `vector-index-from-scratch`, `evals-from-scratch`, `agents-from-scratch`,
 `mcp-from-scratch`, `agent-harness-from-scratch`, `benchmark-from-scratch`,
-`eval-framework-from-scratch`, `cpu-from-scratch`); the
-next course to author is phase J, the Agent Infra list kept in `AGENT-INFRA.md`:
-a queue with concurrency limits, priority, backpressure and a worker pool — the
-prerequisite for the multi-agent, durable-execution and metrics courses that
-follow it.
+`eval-framework-from-scratch`, `cpu-from-scratch`,
+`queue-and-workers-from-scratch`); the next course to author is J2,
+`orchestration-from-scratch` — the DAG, the reviewer that can reject and the
+handoff that must carry its own context — with the I9/H1 interconnects and
+distributed-training pair (the plan further down) as the parallel priority, since
+that is the one a training run's wall clock is decided by.
 
 ```bash
-python3 codecraft/cli.py new queue-and-workers-from-scratch \
-    --title "Queue & Workers From Scratch" --stages 10
+python3 codecraft/cli.py new orchestration-from-scratch \
+    --title "Multi-Agent Orchestration From Scratch" --stages 10
 ```
 
 F1 was a salvage, and it landed: `~/Desarrollo/mus-benchmark` had the turn-gated
@@ -332,12 +334,13 @@ with idempotent effects (that course plus `agent-harness-from-scratch`), the too
 and MCP layer (`mcp-from-scratch`), and evaluation with replay
 (`evals-from-scratch` + `eval-framework-from-scratch`). Six more it reaches in
 part: context and state, checkpointing, distributed state, the filesystem sandbox,
-permissions, and traces. The five below are the parts nothing here touches at all,
-in the order they build on each other:
+permissions, and traces. The five below were the parts nothing here touched at
+all; J1 is now built and graded, and the four that follow are in the order they
+build on each other:
 
-| Slot | Course to author | The mechanism | After |
+| Slot | Course | The mechanism | After |
 |---|---|---|---|
-| J1 | `queue-and-workers-from-scratch` | Concurrency limits, priority, backpressure and a worker pool — deterministic and in-process, with the clock injected, so the scheduler is a data structure and not a thread pool | C2, A7 |
+| J1 | **built** — `queue-and-workers-from-scratch` (10 checks) | Concurrency limits, priority, backpressure and a worker pool — deterministic and in-process, with the clock injected, so the scheduler is a data structure and not a thread pool | C2, A7 |
 | J2 | `orchestration-from-scratch` | A DAG of subtasks, a reviewer that can reject, a handoff that must carry its own context, and a human-in-the-loop that stops before the effect instead of after it | J1, C2 |
 | J3 | `durable-execution-from-scratch` | Leases and heartbeats, a write-ahead log, replay, resume and recovery after a worker is killed holding the lease, and effects that happen exactly once | J1 |
 | J4 | `sandbox-capabilities-from-scratch` | A capability set per tool, a path jail, a modelled network policy, CPU/memory/time limits as counters, secrets that never reach the model, and an audit line | C2, D1 |

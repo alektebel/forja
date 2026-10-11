@@ -289,15 +289,19 @@ PHASES = [
                 "price, and fail the run when a config is missing."},
     ]),
     ("J", "Agent infrastructure", [
-        {"id": "J1", "title": "Queue & Workers", "course": None,
-         "kind": "author", "prereq": ["C2", "A7"],
-         "why": "Distribute tasks through a queue to workers: concurrency limits, "
-                "priority, backpressure and a worker pool. Author "
-                "queue-and-workers-from-scratch: deterministic and in-process, "
-                "with the clock injected, so the scheduler is a data structure "
-                "and not a thread pool — and a check can prove that priority is "
-                "honoured, that a full queue refuses instead of growing, and that "
-                "a worker which dies gives its task back."},
+        {"id": "J1", "title": "Queue & Workers",
+         "course": "queue-and-workers-from-scratch",
+         "kind": "ready", "prereq": ["C2", "A7"],
+         "why": "Built and ready: a task queue and a worker pool as data "
+                "structures, deterministic and in-process, with the clock "
+                "injected — typed specs that refuse a typo instead of defaulting "
+                "it, admission that counts running work and refuses instead of "
+                "growing, priority as a total order, the concurrency limit "
+                "checked before a worker runs, leases that reclaim the task a "
+                "dead worker was holding, backoff and dead letters on that same "
+                "clock, refuse/shed/block backpressure, ageing, and a record "
+                "rebuilt from the run's own log rather than declared. 10 checks, "
+                "no threads and no floats."},
         {"id": "J2", "title": "Multi-Agent Orchestration", "course": None,
          "kind": "author", "prereq": ["J1", "C2"],
          "why": "Decompose a task into subtasks: a DAG, a reviewer that can "
