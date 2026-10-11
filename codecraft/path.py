@@ -178,7 +178,14 @@ PHASES = [
     ]),
     ("H", "The rest", [
         {"id": "H1", "title": "Distributed Training", "course": "distributed-training",
-         "kind": "legacy", "prereq": ["A2"], "why": "Data and model parallelism."},
+         "kind": "author", "prereq": ["A2", "I9"],
+         "why": "Data and model parallelism, and the arithmetic that picks between "
+                "them: gradient all-reduce with buckets and overlap, ZeRO-1/2/3 and "
+                "FSDP, tensor parallel's two all-reduces per block, pipeline bubbles "
+                "(GPipe vs 1F1B), expert all-to-all, ring attention — every plan a "
+                "byte count and a memory ledger checked against the reference "
+                "single-device run. The spec and the ten stages are DISTRIBUTED.md; "
+                "the thin distributed-training/ directory is the salvage source."},
         {"id": "H2", "title": "Inference and serving", "course": None,
          "kind": "salvage", "prereq": ["A3"],
          "why": "Superseded by phase I, which is this list as a twelve-stage spine: "
@@ -256,7 +263,8 @@ PHASES = [
                 "latency/bandwidth model, an RDMA-semantics simulator (one-sided, "
                 "completion queues), and the topology that decides whether "
                 "disaggregation pays. Same mechanism as AWS's networking, different "
-                "wire."},
+                "wire. Ten stages worked out in DISTRIBUTED.md — and the "
+                "prerequisite for H1, the distributed-training course."},
         {"id": "I10", "title": "Cluster Orchestration & GPU Scheduling", "course": None,
          "kind": "author", "prereq": ["A7", "I3"],
          "why": "Kubernetes GPU operators, Ray, Slurm, MIG partitioning, KEDA. "

@@ -52,7 +52,7 @@ just as well as a Python one — its check functions may shell out to `make`.
 | `communication-protocols`, `cryptographic-library`, `quantum-computing-lang` | C |
 | `cuda-from-scratch` | 14 `.cu` files; needs a GPU |
 | `diffusion-models`, `deepfake-creation`, `deepfake-detection` | PyTorch |
-| `distributed-training`, `ml-in-production`, `ml-inference` | Thin (~210–280 lines) |
+| `distributed-training`, `ml-in-production`, `ml-inference` | Thin (~210–280 lines). `distributed-training` is the H1 slot and now has a real plan: `DISTRIBUTED.md`, with I9's collectives course as its prerequisite |
 | `mlops` | 268 lines, and no `solutions/` at all |
 | `spectral-graphs` | 473 lines; numpy |
 | `sas-lineage-tool` | Python + SAS fixtures |
@@ -348,6 +348,26 @@ ten graded stages, DESIGN DECISION docstrings, and a check per stage with plante
 mutations behind it. None of them needs a network, a real server or a thread: the
 whole point is that a queue, a lease and a percentile are data structures whose
 failures are reproducible, which is what makes them checkable at all.
+
+---
+
+## Interconnects and distributed training (I9, H1) — the plan in two courses
+
+NCCL is where a training step's wall clock is decided and where it is hardest to
+see: ring and tree all-reduce, the protocols, the topology, and the arithmetic
+that picks between them. `DISTRIBUTED.md` is the worked-out plan for the two
+slots the roadmap already carries.
+
+| Slot | Course to author | The mechanism | After |
+|---|---|---|---|
+| I9 | `interconnects-from-scratch` | A provided fabric (links with bandwidth and latency, a topology) and the collectives authored over it: ring reduce-scatter + all-gather with the `2S(N−1)/N` accounting, recursive doubling and trees, all-to-all, send/recv with group semantics, and the message size at which the tree beats the ring — plus a training step's end-to-end time with comms hidden behind compute | G3, J1 |
+| H1 | `distributed-training-from-scratch` | The plans on top: DDP's bucketed gradient all-reduce, ZeRO-1/2/3 and FSDP, tensor parallel's two all-reduces per block, pipeline bubbles (GPipe vs 1F1B), expert all-to-all, ring attention, and the memory ledger per rank — every axis chosen by bytes per step against the interconnect | I9 |
+
+I9 comes first: H1's every stage is a byte count, and I9 decides what a byte
+costs. Both are deterministic and offline in the house style — no GPU, no
+network, no `time` — and I7 (`distributed-inference-from-scratch`) is the same
+axes with latency instead of throughput, so it should reference I9's fabric
+rather than re-deriving it.
 
 ---
 
