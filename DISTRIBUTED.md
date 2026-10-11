@@ -59,19 +59,21 @@ the number of ranks, `α` the per-hop latency and `β` the per-link bandwidth:
 | Collective | Algorithm | Per-rank bytes | Steps |
 |---|---|---|---|
 | All-reduce | **ring**: reduce-scatter then all-gather | `2·S·(N−1)/N` | `2(N−1)` |
-| All-reduce | **tree**: reduce to root, broadcast | `2·S·log N` | `2·log N` |
+| All-reduce | **tree**: reduce to root, broadcast | `≈ 2S` per rank, but `≈ 2S(N−1)` on the network | `2·log N` |
 | All-reduce | **recursive doubling / halving** | `S·log N` | `log N` |
 | Reduce-scatter / All-gather | ring | `S·(N−1)/N` | `N−1` |
-| Broadcast | ring / tree (binomial) | `S·(N−1)/N` / `S` critical path | `N−1` / `log N` |
+| Broadcast | ring / binomial tree | `S·(N−1)/N` / `≈ S` | `N−1` / `log N` |
 | All-to-all | pairwise exchange, uneven splits | `S·(N−1)/N` | `1` (bandwidth-bound) |
 
 The ring is **bandwidth-optimal** (`(N−1)/N → 1`) and tree-style algorithms are
-**latency-optimal** (`log N` steps instead of `N−1`). So the crossover is a
-message size: small messages want the tree, large ones the ring — which is
-exactly the heuristic `NCCL_ALGO=Tree` was original for, and why "just call
-`all_reduce`" is a decision. Add SHARP/CollNet — in-network reduction, where the
-switch does the addition so the data crosses the fabric once instead of
-`2(N−1)/N` times — and the lesson becomes: *the algorithm is part of the model.*
+**latency-optimal** (`log N` steps instead of `N−1`). Note the tree's second
+column: it is cheap *per rank* — one send up, one receive down — and expensive on
+the *network*, because every level moves the whole payload again. That is exactly
+the trade: small messages want fewer hops (tree), large messages want fewer bytes
+on the wire (ring), and `NCCL_ALGO` exists because the crossover depends on `S`.
+Add SHARP/CollNet — in-network reduction, where the switch adds the partials so
+they cross the fabric once instead of `2(N−1)/N` times — and the lesson becomes:
+*the algorithm is part of the model.*
 
 The lower bound to check every implementation against: an all-reduce must make
 every rank hold the sum, so at least `S·(N−1)/N` bytes have to *leave* each rank
