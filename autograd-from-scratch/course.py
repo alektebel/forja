@@ -1,32 +1,26 @@
 """Autograd From Scratch — course manifest.
 
-Ten graded stages that build what a training framework does with the
-interconnect: the shape calculus and the memory ledger of one model, then the
-parallelisation plans on top of it — data parallel with its buckets, ZeRO-1/2,
-ZeRO-3/FSDP, tensor parallel's two all-reduces per block, pipeline parallel and
-its schedules, expert parallel's two all-to-alls, context parallel's ring
-attention, and the configuration that picks an axis split for a given number of
-devices.
+Ten graded stages that build the engine every training course in this repository
+assumes: reverse-mode automatic differentiation over **exact rationals**. The
+world is provided twice over — `exact.py` is the forward algebra (a `Rational`
+that is always an exact reduced pair, a `Tensor` of them with broadcasting,
+reshape, matmul, reduce, and a provided `reduce_gradient`) and `fixtures.py` is
+the data and the frozen references (the AND/OR/XOR/PARITY sets, the three model
+shapes, the learning rate, the eight-step `EXPECTED_LOSS` and the reference
+gradient at the initial weights).
 
 The thesis of the whole course is one sentence, and every stage's check asserts
-it: ONE MODEL, MANY DEVICES, THE SAME MATH. A plan is data — the collectives it
-issues, where they happen, how many bytes they move — and three things are
-checked independently: its bytes (per rank and on the network, both counted
-from the plan), its memory ledger (what each rank holds when), and its
-semantics, by recomputing the reference single-device arithmetic over the plan's
-own decomposition. The failures this course makes visible are the silent ones: a
-ZeRO-3 that all-gathers the world instead of the layer, a tensor parallel with
-one all-reduce per block, a bubble formula that ignores the micro-batches, a
-plan that shards the state but drops the remainder, comms added to compute.
+it: THE FORWARD IS GIVEN; THE GRADIENT IS YOURS. Every stage is one decision the
+forward algebra cannot make: how a graph is walked so that a node used twice is
+visited once, what each local derivative is, what a broadcast operand's gradient
+must be reduced back to, how a reused node accumulates, what seed a non-scalar
+output needs, what `detach` cuts, where the tie at a kink sends the gradient,
+what the exact central difference is, and what one training step does.
 
-The world is provided twice over: `fabric.py` is I9's, verbatim (links with a
-bandwidth and a latency, four topologies, an executor and its cost semantics —
-a byte costs what it says), and `model.py` is this course's shape calculus and
-reference arithmetic (the 16 bytes a parameter costs through a step, the
-integer matmuls and gradients a plan must reproduce exactly, the fixtures). The
-exercise is the ten plans and their ledgers. No network, no `time`, no
-`threading`, no `asyncio`, no unseeded randomness and no module-level mutable
-state: ticks are counted, not timed, and no number here is a float.
+No float anywhere: a gradient is an exact reduced `(numerator, denominator)`
+pair, every comparison is `==`, and the cubic the oracle checks is off by
+exactly `h²`. Standard library only, offline, deterministic — no `time`, no
+`threading`, no `asyncio`, no unseeded randomness, no module-level mutable state.
 
     python3 codecraft/cli.py run autograd-from-scratch
 """
@@ -34,17 +28,19 @@ state: ticks are counted, not timed, and no number here is a float.
 from codecraft.api import stage
 
 TITLE = "Autograd From Scratch"
-DESCRIPTION = ("The plans on top of the interconnect: count what one parameter "
-               "costs through a training step (params, gradients, optimizer "
-               "state, masters) and what each rank holds when, then write data "
-               "parallel with its gradient buckets hidden behind compute, "
-               "ZeRO-1/2/3 and FSDP, tensor parallel's f/g blocks with their "
-               "two all-reduces, pipeline schedules and their bubbles, expert "
-               "parallel's dispatch and combine, ring attention's exact "
-               "accumulation, and the configuration that picks the axis split "
-               "by bytes instead of by fashion.")
+DESCRIPTION = ("Reverse-mode automatic differentiation over exact rationals, on a "
+               "provided forward algebra: the graph and the topological order "
+               "that visits a diamond once, the local derivatives and the "
+               "accumulation that makes a node used twice add up, broadcasting "
+               "and the reduction that hands each operand back its own shape, "
+               "matmul's two transposed VJPs with the small MLP composed from "
+               "them, shared/trainable as a freeze that stops the walk, the seed "
+               "of a non-scalar output, detach and the no_grad region, the kink "
+               "at a tie, an exact central-difference oracle, and the capstone "
+               "step that learns XOR in eight exact steps and reproduces the "
+               "reference gradient.")
 LEVEL = "advanced"
-ORDER = 19
+ORDER = 20
 
 # --- the checks. Each one is self-contained: its fixtures are nested
 # inside it because `course.py` is one namespace for ten stages.
