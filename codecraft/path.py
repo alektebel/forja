@@ -47,16 +47,17 @@ PHASES = [
          "why": "Capacity math, SLOs, root-causing faults from metrics. The "
                 "operations thread that every later course leans on. 12 checks."},
         {"id": "A8", "title": "Autograd From Scratch",
-         "course": "autograd-from-scratch", "kind": "author", "prereq": [],
-         "why": "The engine every training course in this repository assumes: "
-                "reverse-mode automatic differentiation over exact rationals, "
-                "built on a provided forward algebra (`exact.py`) so the "
-                "gradients are yours — the graph and its topological order, the "
-                "local derivatives, the reduction of a broadcast gradient, "
-                "accumulation, the seed of a non-scalar output, detach, the kink "
-                "at a tie, the exact finite-difference oracle, and one training "
-                "step. Nothing is a float, so every gradient is an equal pair and "
-                "the last stage reproduces a reference gradient exactly."},
+         "course": "autograd-from-scratch", "kind": "ready", "prereq": ["A2"],
+         "why": "Built: the engine every training course in this repository "
+                "assumes — reverse-mode automatic differentiation over exact "
+                "rationals, on a provided forward algebra (`exact.py`) so the "
+                "gradients are yours: the graph and its topological order, the "
+                "local derivatives, broadcasting and the reduction of a broadcast "
+                "gradient, accumulation, the seed of a non-scalar output, detach, "
+                "the kink at a tie, the exact finite-difference oracle, and one "
+                "training step. Ten checks and 504 planted mutations, no float "
+                "anywhere — every gradient is an equal pair and the last stage "
+                "reproduces a reference gradient exactly."},
     ]),
     ("B", "RAG", [
         {"id": "B1", "title": "RAG From Scratch", "course": "rag-from-scratch",

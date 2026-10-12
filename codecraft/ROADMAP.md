@@ -13,7 +13,7 @@ the rest.**
 
 ### Ready now — checker-driven, pure Python, `codecraft` runs them as-is
 
-Nineteen courses, 221 graded checks between them, no dependencies.
+Twenty courses, 231 graded checks between them, no dependencies.
 
 | Course | Checks | What it teaches |
 |---|---|---|
@@ -35,6 +35,7 @@ Nineteen courses, 221 graded checks between them, no dependencies.
 | `queue-and-workers-from-scratch` | 10 | A scheduler as a data structure, not a thread pool, on a provided clock and worker fleet: typed specs that refuse a typo instead of defaulting it, admission that counts running work and refuses with `QueueFull` instead of growing, priority as a total order with the tie that makes two runs differ, the concurrency limit checked before a worker runs, leases that expire and hand the task and the slot back, retries with a growing backoff on the injected clock and dead letters at the attempt budget, the water mark with refuse/shed/block and nothing lost, ageing capped so the interactive tenant survives, a record whose every number is rebuilt from the run's own log, and two runs that print identical bytes |
 | `interconnects-from-scratch` | 10 | NCCL's model on a provided fabric (links, four topologies, an executor): a cost model you write yourself — per hop `latency + ceil(bytes / bandwidth)`, a step priced by its slowest transfer, a plan by the sum of its steps — ring and tree broadcast and reduce with the accumulator that travels, the ring all-reduce's `2(N-1)` steps and its chunks, recursive doubling with the one-hop XOR partners it actually needs, all-gather and reduce-scatter composed back into stage 4 transfer for transfer, the all-to-all whose per-destination offsets make the receiver's buffer a transpose, send/recv and group semantics on full-duplex links, choosing an algorithm by ticking every candidate against a per-direction lower bound (SHARP as a plan the executor can run), and one training step's four parallelism axes with the communication hidden behind the compute |
 | `distributed-training-from-scratch` | 10 | The plans on top of I9's collectives, with a model handed over: DDP's bucketed all-reduce hidden behind the compute, ZeRO's ladder (`4 + 12/N`, then `2 + 2/N + 12/N`), FSDP's per-unit gather and scatter and its `4P(N−1)/N` peak, tensor parallel's two all-reduces per block, GPipe vs 1F1B and the bubble replayed from the slots, interleaving's `(p−1)/(m·v+p−1)`, the expert all-to-all with its capacity cap, ring attention's exact running pivot, and the configuration whose report is recomputed from the plan it chose |
+| `autograd-from-scratch` | 10 | Reverse-mode automatic differentiation over exact rationals, on a provided forward algebra (`exact.py`): the graph and the topological order that visits a diamond once, the local derivatives and the accumulation that makes a node used twice add up, broadcasting and the reduction that hands each operand back its own shape, `matmul`'s two transposed VJPs with the small MLP composed from them, `shared`/`trainable` as a freeze that stops the walk, the seed of a non-scalar output and its explicit collapse, `detach` and the `no_grad` region, the kink at a tie and the left-operand rule, an exact central-difference oracle off by exactly `h²` on a cubic, and the capstone step that learns XOR in eight exact steps and reproduces the reference gradient — no float anywhere |
 | `rag-from-scratch` | 9 | Chunking, TF-IDF, exact index, BM25, rank fusion, reranking, citations, tenants |
 
 ### Legacy — templates and solutions, but no checker (needs a `course.py`)
@@ -121,26 +122,20 @@ python3 codecraft/cli.py run aws-from-scratch # stage 1: iam.py
 ```
 
 Work one stage at a time; the coach and the mentor handle the rest. Phases B1,
-B2, C1, C2, D1, E1, F1, F2, J1 and I9 are built (`rag-from-scratch`,
+B2, C1, C2, D1, E1, F1, F2, J1, I9 and H1 are built (`rag-from-scratch`,
 `vector-index-from-scratch`, `evals-from-scratch`, `agents-from-scratch`,
 `mcp-from-scratch`, `agent-harness-from-scratch`, `benchmark-from-scratch`,
 `eval-framework-from-scratch`, `cpu-from-scratch`,
-`queue-and-workers-from-scratch`, `interconnects-from-scratch`), and H1
-(`distributed-training-from-scratch`), the second half of the I9/H1 pair, is
-built — 10 checks and 554 mutations caught. The next course to author is the one
-you asked for: **A8, `autograd-from-scratch`** — reverse-mode automatic
-differentiation over exact rationals, the engine every training course here
-assumes. Its frozen plan (the ten stages, the two provided modules, the mistake
-catalogue) is in
-`.h2-dev/CONTRACT.md`; nothing in it is a float, so a gradient is an equal pair
-and the last stage reproduces a reference gradient exactly. J2
-(`orchestration-from-scratch`) follows it — the DAG, the reviewer that can reject
-and the handoff that must carry its own context.
-
-```bash
-python3 codecraft/cli.py new autograd-from-scratch \
-    --title "Autograd From Scratch" --stages 10
-```
+`queue-and-workers-from-scratch`, `interconnects-from-scratch`,
+`distributed-training-from-scratch`), and so is **A8, `autograd-from-scratch`**
+— reverse-mode automatic differentiation over exact rationals, the engine every
+training course here assumes: ten checks and 504 mutations caught, on a provided
+forward algebra (`exact.py`) so every gradient is yours, and nothing in it is a
+float, so a gradient is an equal pair and the last stage reproduces a reference
+gradient exactly (its frozen plan — the ten stages, the two provided modules,
+the mistake catalogue — is in `.h2-dev/CONTRACT.md`). The next course to author
+is J2 (`orchestration-from-scratch`) — the DAG, the reviewer that can reject and
+the handoff that must carry its own context.
 
 F1 was a salvage, and it landed: `~/Desarrollo/mus-benchmark` had the turn-gated
 engine, the per-decision JSONL record, the scorecards and the calibration probes,
