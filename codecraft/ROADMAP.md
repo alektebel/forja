@@ -346,6 +346,63 @@ parallel.
 
 ---
 
+## AWS for real (phase W) — fourteen projects, from first account to SA + ML engineer
+
+`aws-from-scratch` (A1) teaches the mechanisms offline: why an explicit Deny wins,
+why SQS redelivers, why a hot key throttles an idle table. Phase W is the other
+half: the same mechanisms on a real account, built with **Terraform**, in the order
+that leads to the two certifications it targets — **AWS Certified Solutions
+Architect – Associate (SAA-C03)** for W0–W7 and **AWS Certified Machine Learning
+Engineer – Associate (MLA-C01)** for W8–W13. Exam codes change; check the current
+exam guide before booking.
+
+What changes from the rest of this repo, and why it matters:
+
+- **Nothing here is graded by `codecraft`.** These projects run on your account and
+  cost money, so no offline check can say they pass. Each one instead has
+  **acceptance criteria you measure** — a failover time, bytes scanned, a message
+  that lands in a DLQ — not "it deployed". A `terraform apply` that succeeds proves
+  the syntax; the criteria prove the architecture. A `verify.sh` per project
+  (AWS CLI assertions against the live account) is the natural next step and is
+  not written yet.
+- **Cost is a first-class failure.** Every project ends with `terraform destroy`
+  and a check that no resource tagged with its project name survives. Projects
+  marked **$$** have a meaningful hourly charge (NAT gateways, RDS Multi-AZ,
+  SageMaker endpoints, vector search collections): apply, measure and destroy in
+  the same session. W0 exists so a mistake costs an email, not a bill.
+- **Every project names the A1 mechanism it puts on the wire**, so the offline
+  model and the real service check each other. When they disagree, the real
+  service is right and the toy has a bug worth a test.
+
+| Project | What you build | Proves (acceptance) | Exam domain | Builds on |
+|---|---|---|---|---|
+| W0 Account foundations | IAM Identity Center user with MFA, root locked away, AWS Budgets alert, CloudTrail, Terraform remote state in S3 | Root has no access keys; a budget email arrives on a test threshold; `terraform destroy` leaves zero tagged resources | SAA: secure | A1 `iam.py` |
+| W1 Static site + CDN | Private S3 bucket behind CloudFront with Origin Access Control, ACM certificate | Direct S3 URL returns 403, CloudFront returns 200; cache hit ratio visible in metrics | SAA: secure, performant | A1 `s3.py`, `iam.py` |
+| W2 Network from zero **$$** | VPC over 2 AZs, public/private subnets, one NAT gateway, S3 gateway endpoint, SSM Session Manager instead of a bastion, VPC Flow Logs | A private instance reaches S3 with the NAT removed; a NACL deny shows as REJECT in Flow Logs while the SG allows it | SAA: secure, resilient | A1 `vpc.py` |
+| W3 Three-tier HA app **$$** | ALB + Auto Scaling group across 2 AZs + RDS Multi-AZ, credentials in Secrets Manager | Terminating every instance in one AZ keeps the service up; RDS failover downtime measured in seconds, not assumed | SAA: resilient | A5, A7 |
+| W4 Serverless, event-driven | API Gateway → Lambda → DynamoDB, SQS with DLQ, SNS/EventBridge fan-out | A poison message lands in the DLQ after `maxReceiveCount`; a duplicate delivery does not double-write (conditional put) | SAA: resilient, performant | A1 `sqs.py`, `lambda_svc.py`, `dynamodb.py`, `sns.py` |
+| W5 Security & encryption | Customer-managed KMS key, bucket policy denying non-TLS and unencrypted puts, least-privilege roles with a permissions boundary, IAM Access Analyzer | Policy simulator shows the denies you designed; Access Analyzer reports zero unintended external access; key rotation leaves old objects readable | SAA: secure | A1 `kms.py`, `iam.py` |
+| W6 Observability, backup & DR **$$** | CloudWatch alarms and dashboard, AWS Backup plan, cross-region S3 replication, Route 53 failover record | Measured RTO and RPO against the ones you wrote down before the test | SAA: resilient | A7 |
+| W7 Cost & Well-Architected review | Tags and Cost Explorer, Spot in a mixed-instances ASG, S3 lifecycle / Intelligent-Tiering, a Well-Architected review of W3 | A written before/after cost per month for W3 with every number traced to a pricing page or a bill | SAA: cost | W3 |
+| W8 Data lake for ML | S3 raw/curated zones, Glue crawler + ETL to partitioned Parquet, Athena, Lake Formation permissions, Firehose ingest | The same query scans measurably fewer bytes on partitioned Parquet than on CSV; a Lake Formation grant hides a column | MLA: data preparation | W5 |
+| W9 Training on SageMaker | Processing job for features, Training job (built-in XGBoost or script mode), hyperparameter tuning, Model Registry | The tuned model beats a recorded baseline on a held-out set; the model is registered with an approval status | MLA: model development | W8 |
+| W10 Model deployment **$$** | Real-time endpoint with autoscaling, serverless inference, batch transform; canary rollout with automatic rollback | A deliberately bad model version rolls back on its alarm; latency and cost per 1k predictions compared across the three modes | MLA: deployment | W9, A7 |
+| W11 MLOps pipeline | SageMaker Pipelines triggered from CI (GitHub Actions or CodePipeline), registry approval gating the deploy, all of it in Terraform | A commit retrains, registers and stops at approval; approving deploys; rejecting changes nothing | MLA: orchestration | W10 |
+| W12 Monitoring & governance | Model Monitor data-quality baseline, Clarify bias report, VPC-only endpoint with KMS, least-privilege SageMaker execution role | Injected drift fires the alarm; the endpoint is unreachable from outside the VPC | MLA: monitoring, security | W10, W5, W2 |
+| W13 Capstone: RAG on AWS **$$** | Bedrock models with a managed knowledge base (or your own retrieval over a vector store), evaluated with the harness from C1 | Grounded-answer rate and cost per request measured on a fixed question set; a full architecture document with a Well-Architected review | MLA + SAA | B1, C1, W12 |
+
+The honest sequence: W0 before everything (it is the guardrail, not a warm-up),
+W2 before W3 and W12 (they live inside its network), W5 before W8 (a data lake
+without its permissions model is a leak), and W9 → W10 → W11 → W12 in order. W1
+and W4 can run any time after W0. Read the A1 section a project names before you
+build it: forty minutes offline saves a confused afternoon and a bill.
+
+What this phase does not claim: passing it is not passing the exams. The projects
+cover the architecture the exams test; the exams also test breadth (dozens of
+services seen once in a scenario question) that only practice questions cover.
+
+---
+
 ## The MUS benchmark (phase F) — resolved
 
 MUS is the Spanish card game, and `mus-benchmark` is **your own** project

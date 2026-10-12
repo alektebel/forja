@@ -12,6 +12,8 @@ Each item is one of:
             to use it in codecraft it needs a course.py (see scaffold.py)
   author    a course that does not exist yet; author it with `codecraft new`
   salvage   material exists on another git branch; port it first
+  real      a project built on a real AWS account with Terraform; no offline
+            checker can grade it, so it carries acceptance criteria you measure
 
 `prereq` is the honest dependency, not a suggestion. A course can be started
 without its prereqs, but the stages assume them.
@@ -286,9 +288,83 @@ PHASES = [
                 "by the margin the model predicts. S3 and safetensors are the "
                 "runbook."},
     ]),
+    ("W", "AWS for real: Solutions Architect to ML engineer", [
+        {"id": "W0", "title": "Account Foundations", "course": None,
+         "kind": "real", "prereq": ["A1"],
+         "why": "IAM Identity Center with MFA, root locked away, an AWS Budgets alert, "
+                "CloudTrail and Terraform remote state. Accepted when root has no access "
+                "keys, a test budget email arrives, and destroy leaves zero tagged "
+                "resources."},
+        {"id": "W1", "title": "Static Site + CDN", "course": None,
+         "kind": "real", "prereq": ["W0"],
+         "why": "Private S3 behind CloudFront with Origin Access Control and ACM. Accepted "
+                "when the S3 URL is 403 and CloudFront is 200. A1's s3.py and iam.py on the "
+                "wire."},
+        {"id": "W2", "title": "Network From Zero ($$)", "course": None,
+         "kind": "real", "prereq": ["W0"],
+         "why": "VPC over 2 AZs, NAT, S3 gateway endpoint, SSM instead of a bastion, Flow "
+                "Logs. Accepted when a private instance reaches S3 with the NAT gone and a "
+                "NACL deny shows as REJECT while the SG allows it. A1's vpc.py, for real."},
+        {"id": "W3", "title": "Three-Tier HA App ($$)", "course": None,
+         "kind": "real", "prereq": ["W2", "A5", "A7"],
+         "why": "ALB + ASG across 2 AZs + RDS Multi-AZ, secrets in Secrets Manager. "
+                "Accepted when killing one AZ keeps the service up and RDS failover time is "
+                "measured."},
+        {"id": "W4", "title": "Serverless, Event-Driven", "course": None,
+         "kind": "real", "prereq": ["W0"],
+         "why": "API Gateway, Lambda, DynamoDB, SQS with a DLQ, SNS/EventBridge fan-out. "
+                "Accepted when a poison message reaches the DLQ and a duplicate delivery "
+                "does not double-write."},
+        {"id": "W5", "title": "Security & Encryption", "course": None,
+         "kind": "real", "prereq": ["W0"],
+         "why": "Customer-managed KMS, TLS-only bucket policy, permissions boundaries, "
+                "Access Analyzer. Accepted when the simulator shows the designed denies and "
+                "Analyzer finds no unintended external access."},
+        {"id": "W6", "title": "Observability & DR ($$)", "course": None,
+         "kind": "real", "prereq": ["W3"],
+         "why": "CloudWatch alarms, AWS Backup, cross-region replication, Route 53 "
+                "failover. Accepted when measured RTO/RPO meet the ones written down before "
+                "the test."},
+        {"id": "W7", "title": "Cost & Well-Architected Review", "course": None,
+         "kind": "real", "prereq": ["W3"],
+         "why": "Tags, Cost Explorer, Spot in a mixed ASG, S3 lifecycle, and a "
+                "Well-Architected review of W3 with a before/after monthly cost traced to "
+                "pricing or a bill. Closes the SAA-C03 half."},
+        {"id": "W8", "title": "Data Lake for ML", "course": None,
+         "kind": "real", "prereq": ["W5"],
+         "why": "S3 zones, Glue to partitioned Parquet, Athena, Lake Formation, Firehose. "
+                "Accepted when partitioned Parquet scans measurably fewer bytes than CSV "
+                "and a grant hides a column. Opens the MLA-C01 half."},
+        {"id": "W9", "title": "Training on SageMaker", "course": None,
+         "kind": "real", "prereq": ["W8"],
+         "why": "Processing and Training jobs, hyperparameter tuning, Model Registry. "
+                "Accepted when the tuned model beats a recorded baseline on held-out data."},
+        {"id": "W10", "title": "Model Deployment ($$)", "course": None,
+         "kind": "real", "prereq": ["W9", "A7"],
+         "why": "Real-time with autoscaling, serverless, batch transform; canary with "
+                "automatic rollback. Accepted when a bad version rolls back on its alarm "
+                "and cost per 1k predictions is compared across modes."},
+        {"id": "W11", "title": "MLOps Pipeline", "course": None,
+         "kind": "real", "prereq": ["W10"],
+         "why": "SageMaker Pipelines from CI with a registry approval gate, all in "
+                "Terraform. Accepted when a commit retrains and stops at approval, and "
+                "approval deploys."},
+        {"id": "W12", "title": "Monitoring & Governance", "course": None,
+         "kind": "real", "prereq": ["W10", "W5", "W2"],
+         "why": "Model Monitor drift baseline, Clarify bias report, VPC-only endpoint with "
+                "KMS. Accepted when injected drift fires the alarm and the endpoint is "
+                "unreachable from outside the VPC."},
+        {"id": "W13", "title": "Capstone: RAG on AWS ($$)", "course": None,
+         "kind": "real", "prereq": ["B1", "C1", "W12"],
+         "why": "Bedrock with a managed knowledge base or your own retrieval, evaluated "
+                "with C1's harness. Accepted on grounded-answer rate and cost per request "
+                "over a fixed question set, plus an architecture doc and Well-Architected "
+                "review."},
+    ]),
 ]
 
-_SYMBOL = {"ready": "\u25cb", "legacy": "\u00b7", "author": "\u270e", "salvage": "\u21bb"}
+_SYMBOL = {"ready": "\u25cb", "legacy": "\u00b7", "author": "\u270e", "salvage": "\u21bb",
+           "real": "\u2601"}
 
 
 def _find(courses, name):
@@ -302,8 +378,8 @@ def render_path(profile, courses, ink):
     green, yellow, grey, cyan = ("\033[32m", "\033[33m", "\033[90m", "\033[36m")
     lines = ["", ink("  codecraft \u00b7 the path", "\033[1m"),
              ink("  your order: AWS, LLM internals, RAG, evals + agents, MCP, "
-                 "harness, benchmark, eval, the machine stack, and the inference "
-                 "spine", grey), ""]
+                 "harness, benchmark, eval, the machine stack, the inference "
+                 "spine, and AWS for real", grey), ""]
     done = active = 0
     for code, title, items in PHASES:
         lines.append(ink(f"  PHASE {code} \u2014 {title}", cyan))
@@ -327,6 +403,8 @@ def render_path(profile, courses, ink):
                 mark, note = ink("\u270e", yellow), ink("to author", yellow)
             elif item["kind"] == "salvage":
                 mark, note = ink("\u21bb", yellow), ink("port from a branch", yellow)
+            elif item["kind"] == "real":
+                mark, note = ink("\u2601", cyan), ink("real AWS \u00b7 Terraform", cyan)
             else:
                 mark, note = ink("\u00b7", grey), ink("no checker yet", grey)
             prereq = ""
