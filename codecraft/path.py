@@ -12,8 +12,11 @@ Each item is one of:
             to use it in codecraft it needs a course.py (see scaffold.py)
   author    a course that does not exist yet; author it with `codecraft new`
   salvage   material exists on another git branch; port it first
-  real      a project built on a real AWS account with Terraform; no offline
-            checker can grade it, so it carries acceptance criteria you measure
+  real      a project built on a real AWS account with Terraform (or designed
+            for one); no offline checker can grade it, so it carries acceptance
+            criteria you measure. Specs live in aws-architect-track/
+  design    a system design exercise: design doc, ADRs, failure modes and a
+            cost estimate, with an optional build slice on AWS
 
 `prereq` is the honest dependency, not a suggestion. A course can be started
 without its prereqs, but the stages assume them.
@@ -291,80 +294,136 @@ PHASES = [
     ("W", "AWS for real: Solutions Architect to ML engineer", [
         {"id": "W0", "title": "Account Foundations", "course": None,
          "kind": "real", "prereq": ["A1"],
-         "why": "IAM Identity Center with MFA, root locked away, an AWS Budgets alert, "
-                "CloudTrail and Terraform remote state. Accepted when root has no access "
-                "keys, a test budget email arrives, and destroy leaves zero tagged "
-                "resources."},
+         "why": "SAA-C03 \u2014 Design Secure Architectures. Spec, measured acceptance and "
+                "questions in aws-architect-track/projects/w00-account-foundations/."},
         {"id": "W1", "title": "Static Site + CDN", "course": None,
          "kind": "real", "prereq": ["W0"],
-         "why": "Private S3 behind CloudFront with Origin Access Control and ACM. Accepted "
-                "when the S3 URL is 403 and CloudFront is 200. A1's s3.py and iam.py on the "
-                "wire."},
-        {"id": "W2", "title": "Network From Zero ($$)", "course": None,
+         "why": "SAA-C03 \u2014 Secure / High-Performing. Spec, measured acceptance and "
+                "questions in aws-architect-track/projects/w01-static-site-cdn/."},
+        {"id": "W2", "title": "Network From Zero", "course": None,
          "kind": "real", "prereq": ["W0"],
-         "why": "VPC over 2 AZs, NAT, S3 gateway endpoint, SSM instead of a bastion, Flow "
-                "Logs. Accepted when a private instance reaches S3 with the NAT gone and a "
-                "NACL deny shows as REJECT while the SG allows it. A1's vpc.py, for real."},
-        {"id": "W3", "title": "Three-Tier HA App ($$)", "course": None,
+         "why": "$$ hourly cost. SAA-C03 \u2014 Secure / Resilient. Spec, measured acceptance "
+                "and questions in aws-architect-track/projects/w02-network-from-zero/."},
+        {"id": "W3", "title": "Three-Tier HA App + Cache", "course": None,
          "kind": "real", "prereq": ["W2", "A5", "A7"],
-         "why": "ALB + ASG across 2 AZs + RDS Multi-AZ, secrets in Secrets Manager. "
-                "Accepted when killing one AZ keeps the service up and RDS failover time is "
-                "measured."},
+         "why": "$$ hourly cost. SAA-C03 \u2014 Resilient / High-Performing. Spec, measured "
+                "acceptance and questions in "
+                "aws-architect-track/projects/w03-three-tier-ha/."},
         {"id": "W4", "title": "Serverless, Event-Driven", "course": None,
          "kind": "real", "prereq": ["W0"],
-         "why": "API Gateway, Lambda, DynamoDB, SQS with a DLQ, SNS/EventBridge fan-out. "
-                "Accepted when a poison message reaches the DLQ and a duplicate delivery "
-                "does not double-write."},
-        {"id": "W5", "title": "Security & Encryption", "course": None,
+         "why": "SAA-C03 \u2014 Resilient / High-Performing. Spec, measured acceptance and "
+                "questions in aws-architect-track/projects/w04-serverless-event-driven/."},
+        {"id": "W5", "title": "Containers on ECS Fargate", "course": None,
+         "kind": "real", "prereq": ["W2", "W3"],
+         "why": "$$ hourly cost. SAA-C03 \u2014 High-Performing / Resilient; MLA-C01 \u2014 "
+                "bring-your-own container. Spec, measured acceptance and questions in "
+                "aws-architect-track/projects/w05-containers-ecs/."},
+        {"id": "W6", "title": "Streaming with Kinesis", "course": None,
+         "kind": "real", "prereq": ["W4"],
+         "why": "SAA-C03 \u2014 High-Performing; MLA-C01 \u2014 Data ingestion. Spec, measured "
+                "acceptance and questions in "
+                "aws-architect-track/projects/w06-streaming-kinesis/."},
+        {"id": "W7", "title": "Security & Encryption", "course": None,
          "kind": "real", "prereq": ["W0"],
-         "why": "Customer-managed KMS, TLS-only bucket policy, permissions boundaries, "
-                "Access Analyzer. Accepted when the simulator shows the designed denies and "
-                "Analyzer finds no unintended external access."},
-        {"id": "W6", "title": "Observability & DR ($$)", "course": None,
+         "why": "SAA-C03 \u2014 Design Secure Architectures. Spec, measured acceptance and "
+                "questions in aws-architect-track/projects/w07-security-encryption/."},
+        {"id": "W8", "title": "Multi-Account & Hybrid Network", "course": None,
+         "kind": "real", "prereq": ["W2", "W7"],
+         "why": "$$ hourly cost. SAA-C03 \u2014 Secure / Resilient (Organizations, SCPs, "
+                "Transit Gateway, VPN). Spec, measured acceptance and questions in "
+                "aws-architect-track/projects/w08-multi-account-hybrid/."},
+        {"id": "W9", "title": "Observability, Backup & DR", "course": None,
          "kind": "real", "prereq": ["W3"],
-         "why": "CloudWatch alarms, AWS Backup, cross-region replication, Route 53 "
-                "failover. Accepted when measured RTO/RPO meet the ones written down before "
-                "the test."},
-        {"id": "W7", "title": "Cost & Well-Architected Review", "course": None,
+         "why": "$$ hourly cost. SAA-C03 \u2014 Design Resilient Architectures. Spec, measured "
+                "acceptance and questions in "
+                "aws-architect-track/projects/w09-observability-dr/."},
+        {"id": "W10", "title": "Cost & Well-Architected Review", "course": None,
          "kind": "real", "prereq": ["W3"],
-         "why": "Tags, Cost Explorer, Spot in a mixed ASG, S3 lifecycle, and a "
-                "Well-Architected review of W3 with a before/after monthly cost traced to "
-                "pricing or a bill. Closes the SAA-C03 half."},
-        {"id": "W8", "title": "Data Lake for ML", "course": None,
-         "kind": "real", "prereq": ["W5"],
-         "why": "S3 zones, Glue to partitioned Parquet, Athena, Lake Formation, Firehose. "
-                "Accepted when partitioned Parquet scans measurably fewer bytes than CSV "
-                "and a grant hides a column. Opens the MLA-C01 half."},
-        {"id": "W9", "title": "Training on SageMaker", "course": None,
-         "kind": "real", "prereq": ["W8"],
-         "why": "Processing and Training jobs, hyperparameter tuning, Model Registry. "
-                "Accepted when the tuned model beats a recorded baseline on held-out data."},
-        {"id": "W10", "title": "Model Deployment ($$)", "course": None,
-         "kind": "real", "prereq": ["W9", "A7"],
-         "why": "Real-time with autoscaling, serverless, batch transform; canary with "
-                "automatic rollback. Accepted when a bad version rolls back on its alarm "
-                "and cost per 1k predictions is compared across modes."},
-        {"id": "W11", "title": "MLOps Pipeline", "course": None,
-         "kind": "real", "prereq": ["W10"],
-         "why": "SageMaker Pipelines from CI with a registry approval gate, all in "
-                "Terraform. Accepted when a commit retrains and stops at approval, and "
-                "approval deploys."},
-        {"id": "W12", "title": "Monitoring & Governance", "course": None,
-         "kind": "real", "prereq": ["W10", "W5", "W2"],
-         "why": "Model Monitor drift baseline, Clarify bias report, VPC-only endpoint with "
-                "KMS. Accepted when injected drift fires the alarm and the endpoint is "
-                "unreachable from outside the VPC."},
-        {"id": "W13", "title": "Capstone: RAG on AWS ($$)", "course": None,
-         "kind": "real", "prereq": ["B1", "C1", "W12"],
-         "why": "Bedrock with a managed knowledge base or your own retrieval, evaluated "
-                "with C1's harness. Accepted on grounded-answer rate and cost per request "
-                "over a fixed question set, plus an architecture doc and Well-Architected "
-                "review."},
+         "why": "SAA-C03 \u2014 Design Cost-Optimized Architectures. Spec, measured acceptance "
+                "and questions in "
+                "aws-architect-track/projects/w10-cost-well-architected/."},
+        {"id": "W11", "title": "Data Lake for ML", "course": None,
+         "kind": "real", "prereq": ["W7", "W6"],
+         "why": "MLA-C01 \u2014 Data Preparation for ML. Spec, measured acceptance and "
+                "questions in aws-architect-track/projects/w11-data-lake-ml/."},
+        {"id": "W12", "title": "SageMaker Training + Features", "course": None,
+         "kind": "real", "prereq": ["W11"],
+         "why": "MLA-C01 \u2014 ML Model Development. Spec, measured acceptance and questions "
+                "in aws-architect-track/projects/w12-training-sagemaker/."},
+        {"id": "W13", "title": "Model Deployment & Cost", "course": None,
+         "kind": "real", "prereq": ["W12", "W5", "A7"],
+         "why": "$$ hourly cost. MLA-C01 \u2014 Deployment and Orchestration. Spec, measured "
+                "acceptance and questions in "
+                "aws-architect-track/projects/w13-model-deployment/."},
+        {"id": "W14", "title": "MLOps Pipeline", "course": None,
+         "kind": "real", "prereq": ["W13"],
+         "why": "MLA-C01 \u2014 Deployment and Orchestration (CI/CD). Spec, measured "
+                "acceptance and questions in "
+                "aws-architect-track/projects/w14-mlops-pipeline/."},
+        {"id": "W15", "title": "Monitoring & Governance", "course": None,
+         "kind": "real", "prereq": ["W13", "W7", "W2"],
+         "why": "MLA-C01 \u2014 Monitoring, Maintenance and Security. Spec, measured "
+                "acceptance and questions in "
+                "aws-architect-track/projects/w15-monitoring-governance/."},
+        {"id": "W16", "title": "Capstone: RAG on AWS", "course": None,
+         "kind": "real", "prereq": ["B1", "C1", "W15"],
+         "why": "$$ hourly cost. MLA-C01 + SAA-C03. Spec, measured acceptance and "
+                "questions in aws-architect-track/projects/w16-capstone-rag/."},
+    ]),
+    ("S", "System design on AWS", [
+        {"id": "S1", "title": "URL Shortener", "course": None,
+         "kind": "design", "prereq": ["W4"],
+         "why": "Design doc, ADRs, failure modes and a cost estimate; optional Terraform "
+                "slice. aws-architect-track/system-design/s01-url-shortener/."},
+        {"id": "S2", "title": "Distributed Rate Limiter", "course": None,
+         "kind": "design", "prereq": ["W3", "W4"],
+         "why": "Design doc, ADRs, failure modes and a cost estimate; optional Terraform "
+                "slice. aws-architect-track/system-design/s02-rate-limiter/."},
+        {"id": "S3", "title": "Notification System", "course": None,
+         "kind": "design", "prereq": ["W4"],
+         "why": "Design doc, ADRs, failure modes and a cost estimate; optional Terraform "
+                "slice. aws-architect-track/system-design/s03-notification-system/."},
+        {"id": "S4", "title": "News Feed / Timeline", "course": None,
+         "kind": "design", "prereq": ["W3"],
+         "why": "Design doc, ADRs, failure modes and a cost estimate; optional Terraform "
+                "slice. aws-architect-track/system-design/s04-news-feed/."},
+        {"id": "S5", "title": "Real-Time Chat", "course": None,
+         "kind": "design", "prereq": ["W4"],
+         "why": "Design doc, ADRs, failure modes and a cost estimate; optional Terraform "
+                "slice. aws-architect-track/system-design/s05-chat-messaging/."},
+        {"id": "S6", "title": "Video Upload & Streaming", "course": None,
+         "kind": "design", "prereq": ["W1", "W4"],
+         "why": "Design doc, ADRs, failure modes and a cost estimate; optional Terraform "
+                "slice. aws-architect-track/system-design/s06-video-platform/."},
+        {"id": "S7", "title": "Payments Ledger", "course": None,
+         "kind": "design", "prereq": ["W3", "W7"],
+         "why": "Design doc, ADRs, failure modes and a cost estimate; optional Terraform "
+                "slice. aws-architect-track/system-design/s07-payments-ledger/."},
+        {"id": "S8", "title": "Distributed Job Scheduler", "course": None,
+         "kind": "design", "prereq": ["W4"],
+         "why": "Design doc, ADRs, failure modes and a cost estimate; optional Terraform "
+                "slice. aws-architect-track/system-design/s08-job-scheduler/."},
+        {"id": "S9", "title": "Search Autocomplete", "course": None,
+         "kind": "design", "prereq": ["W3"],
+         "why": "Design doc, ADRs, failure modes and a cost estimate; optional Terraform "
+                "slice. aws-architect-track/system-design/s09-search-autocomplete/."},
+        {"id": "S10", "title": "Ride-Hailing Geo Matching", "course": None,
+         "kind": "design", "prereq": ["W6"],
+         "why": "Design doc, ADRs, failure modes and a cost estimate; optional Terraform "
+                "slice. aws-architect-track/system-design/s10-geo-matching/."},
+        {"id": "S11", "title": "Recommendation Serving", "course": None,
+         "kind": "design", "prereq": ["W12", "W13"],
+         "why": "Design doc, ADRs, failure modes and a cost estimate; optional Terraform "
+                "slice. aws-architect-track/system-design/s11-recommendation-serving/."},
+        {"id": "S12", "title": "Multi-Tenant LLM Platform", "course": None,
+         "kind": "design", "prereq": ["W13", "W16"],
+         "why": "Design doc, ADRs, failure modes and a cost estimate; optional Terraform "
+                "slice. aws-architect-track/system-design/s12-llm-platform/."},
     ]),
 ]
 
 _SYMBOL = {"ready": "\u25cb", "legacy": "\u00b7", "author": "\u270e", "salvage": "\u21bb",
-           "real": "\u2601"}
+           "real": "\u2601", "design": "\u25c7"}
 
 
 def _find(courses, name):
@@ -379,7 +438,7 @@ def render_path(profile, courses, ink):
     lines = ["", ink("  codecraft \u00b7 the path", "\033[1m"),
              ink("  your order: AWS, LLM internals, RAG, evals + agents, MCP, "
                  "harness, benchmark, eval, the machine stack, the inference "
-                 "spine, and AWS for real", grey), ""]
+                 "spine, AWS for real, and system design on AWS", grey), ""]
     done = active = 0
     for code, title, items in PHASES:
         lines.append(ink(f"  PHASE {code} \u2014 {title}", cyan))
@@ -403,6 +462,8 @@ def render_path(profile, courses, ink):
                 mark, note = ink("\u270e", yellow), ink("to author", yellow)
             elif item["kind"] == "salvage":
                 mark, note = ink("\u21bb", yellow), ink("port from a branch", yellow)
+            elif item["kind"] == "design":
+                mark, note = ink("\u25c7", cyan), ink("design doc + ADRs", cyan)
             elif item["kind"] == "real":
                 mark, note = ink("\u2601", cyan), ink("real AWS \u00b7 Terraform", cyan)
             else:
