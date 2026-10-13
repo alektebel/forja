@@ -77,8 +77,8 @@ of it builds the thing and a check catches the mistake.
 |---|---|---|---|
 | 1 | Agent Runtime | `agents-from-scratch` (the loop and the transcript that is its state, tool schemas and validation, errors as observations, parsing what a model actually writes) and `agent-harness-from-scratch` (a model's event stream collected into one turn, streaming with TTFT and inter-token timings) | yes |
 | 2 | Context and state | `agent-harness-from-scratch` (a prompt budget recomputed from the bytes, compaction that summarizes the middle and pins the system message), `agents-from-scratch` (memory bounded by turns), `eval-framework-from-scratch` (a checkpoint and a resume) | mostly — long-term memory is not a stage anywhere |
-| 3 | Queue and workers | nothing | no |
-| 4 | Multi-agent scheduling | nothing; `agents-from-scratch`'s approval gate is the shape of human-in-the-loop and nothing else | no |
+| 3 | Queue and workers | `queue-and-workers-from-scratch` (typed specs that refuse a typo instead of defaulting it, admission that counts running work and refuses instead of growing, priority as a total order, the concurrency limit checked before a worker runs, leases that expire and hand the slot back, a growing backoff and dead letters on the injected clock, refuse/shed/block backpressure, ageing, and a record rebuilt from the run's own log rather than declared) | yes |
+| 4 | Multi-agent scheduling | `orchestration-from-scratch` (a big task as a graph of small ones: subtasks that refuse a typo, the wave a dependency forces, the schedule decided by the states rather than by the wave, the handoff cut to the budget each dependency declared, the reviewer who can reject, the failure that skips its transitive dependents, the effect held behind its approval, the budget asked before the call, and a report recomputed from a record that carries no text) | yes |
 | 5 | Durable execution | `eval-framework-from-scratch` (a hash that decides whether a resume is allowed, budgets carried over from the log, a half-written tail repaired, a resumed run whose bytes equal an uninterrupted one) | partly — one process, one log, no crash recovery of a *worker* |
 | 6 | Retry, timeout, idempotency | `agents-from-scratch` (retries with idempotent effects), `agent-harness-from-scratch` (retries that stop the moment anything was forwarded) | yes |
 | 7 | Distributed state and consistency | `dynamo-paper` (quorums, hinted handoff, Merkle anti-entropy) and `aws-from-scratch` (S3/SQS/DynamoDB semantics) — the theory and the APIs, not an orchestrator's own task state | partly |
@@ -96,14 +96,15 @@ mutations behind every check). `python3 codecraft/cli.py path` shows them:
 
 | Slot | Course to author | Which item above it answers |
 |---|---|---|
-| J1 | `queue-and-workers-from-scratch` | #3 — a queue with concurrency limits, priority, backpressure and a worker pool, deterministic and in-process: a scheduler that is a data structure and not a thread pool. The prerequisite for the two below. |
-| J2 | `orchestration-from-scratch` | #4 — a DAG of subtasks, a reviewer that can reject, a handoff that must carry its own context, and a human-in-the-loop that stops *before* the effect rather than after it. |
+| J1 | **built** — `queue-and-workers-from-scratch` | #3 — a queue with concurrency limits, priority, backpressure and a worker pool, deterministic and in-process: a scheduler that is a data structure and not a thread pool. The prerequisite for the two below. |
+| J2 | **built** — `orchestration-from-scratch` | #4 — a DAG of subtasks, a reviewer that can reject, a handoff that must carry its own context, and a human-in-the-loop that stops *before* the effect rather than after it. |
 | J3 | `durable-execution-from-scratch` | #5 — what `eval-framework-from-scratch` does for one run, generalized: leases and heartbeats, replay from a log, recovery after a killed worker, exactly-once effects. |
 | J4 | `sandbox-capabilities-from-scratch` | #10 (and the rest of #8) — capability sets per tool, a path jail, a network policy, resource limits as counters, secrets that never reach the model, and an audit line complete enough to answer "what did it touch". |
 | J5 | `agent-metrics-from-scratch` | #11 — token, cost, queue depth and latency metrics over a simulated fleet, with the windows that make percentiles stable. |
 
-Items 3, 4, 7, 8, 10 and 11 are the parts of this list that the courses reach only
-in part, and 3, 4, 8, 10 and 11 are what phase J is for; #1, #6, #9 and #12 are
+Items 2, 5, 7, 8, 10 and 11 are the parts of this list that the courses reach only
+in part; #3 and #4 are now taught end to end by J1 and J2, and 5, 8, 10 and 11
+are what the rest of phase J is for; #1, #6, #9 and #12 are
 already taught end to end, which is a good sign for both the list and the
 repository. #7 (transaction, WAL, lease, heartbeat, replication) is the one item
 with no slot yet: `dynamo-paper` and `aws-from-scratch` teach the theory and the

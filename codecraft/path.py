@@ -326,14 +326,24 @@ PHASES = [
                 "clock, refuse/shed/block backpressure, ageing, and a record "
                 "rebuilt from the run's own log rather than declared. 10 checks, "
                 "no threads and no floats."},
-        {"id": "J2", "title": "Multi-Agent Orchestration", "course": None,
-         "kind": "author", "prereq": ["J1", "C2"],
-         "why": "Decompose a task into subtasks: a DAG, a reviewer that can "
-                "reject, a handoff that must carry its own context (and does the "
-                "wrong thing when it does not), and a human-in-the-loop that "
-                "stops BEFORE the effect rather than after it. Author "
-                "orchestration-from-scratch; C2's approval gate is the "
-                "single-agent half of exactly this."},
+        {"id": "J2", "title": "Multi-Agent Orchestration",
+         "course": "orchestration-from-scratch",
+         "kind": "ready", "prereq": ["J1", "C2"],
+         "why": "Built and ready: a big task as a graph of small ones, and the "
+                "graph as data. Subtasks that refuse a typo instead of "
+                "defaulting it, the edge set and the waves a cycle would break, "
+                "a schedule decided by the states rather than by the wave, the "
+                "handoff that carries exactly a child's own dependencies' "
+                "accepted results (each cut to the budget that dependency "
+                "declared), a reviewer who can reject and a rework that carries "
+                "the reason and stops at MAX_REWORK, one failure that skips its "
+                "transitive dependents without running them, an effect held "
+                "until its approval is answered rather than after it lands, the "
+                "call a budget cannot pay for refused before it happens, and a "
+                "record of seven kinds and no payload text with a report "
+                "recomputed from it — two runs of one fixture, identical bytes. "
+                "10 checks and 526 mutations caught, on J1's clock and a scripted "
+                "fleet: no threads, no model, no floats."},
         {"id": "J3", "title": "Durable Execution", "course": None,
          "kind": "author", "prereq": ["J1"],
          "why": "Survive a process restart in the middle of an hour-long task: "

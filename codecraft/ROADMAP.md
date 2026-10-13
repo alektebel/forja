@@ -13,7 +13,7 @@ the rest.**
 
 ### Ready now — checker-driven, pure Python, `codecraft` runs them as-is
 
-Twenty courses, 231 graded checks between them, no dependencies.
+Twenty-one courses, 241 graded checks between them, no dependencies.
 
 | Course | Checks | What it teaches |
 |---|---|---|
@@ -37,6 +37,7 @@ Twenty courses, 231 graded checks between them, no dependencies.
 | `distributed-training-from-scratch` | 10 | The plans on top of I9's collectives, with a model handed over: DDP's bucketed all-reduce hidden behind the compute, ZeRO's ladder (`4 + 12/N`, then `2 + 2/N + 12/N`), FSDP's per-unit gather and scatter and its `4P(N−1)/N` peak, tensor parallel's two all-reduces per block, GPipe vs 1F1B and the bubble replayed from the slots, interleaving's `(p−1)/(m·v+p−1)`, the expert all-to-all with its capacity cap, ring attention's exact running pivot, and the configuration whose report is recomputed from the plan it chose |
 | `autograd-from-scratch` | 10 | Reverse-mode automatic differentiation over exact rationals, on a provided forward algebra (`exact.py`): the graph and the topological order that visits a diamond once, the local derivatives and the accumulation that makes a node used twice add up, broadcasting and the reduction that hands each operand back its own shape, `matmul`'s two transposed VJPs with the small MLP composed from them, `shared`/`trainable` as a freeze that stops the walk, the seed of a non-scalar output and its explicit collapse, `detach` and the `no_grad` region, the kink at a tie and the left-operand rule, an exact central-difference oracle off by exactly `h²` on a cubic, and the capstone step that learns XOR in eight exact steps and reproduces the reference gradient — no float anywhere |
 | `rag-from-scratch` | 9 | Chunking, TF-IDF, exact index, BM25, rank fusion, reranking, citations, tenants |
+| `orchestration-from-scratch` | 10 | A big task as a graph of small ones, on a provided clock, a scripted fleet and the raw plans: a subtask and a graph that refuse a typo instead of defaulting it, the edge set and the waves a dependency forces — with a cycle refused by naming its path — a schedule decided by the states rather than by the wave, so a fast node never waits for a slow sibling, the handoff that carries exactly a child's own dependencies' accepted results, each cut to the budget that dependency declared, a reviewer who can reject and a rework that carries the reason and stops at `MAX_REWORK`, one failure that skips its transitive dependents without running them, an effect held behind its approval instead of landing before it, the call a budget cannot pay for refused before it happens, a record of seven kinds and no payload text with a report recomputed from it, and the capstone that runs the whole plan to identical bytes twice |
 
 ### Legacy — templates and solutions, but no checker (needs a `course.py`)
 
@@ -122,20 +123,28 @@ python3 codecraft/cli.py run aws-from-scratch # stage 1: iam.py
 ```
 
 Work one stage at a time; the coach and the mentor handle the rest. Phases B1,
-B2, C1, C2, D1, E1, F1, F2, J1, I9 and H1 are built (`rag-from-scratch`,
+B2, C1, C2, D1, E1, F1, F2, J1, J2, I9 and H1 are built (`rag-from-scratch`,
 `vector-index-from-scratch`, `evals-from-scratch`, `agents-from-scratch`,
 `mcp-from-scratch`, `agent-harness-from-scratch`, `benchmark-from-scratch`,
 `eval-framework-from-scratch`, `cpu-from-scratch`,
-`queue-and-workers-from-scratch`, `interconnects-from-scratch`,
+`queue-and-workers-from-scratch`, `orchestration-from-scratch`,
+`interconnects-from-scratch`,
 `distributed-training-from-scratch`), and so is **A8, `autograd-from-scratch`**
 — reverse-mode automatic differentiation over exact rationals, the engine every
 training course here assumes: ten checks and 504 mutations caught, on a provided
 forward algebra (`exact.py`) so every gradient is yours, and nothing in it is a
 float, so a gradient is an equal pair and the last stage reproduces a reference
 gradient exactly (its frozen plan — the ten stages, the two provided modules,
-the mistake catalogue — is in `.h2-dev/CONTRACT.md`). The next course to author
-is J2 (`orchestration-from-scratch`) — the DAG, the reviewer that can reject and
-the handoff that must carry its own context.
+the mistake catalogue — is in `.h2-dev/CONTRACT.md`). **J2,
+`orchestration-from-scratch`**, is built on J1's clock and a scripted fleet: a
+big task as a graph of small ones, ten checks and 526 mutations caught, with the
+schedule decided by the states rather than by the wave, the handoff cut to the
+budget each dependency declared, the reviewer who can reject, the failure that
+skips its transitive dependents, the effect held behind its approval, the budget
+asked before the call, and a report recomputed from a record that carries no
+text (`.j2-dev/CONTRACT.md`). The next course to author is J3
+(`durable-execution-from-scratch`) — leases and heartbeats, a write-ahead log,
+replay and recovery after a worker is killed holding the lease.
 
 F1 was a salvage, and it landed: `~/Desarrollo/mus-benchmark` had the turn-gated
 engine, the per-decision JSONL record, the scorecards and the calibration probes,
@@ -338,13 +347,13 @@ and MCP layer (`mcp-from-scratch`), and evaluation with replay
 (`evals-from-scratch` + `eval-framework-from-scratch`). Six more it reaches in
 part: context and state, checkpointing, distributed state, the filesystem sandbox,
 permissions, and traces. The five below were the parts nothing here touched at
-all; J1 is now built and graded, and the four that follow are in the order they
-build on each other:
+all; J1 and J2 are now built and graded, and the three that follow are in the
+order they build on each other:
 
 | Slot | Course | The mechanism | After |
 |---|---|---|---|
 | J1 | **built** — `queue-and-workers-from-scratch` (10 checks) | Concurrency limits, priority, backpressure and a worker pool — deterministic and in-process, with the clock injected, so the scheduler is a data structure and not a thread pool | C2, A7 |
-| J2 | `orchestration-from-scratch` | A DAG of subtasks, a reviewer that can reject, a handoff that must carry its own context, and a human-in-the-loop that stops before the effect instead of after it | J1, C2 |
+| J2 | **built** — `orchestration-from-scratch` (10 checks, 526 mutations caught) | A DAG of subtasks, a reviewer that can reject, a handoff that must carry its own context, and a human-in-the-loop that stops before the effect instead of after it — scheduled by the states rather than by the wave, with the record of seven kinds and no payload text that the capstone's report is recomputed from | J1, C2 |
 | J3 | `durable-execution-from-scratch` | Leases and heartbeats, a write-ahead log, replay, resume and recovery after a worker is killed holding the lease, and effects that happen exactly once | J1 |
 | J4 | `sandbox-capabilities-from-scratch` | A capability set per tool, a path jail, a modelled network policy, CPU/memory/time limits as counters, secrets that never reach the model, and an audit line | C2, D1 |
 | J5 | `agent-metrics-from-scratch` | Queue depth, latency percentiles, tokens, cost per task, failure and retry rates, and the aggregation windows that make those numbers stable | J1, A7 |
