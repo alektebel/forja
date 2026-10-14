@@ -344,13 +344,25 @@ PHASES = [
                 "recomputed from it — two runs of one fixture, identical bytes. "
                 "10 checks and 526 mutations caught, on J1's clock and a scripted "
                 "fleet: no threads, no model, no floats."},
-        {"id": "J3", "title": "Durable Execution", "course": None,
-         "kind": "author", "prereq": ["J1"],
-         "why": "Survive a process restart in the middle of an hour-long task: "
-                "leases and heartbeats, a write-ahead log, replay, resume and "
-                "recovery, and effects that happen exactly once. F2's resume_run "
-                "is the one-process version; the course is the version with two "
-                "workers, one of which is killed holding the lease."},
+        {"id": "J3", "title": "Durable Execution",
+         "course": "durable-execution-from-scratch",
+         "kind": "ready", "prereq": ["J1"],
+         "why": "Built and ready: a run as a log rather than a process. The line "
+                "and the journal that holds it, the write that was not synced "
+                "and the sync that makes it a fact, replay with the half-written "
+                "tail refused rather than guessed at, a lease whose deadline is "
+                "derived from the line and whose owner is named, the heartbeat "
+                "and the grace that separate *expired* from *dead*, a crash that "
+                "replays only what the disk would keep and writes the lines the "
+                "dead owners' jobs owe, an effect that happens exactly once "
+                "because its intent is synced before it runs, a checkpoint and a "
+                "resume that refuses another run's log by name, a report whose "
+                "every counter is recounted from the lines, and a capstone that "
+                "kills one worker holding a lease in the middle of the run and "
+                "still lands on the same states as the run nobody killed. "
+                "10 checks and 558 mutations caught, on a disk that loses "
+                "everything it was not told to sync: no threads, no filesystem, "
+                "no floats."},
         {"id": "J4", "title": "Sandbox & Capabilities", "course": None,
          "kind": "author", "prereq": ["C2", "D1"],
          "why": "Control what an agent can touch: a capability set per tool, a "

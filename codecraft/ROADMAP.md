@@ -13,7 +13,7 @@ the rest.**
 
 ### Ready now — checker-driven, pure Python, `codecraft` runs them as-is
 
-Twenty-one courses, 241 graded checks between them, no dependencies.
+Twenty-two courses, 251 graded checks between them, no dependencies.
 
 | Course | Checks | What it teaches |
 |---|---|---|
@@ -38,6 +38,7 @@ Twenty-one courses, 241 graded checks between them, no dependencies.
 | `autograd-from-scratch` | 10 | Reverse-mode automatic differentiation over exact rationals, on a provided forward algebra (`exact.py`): the graph and the topological order that visits a diamond once, the local derivatives and the accumulation that makes a node used twice add up, broadcasting and the reduction that hands each operand back its own shape, `matmul`'s two transposed VJPs with the small MLP composed from them, `shared`/`trainable` as a freeze that stops the walk, the seed of a non-scalar output and its explicit collapse, `detach` and the `no_grad` region, the kink at a tie and the left-operand rule, an exact central-difference oracle off by exactly `h²` on a cubic, and the capstone step that learns XOR in eight exact steps and reproduces the reference gradient — no float anywhere |
 | `rag-from-scratch` | 9 | Chunking, TF-IDF, exact index, BM25, rank fusion, reranking, citations, tenants |
 | `orchestration-from-scratch` | 10 | A big task as a graph of small ones, on a provided clock, a scripted fleet and the raw plans: a subtask and a graph that refuse a typo instead of defaulting it, the edge set and the waves a dependency forces — with a cycle refused by naming its path — a schedule decided by the states rather than by the wave, so a fast node never waits for a slow sibling, the handoff that carries exactly a child's own dependencies' accepted results, each cut to the budget that dependency declared, a reviewer who can reject and a rework that carries the reason and stops at `MAX_REWORK`, one failure that skips its transitive dependents without running them, an effect held behind its approval instead of landing before it, the call a budget cannot pay for refused before it happens, a record of seven kinds and no payload text with a report recomputed from it, and the capstone that runs the whole plan to identical bytes twice |
+| `durable-execution-from-scratch` | 10 | A run as a log rather than a process, on a provided disk that loses everything it was not told to sync: the line and the journal that holds it — eight fields, nine kinds, a typo refused by name — the write that was not synced and the sync that makes it a fact, a replay with the half-written tail refused by index and text instead of guessed at, a lease whose deadline is derived from its own line (`claimed_at + ticks`) and whose steal is refused naming both owners, the beat that renames a deadline and the grace that separates *expired* from *dead*, a crash that replays only what the disk would keep and writes the `expire` lines the dead owners' jobs owe, an effect that happens exactly once because its intent is synced before it runs and the world's own `count` decides what a replay owes, a checkpoint beside the append-only journal with a resume that refuses another run's or another plan's log by name, a report whose counters are all recounted from the lines and a caller's total refused when the log contradicts it, and a capstone that kills one worker holding a lease in the middle of the run and still ends on the same states, and the same effects, as the run nobody killed — two death paths, and the log says which one happened |
 
 ### Legacy — templates and solutions, but no checker (needs a `course.py`)
 
@@ -145,9 +146,18 @@ schedule decided by the states rather than by the wave, the handoff cut to the
 budget each dependency declared, the reviewer who can reject, the failure that
 skips its transitive dependents, the effect held behind its approval, the budget
 asked before the call, and a report recomputed from a record that carries no
-text (`.j2-dev/CONTRACT.md`). The next course to author is J3
-(`durable-execution-from-scratch`) — leases and heartbeats, a write-ahead log,
-replay and recovery after a worker is killed holding the lease.
+text (`.j2-dev/CONTRACT.md`). **J3, `durable-execution-from-scratch`**, is built
+on a disk that loses everything it was not told to sync: a run as a log, ten
+checks and 558 mutations caught, with the lease's deadline derived from its own
+line, the grace that separates *expired* from *dead*, a crash that replays only
+what the disk would keep and writes the lines the dead owners' jobs owe, an
+intent synced before the effect so the effect happens exactly once however often
+the run is resumed, a checkpoint whose resume refuses another run's log by name,
+a report recounted from the lines, and a capstone that kills one worker holding a
+lease mid-run and still ends on the states the run nobody killed reached
+(`.j3-dev/CONTRACT.md`). The next course to author is J4
+(`sandbox-capabilities-from-scratch`) — a capability set per tool, a path jail, a
+modelled network policy, limits as counters, and an audit line.
 
 F1 was a salvage, and it landed: `~/Desarrollo/mus-benchmark` had the turn-gated
 engine, the per-decision JSONL record, the scorecards and the calibration probes,
@@ -350,14 +360,14 @@ and MCP layer (`mcp-from-scratch`), and evaluation with replay
 (`evals-from-scratch` + `eval-framework-from-scratch`). Six more it reaches in
 part: context and state, checkpointing, distributed state, the filesystem sandbox,
 permissions, and traces. The five below were the parts nothing here touched at
-all; J1 and J2 are now built and graded, and the three that follow are in the
-order they build on each other:
+at all; J1, J2 and J3 are now built and graded, and the two that follow are in
+the order they build on each other:
 
 | Slot | Course | The mechanism | After |
 |---|---|---|---|
 | J1 | **built** — `queue-and-workers-from-scratch` (10 checks) | Concurrency limits, priority, backpressure and a worker pool — deterministic and in-process, with the clock injected, so the scheduler is a data structure and not a thread pool | C2, A7 |
 | J2 | **built** — `orchestration-from-scratch` (10 checks, 526 mutations caught) | A DAG of subtasks, a reviewer that can reject, a handoff that must carry its own context, and a human-in-the-loop that stops before the effect instead of after it — scheduled by the states rather than by the wave, with the record of seven kinds and no payload text that the capstone's report is recomputed from | J1, C2 |
-| J3 | `durable-execution-from-scratch` | Leases and heartbeats, a write-ahead log, replay, resume and recovery after a worker is killed holding the lease, and effects that happen exactly once | J1 |
+| J3 | **built** — `durable-execution-from-scratch` (10 checks, 558 mutations caught) | A run as a log rather than a process: the line and the journal, the sync that makes a write a fact, replay with the half-written tail refused, a lease derived from its own line, the heartbeat and the grace, a crash that replays only what the disk would keep, an effect that happens exactly once because its intent is synced first, a checkpoint and a resume that refuses another run's log, a report recounted from the lines, and a capstone that kills one worker holding a lease mid-run and still ends on the same states | J1 |
 | J4 | `sandbox-capabilities-from-scratch` | A capability set per tool, a path jail, a modelled network policy, CPU/memory/time limits as counters, secrets that never reach the model, and an audit line | C2, D1 |
 | J5 | `agent-metrics-from-scratch` | Queue depth, latency percentiles, tokens, cost per task, failure and retry rates, and the aggregation windows that make those numbers stable | J1, A7 |
 
