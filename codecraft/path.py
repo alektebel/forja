@@ -384,13 +384,28 @@ PHASES = [
                 "its audit and not its plan. 10 checks and 494 mutations caught, "
                 "with no filesystem, no socket and no float: C2's real path jail "
                 "and D1's read-only-first policy are its two parts."},
-        {"id": "J5", "title": "Observability & Metrics", "course": None,
-         "kind": "author", "prereq": ["J1", "A7"],
-         "why": "A trace is not a metric: author agent-metrics-from-scratch over "
-                "a simulated fleet — queue depth, latency percentiles, tokens, "
-                "cost per task, failure and retry rates, and the aggregation "
-                "windows that make those numbers stable. A7's percentile "
-                "pipeline and E1's six-key trace are its two halves."},
+        {"id": "J5", "title": "Observability & Metrics",
+         "course": "agent-metrics-from-scratch", "kind": "ready",
+         "prereq": ["J1", "A7"],
+         "why": "A trace is not a metric, over a fleet that records its own "
+                "events: a twelve-field event whose kind decides which of them "
+                "mean anything, a half-open window that makes a tumbling set a "
+                "partition and refuses an inclusive end, queue depth as a gauge "
+                "derived from a state machine over the five kinds and never "
+                "summed, a percentile as a nearest-rank index over exact integers "
+                "with no float and no interpolation, latency split into the wait, "
+                "the service and the retry gap with the identity asserted, tokens "
+                "and micros summed before they are divided and priced by the pool "
+                "that ran the task, failure and retry rates that name their own "
+                "denominators and answer floored basis points, windows whose step "
+                "may not leave a hole, a report recomputed from the events and "
+                "cross-checked key by key against the fleet's own count of the "
+                "same run, and a capstone whose budget is spent by the size of an "
+                "overshoot and whose alert names the window that spent the last "
+                "of it. 10 checks and 510 mutations caught, with no float, no "
+                "library statistics and no clock but the injected tick: E1's "
+                "six-key trace is the input and A7's percentile pipeline is the "
+                "other half."},
     ]),
     ("K", "Applied AI engineering", [
         {"id": "K1", "title": "Agentic Retrieval", "course": None,

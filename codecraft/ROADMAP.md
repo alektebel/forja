@@ -13,7 +13,7 @@ the rest.**
 
 ### Ready now — checker-driven, pure Python, `codecraft` runs them as-is
 
-Twenty-three courses, 261 graded checks between them, no dependencies.
+Twenty-four courses, 271 graded checks between them, no dependencies.
 
 | Course | Checks | What it teaches |
 |---|---|---|
@@ -40,6 +40,7 @@ Twenty-three courses, 261 graded checks between them, no dependencies.
 | `orchestration-from-scratch` | 10 | A big task as a graph of small ones, on a provided clock, a scripted fleet and the raw plans: a subtask and a graph that refuse a typo instead of defaulting it, the edge set and the waves a dependency forces — with a cycle refused by naming its path — a schedule decided by the states rather than by the wave, so a fast node never waits for a slow sibling, the handoff that carries exactly a child's own dependencies' accepted results, each cut to the budget that dependency declared, a reviewer who can reject and a rework that carries the reason and stops at `MAX_REWORK`, one failure that skips its transitive dependents without running them, an effect held behind its approval instead of landing before it, the call a budget cannot pay for refused before it happens, a record of seven kinds and no payload text with a report recomputed from it, and the capstone that runs the whole plan to identical bytes twice |
 | `durable-execution-from-scratch` | 10 | A run as a log rather than a process, on a provided disk that loses everything it was not told to sync: the line and the journal that holds it — eight fields, nine kinds, a typo refused by name — the write that was not synced and the sync that makes it a fact, a replay with the half-written tail refused by index and text instead of guessed at, a lease whose deadline is derived from its own line (`claimed_at + ticks`) and whose steal is refused naming both owners, the beat that renames a deadline and the grace that separates *expired* from *dead*, a crash that replays only what the disk would keep and writes the `expire` lines the dead owners' jobs owe, an effect that happens exactly once because its intent is synced before it runs and the world's own `count` decides what a replay owes, a checkpoint beside the append-only journal with a resume that refuses another run's or another plan's log by name, a report whose counters are all recounted from the lines and a caller's total refused when the log contradicts it, and a capstone that kills one worker holding a lease in the middle of the run and still ends on the same states, and the same effects, as the run nobody killed — two death paths, and the log says which one happened |
 
+| `agent-metrics-from-scratch` | 10 | A trace is not a metric: the fleet's twelve-field event and the fields its kind carries, a half-open window that makes a tumbling set a partition and refuses an inclusive end, queue depth as a gauge derived from a state machine over the five kinds and never summed, a percentile as a nearest-rank index over exact integers (no float, no interpolation), latency split into the wait, the service and the retry gap with the identity asserted, tokens and micros summed before they are divided and priced by the pool that ran the task, failure and retry rates that name their own denominators and answer floored basis points, windows whose step may not leave a hole, a report recomputed from the events and cross-checked key by key against the fleet's own count of its own run, and a capstone whose budget is spent by the size of an overshoot and whose alert names the window that spent the last of it |
 | `sandbox-capabilities-from-scratch` | 10 | An agent's power as the intersection of declared, granted and affordable, on a world made of data: a capability vocabulary and a per-tool demand that must be a set, a principal's grant whose answer is the missing difference and never a boolean, a path jail that resolves `..` before anything is judged and refuses the sibling root a prefix test would hand over, a network policy of exact `host:port` specs where the port is part of the host's identity, cpu/memory/ticks limits charged all or nothing before the work, secrets that reach the model as a handle, a length and a digest while the leak test knows base64 (padded and stripped), hex (both cases) and the reversed value, an audit line of seven fields always written with a closed reason vocabulary, the six questions — catalogue, grant, jail, host, limit, secret — decided in one order with the line written *before* the act and a denial that reaches the filesystem, the wire, the vault and the meter not at all, a report recomputed from the lines and cross-checked against `VFS.log()`, `Wire.dialled()` and `Vault.reads()` with no denied call allowed in any of them, and a capstone whose answer to "what did it touch" is its audit and not its plan |
 
 ### Legacy — templates and solutions, but no checker (needs a `course.py`)
@@ -73,12 +74,12 @@ from scratch, not just a checker.
 
 ### Missing entirely — the half of your list the repo does not have yet
 
-No `OS`; the benchmark, the eval runner and the CPU are now
+No `OS` yet; the benchmark, the eval runner and the CPU are now
 `benchmark-from-scratch` (phase F1), `eval-framework-from-scratch` (phase F2) and
 `cpu-from-scratch` (phase G3).
-No task queue, no multi-agent orchestration, no durable execution across a killed
-worker, no capability sandbox and no serving-side metrics — phase J, below,
-is those five, from the Agent Infra list kept in `AGENT-INFRA.md`.
+Phase J's five — the task queue, multi-agent orchestration, durable execution
+across a killed worker, the capability sandbox and the fleet's own metrics — are
+all built now, from the Agent Infra list kept in `AGENT-INFRA.md`.
 No retrieval that checks itself, no prompt/routing ops, no memory engine, no
 fine-tuning and no privacy gateway — phase K, below, is those five, from the
 interview and build lists kept in `AI-ENGINEER.md`.
@@ -173,10 +174,20 @@ before the work, a secret that reaches the model as a fingerprint and leaks in
 none of four encodings, an audit line with a closed reason vocabulary written
 before the act, and a report recomputed from the lines and cross-checked against
 the filesystem's, the wire's and the vault's own records
-(`.j4-dev/CONTRACT.md`). The next course to author is J5
-(`agent-metrics-from-scratch`) — queue depth, latency percentiles, tokens, cost
-per task, failure and retry rates, and the aggregation windows that make those
-numbers stable.
+(`.j4-dev/CONTRACT.md`). **J5, `agent-metrics-from-scratch`**, closes the phase:
+a trace is not a metric, and the whole course is the distance between them — a
+fleet that records twelve fields per event and five kinds, a fold over a window
+whose ends decide what is in it, depth as a gauge that is derived and never
+summed, a percentile that is an index into sorted samples rather than an
+interpolation between two that never happened, latency split into the wait, the
+service and the retry gap, tokens and micros summed before they are divided and
+priced by the pool, rates that name their own denominators, and a report whose
+every number is recomputed from the events and cross-checked against the fleet's
+own count of the same run — the one comparison a fold that quietly lost an event
+cannot survive (`10 checks and 510 mutations caught`, `.j5-dev/CONTRACT.md`). The
+next unit is **G4**, the OS course — a salvage on
+`origin/claude/linux-from-scratch-curriculum-2qokjd` — and then phase L's three
+series, beginning with `tcp-ip-from-scratch`.
 
 F1 was a salvage, and it landed: `~/Desarrollo/mus-benchmark` had the turn-gated
 engine, the per-decision JSONL record, the scorecards and the calibration probes,
@@ -388,7 +399,7 @@ the order they build on each other:
 | J2 | **built** — `orchestration-from-scratch` (10 checks, 526 mutations caught) | A DAG of subtasks, a reviewer that can reject, a handoff that must carry its own context, and a human-in-the-loop that stops before the effect instead of after it — scheduled by the states rather than by the wave, with the record of seven kinds and no payload text that the capstone's report is recomputed from | J1, C2 |
 | J3 | **built** — `durable-execution-from-scratch` (10 checks, 558 mutations caught) | A run as a log rather than a process: the line and the journal, the sync that makes a write a fact, replay with the half-written tail refused, a lease derived from its own line, the heartbeat and the grace, a crash that replays only what the disk would keep, an effect that happens exactly once because its intent is synced first, a checkpoint and a resume that refuses another run's log, a report recounted from the lines, and a capstone that kills one worker holding a lease mid-run and still ends on the same states | J1 |
 | J4 | **built** — `sandbox-capabilities-from-scratch` (10 checks, 494 mutations caught) | Capability sets per tool that refuse a demand the vocabulary does not have, a grant whose answer is the missing difference, a jail that resolves before it decides and refuses the sibling root a prefix test hands over, a network policy of exact `host:port` specs, limits charged all or nothing before the work, secrets that travel as a fingerprint and leak in none of four encodings, an audit line written before the act with a closed reason vocabulary, and a report cross-checked against the filesystem's, the wire's and the vault's own records | C2, D1 |
-| J5 | `agent-metrics-from-scratch` | Queue depth, latency percentiles, tokens, cost per task, failure and retry rates, and the aggregation windows that make those numbers stable | J1, A7 |
+| J5 | **built** — `agent-metrics-from-scratch` (10 checks, 510 mutations caught) | A trace as the input and a metric as the fold: the event and the fields its kind carries, a half-open window that partitions a tumbling set, depth as a derived gauge, nearest-rank percentiles over exact integers, latency split into the wait, the service and the retry gap, tokens and micros summed before the division, rates with named denominators, and a report recomputed from the events and cross-checked against the fleet's own count | J1, A7 |
 
 All five follow the shape of every authored course here: a provided simulator,
 ten graded stages, DESIGN DECISION docstrings, and a check per stage with planted
