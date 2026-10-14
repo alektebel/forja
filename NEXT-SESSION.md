@@ -1,10 +1,11 @@
 # Next session — where everything is
 
-Written at the end of the session that shipped **J3
-(`durable-execution-from-scratch`)** — a run as a log rather than a process, ten
-stages on a provided disk that loses everything it was not told to sync, 558
-planted mutations, ten stages composed in one process. Everything in *Done* is
-committed and pushed; the section after it is the commit that carries this file.
+Written at the end of the session that shipped **J4
+(`sandbox-capabilities-from-scratch`)** — an agent's power as the intersection of
+what its tools declare, what its principal granted and what the world will still
+afford, ten stages on a world made of data (no filesystem, no socket, no float),
+494 planted mutations. Everything in *Done* is committed and pushed; the section
+after it is the commit that carries this file.
 
 ## Done, pushed, on `origin/main`
 
@@ -22,96 +23,113 @@ committed and pushed; the section after it is the commit that carries this file.
 | `13bd3eb` | **J2 `orchestration-from-scratch`** — 10 stages, provided `agents.py` + `graphs.py`, 526 mutations, smoke green, registered |
 | `10b361c` | **`AI-ENGINEER.md`** — the user's two lists kept verbatim (25 AI-engineer interview problems, 15 things to build), a per-item coverage table for all 40, and the five surviving gaps registered as **phase K** (`path.py` + `ROADMAP.md`, all five `kind: "author"`, with three items deliberately left with no slot and their reasons stated) |
 
+| `b926158` | **J3 `durable-execution-from-scratch`** — 10 stages, provided `disk.py` + `work.py`, 558 mutations, thesis *a run is not the process that started it; it is the log on disk*, registered |
+
 ## Done, in the commit that follows this file
 
-**J3 `durable-execution-from-scratch`** — ten stages, 558 mutations, the thesis
-*a run is not the process that started it; it is the log on disk*. Provided:
-`fleet.py` (J1's, verbatim), `disk.py` (the append-only journal, the **sync** that
-is the only thing that makes a write a fact, the **`crash()`** that hands back
-what it cost, and the two readings that never lie: `read` and `synced`) and
-`work.py` (the six fixtures and `Effects`, which deliberately never
-deduplicates). Chain: 1 the line and the journal that holds it → 2 the write that
-was not synced did not happen → 3 replay, and the tail that was never finished →
-4 the lease, and the owner that stops answering → 5 the heartbeat, and the worker
-that dies holding the slot → 6 crash, and the process that comes after it → 7 the
-effect that happens exactly once → 8 the resume, and the log that is not this
-run's → 9 the report, and the number that has to come from the log → 10 two
-workers, one killed holding the lease.
+**J4 `sandbox-capabilities-from-scratch`** — ten stages, 494 mutations, the
+thesis *an agent's power is the intersection of what its tools declare, what its
+principal granted and what the world will still afford*. Provided: `fleet.py`
+(J1's, byte-identical), `vfs.py` (the filesystem as data — nothing normalised, a
+`..` refused rather than resolved by a prefix test, a refusal that leaves no log
+entry, and a question that is not a touch) and `tools.py` (ten tools that each
+declare a demand, a cost and what kind of thing they act on, five hosts, three
+secrets, five principals, five plans, four scripted shell commands, and the four
+objects that keep their own records: `Meter`, `Wire`, `Vault`, `Audit`). Chain: 1
+the capability, and the tool that declares it → 2 the grant, and the intersection
+that decides → 3 the path jail, and the escape that is a string test → 4 the
+network policy, and the host nobody can read → 5 the limits, and the charge that
+is all or nothing → 6 the secret that never reaches the model → 7 the audit line,
+and the reason that is a word → 8 the call that never happens (the six questions
+in one order, the line written **before** the act) → 9 the report, and the world's
+own record → 10 an agent, its policy, and the answer to what it touched.
 
-- `python3 /home/diego/Desarrollo/.j3-dev/verify_provided.py` → `provided: ALL
-  PASS (36 checks)` for the three provided modules before a stage was written —
-  and its **first** run failed one probe of the *parent's* (`fleet.dying` is
-  `ok`/`died`/`ok` on attempts 1/2/3): the smoke earning its keep before a stage
-  existed.
-- `check_NN.py` → PASS for all ten; `run_all.py 01 … 10` → **`FAILED: 0`**.
-- `mutate_all.py 01 … 10` → **`TOTAL 558/558`, `MISSED OR BROKEN: 0`** (one
-  mutant hangs, counted as caught). Per stage: 49, 42, 49, 60, 56, 55, 62, 83,
-  55, 47 — stage 8's 83 is the course's deepest check, `repair` and the resume's
-  refusals being where an off-by-one costs data.
+- `python3 /home/diego/Desarrollo/.j4-dev/verify_provided.py` → `provided: ALL
+  PASS (78 checks)` for the three provided modules.
+- `check_NN.py` → PASS for all ten; `run_all.py 01 … 10` → **`FAILED: 0`**;
+  `mutate_all.py 01 … 10` → **`TOTAL 494/494`, `MISSED OR BROKEN: 0`**. Per stage:
+  48, 54, 39, 42, 50, 60, 54, 51, 53, 43 — stage 7's audit line and stage 6's
+  encodings are where an off-by-one costs the most (a suggestion one typo away, a
+  base64 secret with its padding stripped).
 - `audit_course.py 01 … 10` → `AUDITED: 10, PROBLEMS: 0`; the audit refuses an
-  import of a *later* stage, and stages 2–9 keep to stage 1 on purpose so each is
-  solvable alone.
-- `assemble.py` → `assembled 10 checks, 5098 lines, compiles`;
+  import of a *later* stage, and stages 2–7 keep to stages 1 on purpose so six of
+  them could be delegated at once.
+- `assemble.py` → `assembled 10 checks, 4326 lines, compiles`;
   `probe_manifest.py` → `MANIFEST: 10/10 clean`.
-- `smoke.py` (in `.j3-dev/`) → **`SMOKE PASS — 39 probes, the durable course
-  composed`**: a claim line hand-computed character for character, all nine kinds
-  round-tripping, `write_line` appending and never syncing, `commit` versus
-  `append` and `lost()` equal to what `crash()` discards, the state table and the
-  torn tail by index and text, the deadline derived (`claimed_at + ticks`) with
-  expiry inclusive at the boundary, a steal refused naming both owners, the beat
-  that renames a deadline and the grace with both of its halves inclusive,
-  `recover` writing nothing, a crash that loses the unsynced `result` and syncs
-  the `expire` its dead owner's job owed, the intent synced before the effect and
-  the count ending at exactly one on both `settle` branches, the checkpoint
-  durable beside the journal and `repair` keeping whole lines only, every report
-  counter hand-computed with a contradicted total refused, and the capstone: an
-  uninterrupted run versus the same plan killed mid-run over the same disk ending
-  on **equal states** with every key applied **exactly once**, two runs of one
-  fixture equal value for value, the crashed log a prefix of the resumed one's,
-  and every line of the log a line the course's own parser accepts.
-- `./cz run durable-execution-from-scratch` → `0/10` on the templates (every
-  stage reporting `not implemented yet`), `10/10` with the solutions overlaid,
-  and the ten templates restored byte-for-byte (`cmp` clean, backed up in
-  `.j3-dev/templates/`).
-- Registered: `path.py` J3 → `course: "durable-execution-from-scratch"`,
-  `kind: "ready"`, `prereq ["J1"]`, a real `why`; `ROADMAP.md` → **Twenty-two
-  courses, 251 graded checks**, the ready row, the phase-J table's J3 row marked
-  built, and the paragraph naming J4 as the next course; `AGENT-INFRA.md` → item 5
-  now **yes**, the gaps table's J3 row marked built, and the paragraph that
-  claimed "J3 is where an orchestrator's own task state starts to need
-  replication" corrected to say what J3 does teach and what it does not; a bullet
+- `smoke.py` (in `.j4-dev/`) → **`SMOKE PASS — 65 probes, the sandbox course
+  composed`**: the running arithmetic of a `..` escape, a grant whose answer is
+  the difference and never a boolean, a jail that resolves before it judges and
+  refuses the sibling root a prefix test hands over, the six questions each
+  answering with its own reason and the *first* no winning, a denial that touches
+  nothing and spends nothing (proved with a poisoned `VFS`, `Wire` and `Vault`),
+  the line present and parsed for a denial, the predicted `bytes` equal to what
+  the world then records for a read, a write and a remove, the report recomputed
+  from the lines and cross-checked against `VFS.log()`, `Wire.dialled()` and
+  `Vault.reads()`, `audit` reporting a disagreement instead of raising, and the
+  capstone: two runs of one plan equal field for field, a counter the meter cannot
+  pay stopping the run, the call cap stopping it *before* the call is made, an
+  `intern` walked past two `capability` denials with the world untouched, and a
+  `vaultkeeper` running the deploy plan with no secret's value anywhere in the
+  audit, the report or an observation.
+- `./cz run sandbox-capabilities-from-scratch` → `0/10` on the templates (every
+  stage reporting `not implemented yet`), `10/10` with the solutions overlaid, and
+  the ten templates restored byte-for-byte (`cmp` clean, backed up in
+  `.j4-dev/templates/`).
+- Registered: `path.py` J4 → `course: "sandbox-capabilities-from-scratch"`,
+  `kind: "ready"`, `prereq ["C2", "D1"]`, a real `why`; `ROADMAP.md` →
+  **Twenty-three courses, 261 graded checks**, a ready row, the phase-J table's J4
+  row marked built, and the paragraph naming J5 as the next course (the J3
+  paragraph kept, J4's written beside it); `AGENT-INFRA.md` → items 8 and 10 now
+  **yes** with J4 named in both, and the gaps table's J4 row marked built; a bullet
   in the root `README.md`; the course's two READMEs.
-- Harness: `/home/diego/Desarrollo/.j3-dev/` (`CONTRACT.md` — 30.7KB, frozen
-  before any stage and amended eight times, §7 records every amendment —
-  `course_head.py`, `course_tail.py`, ten `check_NN.py`, ten `mutate_NN.py`,
-  `run_all.py`, `mutate_all.py`, `audit_course.py`, `assemble.py`, `smoke.py`,
-  `probe_manifest.py`, `verify_provided.py`, `templates/`). **Never in `/tmp`.**
+- Harness: `/home/diego/Desarrollo/.j4-dev/` (`CONTRACT.md` — 42KB, frozen before
+  any stage and amended nineteen times, §7 recording what the plan said, what the
+  course does and why — `course_head.py`, `course_tail.py`, ten `check_NN.py`, ten
+  `mutate_NN.py`, `run_all.py`, `mutate_all.py`, `audit_course.py`, `assemble.py`,
+  `smoke.py`, `probe_manifest.py`, `verify_provided.py`, `templates/`). **Never in
+  `/tmp`.**
 
-Shapes worth keeping: **a line is a prediction and only a sync is a fact**, so
-`write_line`, `claim` and the `effect` line never sync while the `start` line, an
-`intent` and a checkpoint always do; a **claim line carries a length**
-(`ticks`), so the deadline is *derived* (`claimed_at + ticks` for a claim,
-`now + ticks` for a beat) because a stored deadline goes stale exactly where a log
-gets read; **`expired` is arithmetic and `dead` is policy**
-(`misses >= MAX_MISSES and now >= deadline`, both halves the caller's, and
-`recover` counting `now - deadline` floored at zero); **recovery is a reading**
-(`recover` has no disk argument; stage 6's `crash` is what writes the `expire`
-lines); **exactly-once is data** (the intent is synced, `settle` asks
-`Effects.count(key)`, and the world never deduplicates, so a second application is
-observable); `repair` is the one function that edits a log and it drops only a
-torn fragment; `report` refuses a caller's total, table or world the lines
-contradict; and stage 10 has **two death paths decided by the log**: a worker
-killed before any sync leaves nothing behind (its claim was a prediction, so the
-job is `pending` and re-issued at once) while a kill after a checkpoint's barrier
-leaves a durable lease the next process must honour until it lapses.
+Shapes worth keeping: **a refusal raises and a denial is returned** — anything the
+caller got wrong is an error and anything the *policy* decided is data with a word
+from a closed vocabulary (`granted`, `unknown`, `capability`, `jail`, `host`,
+`limit`, `secret`); **the world is the tie-breaker**, so `VFS.log()`,
+`Wire.dialled()` and `Vault.reads()` are the records the report must equal and a
+denied call has to be absent from all three; **the line is written before the
+act**, and its `bytes` is a *prediction* made at decision time (`stat` is a
+question, not a touch) that must equal what the world then records — with `0` for
+a listing, a process and a secret, because a directory's shape is not bytes, what
+a scripted command will touch is not knowable before it runs, and a secret travels
+as a fingerprint; **the six questions are one order**, and the order is the design
+(catalogue, grant, jail, host, limit, secret — first no wins); **a process tool's
+target is the directory it was allowed to work in**, so everything it touched has
+to be inside it, which is how the audit stays true for a shell; **the reports
+cross-check by claim** — every handle the vault read is claimed by a line that
+demanded it, a dump claiming them all at once; and **the capstone's clock is
+logical time** (`fleet.Clock`, advanced by each tool's `cost.ticks`), so two runs
+of one plan agree on the tick of every line.
+
+Three contract defects the *stages* found, all of them mine: `/home/agent/../etc/passwd`
+resolves to `/home/etc/passwd` (one `..` pops one component; the plan said
+`/etc/passwd`); the `secret` reason could never fire, because no tool's target
+*was* a handle until a tenth fixture (`get_secret`) gave it one; and §4.9's
+`secrets == len(vault.reads())` is false the moment a single call legitimately
+reads three handles (`env_dump`), the fix being the claim rule above. There is a
+pattern in all three: **a vocabulary word or a rule that no run can reach is a
+design bug, not a corner case** — the same argument that kept the capstone from
+parsing calls with `parse_call` before deciding them (`unknown` would have become
+unreachable too).
 
 ## In flight — nothing
 
-The next unit is **J4 (`sandbox-capabilities-from-scratch`)** — a capability set
-per tool, a path jail, a modelled network policy, CPU/memory/time limits as
-counters, secrets that never reach the model, and an audit line complete enough to
-answer "what did it touch" — then J5 `agent-metrics-from-scratch`, then G4 (an OS
-course; salvage `origin/claude/linux-from-scratch-curriculum-2qokjd`) and G5/G6.
+The next unit is **J5 (`agent-metrics-from-scratch`)** — queue depth, latency
+percentiles, tokens, cost per task, failure and retry rates, and the aggregation
+windows that make those numbers stable — then G4 (an OS course; salvage
+`origin/claude/linux-from-scratch-curriculum-2qokjd`) and G5/G6. A third
+source list also arrived this session — three C/C++ networking series — and
+it is now `NETWORKING.md` plus **phase L** (`tcp-ip-from-scratch`,
+`concurrent-servers-from-scratch`, `mqtt-broker-from-scratch`, all three
+`author`), so the queue after J5 is J5 → G4 → L1 → L2 → L3 → G5/G6, minus
+whatever the ROADMAP's own order says.
 
 Two questions from earlier sessions are **answered**: the legacy, thin
 `distributed-training/` directory stays exactly as it is (the user's call,
@@ -119,7 +137,7 @@ Two questions from earlier sessions are **answered**: the legacy, thin
 two lists in `AI-ENGINEER.md` are handled: 40 items mapped to existing courses,
 five gaps registered as phase K.
 
-## The workflow that produced G3, F2, J1, I9, H1, A8, J2 and J3 — keep it
+## The workflow that produced G3, F2, J1, I9, H1, A8, J2, J3 and J4 — keep it
 
 1. **Recon**, then **freeze a contract** in a dev directory beside the repo
    (`/home/diego/Desarrollo/.j3-dev/CONTRACT.md`): thesis, conventions, the
@@ -146,8 +164,14 @@ five gaps registered as phase K.
    its first runs caught **four** of the parent's probe expectations
    (`fleet.dying`'s attempt sequence, the claim line's byte count, `torn` taking
    the *text* rather than a replay's records, `dead`'s two halves) and the stages
-   were right every time. Write the smoke early, run it against the landed stages
-   even before the capstone exists, and expect it to teach you the surfaces.
+   were right every time. J4's caught four more of the same kind (a secret's
+   `env_dump` hands back a tuple of observations, not handles; a secret read's
+   *line* bytes is `0` while its observation carries the length; the analyst holds
+   **both** of `debug_dump`'s capabilities; a `value` on a read tool is not a
+   grant question, and a missing file makes `stat` raise). Write the smoke early,
+   run it against the landed stages even before the capstone exists, and expect it
+   to teach you the surfaces — and treat a red probe as a claim about *your*
+   expectation until the stage's own check proves otherwise.
 7. **The `NotImplementedError` rule.** Every check must let it escape (a broad
    handler re-raises it first), or an untouched template reports as `✗` instead of
    `· not implemented yet` in `./cz run`. Verified both ways: `0/10` on the
@@ -189,6 +213,13 @@ five gaps registered as phase K.
   stage_*.py .j3-dev/templates/`) and `cmp` them after restoring. `git pull
   --rebase` also refuses with unstaged changes: `--autostash` is the way to push
   around them.
+- **A vocabulary word or a rule no run can reach is a design bug, not a corner
+  case.** J4's contract had three of them: `secret` as a reason when no tool's
+  target *was* a handle (fixed by a tenth fixture), the capstone about to read
+  calls with `parse_call` before deciding them (`unknown` would have become
+  unreachable), and a cross-check that a dump or a shell could never satisfy.
+  When a reason, a branch or a mutation cannot be reached, the world or the
+  order is wrong — not the check that failed to reach it.
 - **The parent's own file can be the moving part.** J3's stage 1 was written and
   verified *before* spawning the other eight, so its surface was frozen while they
   read it; a delegate that edits an already-verified stage's file is the failure

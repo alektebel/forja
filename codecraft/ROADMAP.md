@@ -13,7 +13,7 @@ the rest.**
 
 ### Ready now — checker-driven, pure Python, `codecraft` runs them as-is
 
-Twenty-two courses, 251 graded checks between them, no dependencies.
+Twenty-three courses, 261 graded checks between them, no dependencies.
 
 | Course | Checks | What it teaches |
 |---|---|---|
@@ -39,6 +39,8 @@ Twenty-two courses, 251 graded checks between them, no dependencies.
 | `rag-from-scratch` | 9 | Chunking, TF-IDF, exact index, BM25, rank fusion, reranking, citations, tenants |
 | `orchestration-from-scratch` | 10 | A big task as a graph of small ones, on a provided clock, a scripted fleet and the raw plans: a subtask and a graph that refuse a typo instead of defaulting it, the edge set and the waves a dependency forces — with a cycle refused by naming its path — a schedule decided by the states rather than by the wave, so a fast node never waits for a slow sibling, the handoff that carries exactly a child's own dependencies' accepted results, each cut to the budget that dependency declared, a reviewer who can reject and a rework that carries the reason and stops at `MAX_REWORK`, one failure that skips its transitive dependents without running them, an effect held behind its approval instead of landing before it, the call a budget cannot pay for refused before it happens, a record of seven kinds and no payload text with a report recomputed from it, and the capstone that runs the whole plan to identical bytes twice |
 | `durable-execution-from-scratch` | 10 | A run as a log rather than a process, on a provided disk that loses everything it was not told to sync: the line and the journal that holds it — eight fields, nine kinds, a typo refused by name — the write that was not synced and the sync that makes it a fact, a replay with the half-written tail refused by index and text instead of guessed at, a lease whose deadline is derived from its own line (`claimed_at + ticks`) and whose steal is refused naming both owners, the beat that renames a deadline and the grace that separates *expired* from *dead*, a crash that replays only what the disk would keep and writes the `expire` lines the dead owners' jobs owe, an effect that happens exactly once because its intent is synced before it runs and the world's own `count` decides what a replay owes, a checkpoint beside the append-only journal with a resume that refuses another run's or another plan's log by name, a report whose counters are all recounted from the lines and a caller's total refused when the log contradicts it, and a capstone that kills one worker holding a lease in the middle of the run and still ends on the same states, and the same effects, as the run nobody killed — two death paths, and the log says which one happened |
+
+| `sandbox-capabilities-from-scratch` | 10 | An agent's power as the intersection of declared, granted and affordable, on a world made of data: a capability vocabulary and a per-tool demand that must be a set, a principal's grant whose answer is the missing difference and never a boolean, a path jail that resolves `..` before anything is judged and refuses the sibling root a prefix test would hand over, a network policy of exact `host:port` specs where the port is part of the host's identity, cpu/memory/ticks limits charged all or nothing before the work, secrets that reach the model as a handle, a length and a digest while the leak test knows base64 (padded and stripped), hex (both cases) and the reversed value, an audit line of seven fields always written with a closed reason vocabulary, the six questions — catalogue, grant, jail, host, limit, secret — decided in one order with the line written *before* the act and a denial that reaches the filesystem, the wire, the vault and the meter not at all, a report recomputed from the lines and cross-checked against `VFS.log()`, `Wire.dialled()` and `Vault.reads()` with no denied call allowed in any of them, and a capstone whose answer to "what did it touch" is its audit and not its plan |
 
 ### Legacy — templates and solutions, but no checker (needs a `course.py`)
 
@@ -80,6 +82,11 @@ is those five, from the Agent Infra list kept in `AGENT-INFRA.md`.
 No retrieval that checks itself, no prompt/routing ops, no memory engine, no
 fine-tuning and no privacy gateway — phase K, below, is those five, from the
 interview and build lists kept in `AI-ENGINEER.md`.
+No TCP/IP stack, no reactor and no broker — phase L, below, is those three, from
+the three C/C++ networking series kept in `NETWORKING.md`. The repo has an
+application protocol (legacy `http-server`, `dns-server`) and a modelled
+collective (`interconnects-from-scratch`), and has never parsed a wire format
+byte by byte.
 `rag-from-scratch/` (phase B1), `vector-index-from-scratch/` (phase B2),
 `evals-from-scratch/` (phase C1), `agents-from-scratch/` (phase C2),
 `mcp-from-scratch/` (phase D1) and `agent-harness-from-scratch` (phase E1) now
@@ -155,9 +162,21 @@ intent synced before the effect so the effect happens exactly once however often
 the run is resumed, a checkpoint whose resume refuses another run's log by name,
 a report recounted from the lines, and a capstone that kills one worker holding a
 lease mid-run and still ends on the states the run nobody killed reached
-(`.j3-dev/CONTRACT.md`). The next course to author is J4
-(`sandbox-capabilities-from-scratch`) — a capability set per tool, a path jail, a
-modelled network policy, limits as counters, and an audit line.
+(`.j3-dev/CONTRACT.md`). **J4, `sandbox-capabilities-from-scratch`**, is the
+same idea one layer out — the sandbox around the call rather than the log under
+the run: 10 checks and 494 mutations caught, with the capability a tool demands
+intersected against the capability its principal holds so the answer is the
+missing difference rather than a boolean, a jail that resolves `..` before
+anything is judged and refuses `/home/agent-other` for the sibling root it is, a
+host policy where the port is part of the identity, limits charged all or nothing
+before the work, a secret that reaches the model as a fingerprint and leaks in
+none of four encodings, an audit line with a closed reason vocabulary written
+before the act, and a report recomputed from the lines and cross-checked against
+the filesystem's, the wire's and the vault's own records
+(`.j4-dev/CONTRACT.md`). The next course to author is J5
+(`agent-metrics-from-scratch`) — queue depth, latency percentiles, tokens, cost
+per task, failure and retry rates, and the aggregation windows that make those
+numbers stable.
 
 F1 was a salvage, and it landed: `~/Desarrollo/mus-benchmark` had the turn-gated
 engine, the per-decision JSONL record, the scorecards and the calibration probes,
@@ -368,7 +387,7 @@ the order they build on each other:
 | J1 | **built** — `queue-and-workers-from-scratch` (10 checks) | Concurrency limits, priority, backpressure and a worker pool — deterministic and in-process, with the clock injected, so the scheduler is a data structure and not a thread pool | C2, A7 |
 | J2 | **built** — `orchestration-from-scratch` (10 checks, 526 mutations caught) | A DAG of subtasks, a reviewer that can reject, a handoff that must carry its own context, and a human-in-the-loop that stops before the effect instead of after it — scheduled by the states rather than by the wave, with the record of seven kinds and no payload text that the capstone's report is recomputed from | J1, C2 |
 | J3 | **built** — `durable-execution-from-scratch` (10 checks, 558 mutations caught) | A run as a log rather than a process: the line and the journal, the sync that makes a write a fact, replay with the half-written tail refused, a lease derived from its own line, the heartbeat and the grace, a crash that replays only what the disk would keep, an effect that happens exactly once because its intent is synced first, a checkpoint and a resume that refuses another run's log, a report recounted from the lines, and a capstone that kills one worker holding a lease mid-run and still ends on the same states | J1 |
-| J4 | `sandbox-capabilities-from-scratch` | A capability set per tool, a path jail, a modelled network policy, CPU/memory/time limits as counters, secrets that never reach the model, and an audit line | C2, D1 |
+| J4 | **built** — `sandbox-capabilities-from-scratch` (10 checks, 494 mutations caught) | Capability sets per tool that refuse a demand the vocabulary does not have, a grant whose answer is the missing difference, a jail that resolves before it decides and refuses the sibling root a prefix test hands over, a network policy of exact `host:port` specs, limits charged all or nothing before the work, secrets that travel as a fingerprint and leak in none of four encodings, an audit line written before the act with a closed reason vocabulary, and a report cross-checked against the filesystem's, the wire's and the vault's own records | C2, D1 |
 | J5 | `agent-metrics-from-scratch` | Queue depth, latency percentiles, tokens, cost per task, failure and retry rates, and the aggregation windows that make those numbers stable | J1, A7 |
 
 All five follow the shape of every authored course here: a provided simulator,
@@ -408,6 +427,37 @@ why for each: serving at scale and 1M-user chat are systems exercises the repo
 already decomposes (phase I, `system-design`, the docs-only serving trio), and
 voice interruption and computer-use fallback are interface courses that would
 need a timeline and a DOM model — real gaps, not yet promises.
+
+---
+
+## Programs that talk (phase L) — three series, as three courses
+
+A third list arrived from the user: three C/C++ networking series — a TCP/IP
+stack built part by part, four ways to write a concurrent server, and an MQTT
+broker — kept verbatim in `NETWORKING.md`. That file maps each series to what is
+already here and collects what is not. The short version: the repo has
+application protocols in C (legacy `http-server`, `dns-server`), a protocol-design
+slot (`communication-protocols`), a modelled collective (`interconnects-from-
+scratch`) and a house method for making a world out of data (`queue-and-workers`,
+`durable-execution`, `sandbox-capabilities`); it has never built the layer under
+all of them.
+
+Three gaps survived the mapping, and they are the three L slots. All three are
+authorable in the house style, and none of them needs a socket or a thread — the
+link, the clock and the failure are data, which is what makes the interesting
+question answerable (which segment was retransmitted, how many scheduler steps a
+model took) instead of a matter of timing:
+
+| Slot | Course to author | The mechanism | After |
+|---|---|---|---|
+| L1 | `tcp-ip-from-scratch` | The stack as data against a provided lossy `wire.py`: the frame and its type field, ARP and an ageing cache, IPv4 with a routing table and a TTL that has to be decremented, ICMP and a recomputed checksum, the handshake as a state machine, the sliding window, the socket API as a table, retransmission on the injected clock, the close with `TIME_WAIT` as a state, and a session whose tie-breaker is the wire's own segment log | G3, J4 |
+| L2 | `concurrent-servers-from-scratch` | Four models for one server over a provided in-memory `link.py`: blocking, thread-per-connection on J1's scheduler with the interleaving the check chooses, a reactor whose readiness is a set, the event loop and its timer queue, callbacks as a handle table, futures and `async`/`await` as a desugaring, backpressure and head-of-line blocking, the Redis case study as a command loop, and one workload through all four with identical answers and a counted number of scheduler steps | J1, J3 |
+| L3 | `mqtt-broker-from-scratch` | The wire format itself: the fixed header and its variable-length integer, CONNECT and the session flags, a topic trie where `+` and `#` are matched by components and never by prefix string, QoS 1 as state, QoS 2 as a four-way handshake, retained messages and the last will, a session that survives a reconnect, and a trace replayed twice byte-identically with every frame accepted by the course's own reader | L1, J4 |
+
+What has no slot: the blog posts (the links are the source, not the course), the C
+implementations (the house authors Python; the C versions are what the legacy
+slots are for) and the MQTT *client*, which is the broker's protocol seen from the
+other side and so is a stage of L3 rather than a course of its own.
 
 ---
 

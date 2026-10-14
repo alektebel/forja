@@ -363,14 +363,27 @@ PHASES = [
                 "10 checks and 558 mutations caught, on a disk that loses "
                 "everything it was not told to sync: no threads, no filesystem, "
                 "no floats."},
-        {"id": "J4", "title": "Sandbox & Capabilities", "course": None,
-         "kind": "author", "prereq": ["C2", "D1"],
-         "why": "Control what an agent can touch: a capability set per tool, a "
-                "path jail, a modelled network policy, CPU/memory/time limits as "
-                "counters, secrets that never reach the model, and an audit line "
-                "complete enough to answer 'what did it touch'. Author "
-                "sandbox-capabilities-from-scratch; C2's filesystem jail and "
-                "D1's read-only-first policy are its parts."},
+        {"id": "J4", "title": "Sandbox & Capabilities",
+         "course": "sandbox-capabilities-from-scratch", "kind": "ready",
+         "prereq": ["C2", "D1"],
+         "why": "Control what an agent can touch, on a world made of data: a "
+                "capability per tool that is declared, granted and then "
+                "intersected rather than inferred, a principal's grant whose "
+                "answer is the missing difference and never a boolean, a path "
+                "jail that resolves before it decides and refuses the sibling "
+                "root a prefix test hands over, a network policy of exact "
+                "host:port specs with no wildcard a reader cannot evaluate, "
+                "cpu/memory/ticks limits charged all or nothing before the work, "
+                "secrets that reach the model as a fingerprint and leak in none "
+                "of four encodings, an audit line per call with a closed reason "
+                "vocabulary written before the act, the six questions decided in "
+                "one order with a denial that touches nothing and spends "
+                "nothing, a report recomputed from the lines and cross-checked "
+                "against the filesystem's, the wire's and the vault's own "
+                "records, and a capstone whose answer to 'what did it touch' is "
+                "its audit and not its plan. 10 checks and 494 mutations caught, "
+                "with no filesystem, no socket and no float: C2's real path jail "
+                "and D1's read-only-first policy are its two parts."},
         {"id": "J5", "title": "Observability & Metrics", "course": None,
          "kind": "author", "prereq": ["J1", "A7"],
          "why": "A trace is not a metric: author agent-metrics-from-scratch over "
@@ -423,6 +436,49 @@ PHASES = [
                 "sanitization of one agent's output before it becomes another's "
                 "input. Author agent-privacy-from-scratch; J4 is the sandbox "
                 "half and this is the data-in-transit half."},
+    ]),
+    ("L", "Programs that talk", [
+        {"id": "L1", "title": "TCP/IP From Scratch", "course": None,
+         "kind": "author", "prereq": ["G3", "J4"],
+         "why": "The stack as data, from the first of the three series kept in "
+                "`NETWORKING.md`: a frame and its type field, ARP and a cache "
+                "that ages, IPv4 with a routing table and a TTL that has to be "
+                "decremented, ICMP echo and a checksum recomputed over the "
+                "header, the handshake as a state machine, the sliding window "
+                "that must not be overrun, the socket API as a table, "
+                "retransmission on the injected clock, the close with TIME_WAIT "
+                "as a state rather than a sleep, and a session whose tie-breaker "
+                "is the wire's own segment log. Author tcp-ip-from-scratch "
+                "against a provided lossy `wire.py`; G3 is the house's example "
+                "of a simulator a course is written against, and J4 is the "
+                "method: the world keeps the record."},
+        {"id": "L2", "title": "Concurrent Servers", "course": None,
+         "kind": "author", "prereq": ["J1", "J3"],
+         "why": "Four models for one server, from the second series: a blocking "
+                "server and the one slow client that stops everyone, "
+                "thread-per-connection over J1's scheduler with the interleaving "
+                "the check chooses, a reactor whose readiness is a set and whose "
+                "poll loop never busy-waits, the event loop with a monotonic "
+                "timer queue, callbacks as a handle table with cancellation, "
+                "futures and async/await as a desugaring, backpressure and "
+                "head-of-line blocking, the Redis case study as a command loop, "
+                "and one workload through all four models with identical answers "
+                "and a counted number of scheduler steps. Author "
+                "concurrent-servers-from-scratch; J1 is the queueing half and J3 "
+                "is the durability half of the same problem."},
+        {"id": "L3", "title": "MQTT Broker", "course": None,
+         "kind": "author", "prereq": ["L1", "J4"],
+         "why": "The wire format itself, from the third series: the fixed header "
+                "and its variable-length integer, CONNECT and the session flags, "
+                "a topic trie where `+` and `#` are matched by components and "
+                "never by prefix string, QoS 1 as state (the packet id, the "
+                "PUBACK, the redelivery deadline), QoS 2 as a four-way handshake "
+                "and why an id may not be reused before PUBCOMP, retained "
+                "messages and the last will, a session that survives a "
+                "reconnect, and a trace replayed twice byte-identically with "
+                "every frame the broker wrote accepted by the course's own "
+                "reader. Author mqtt-broker-from-scratch; L1 is the framing and "
+                "J4 is the policy that decides who may publish where."},
     ]),
 ]
 
