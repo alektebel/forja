@@ -76,6 +76,9 @@ No `OS`; the benchmark, the eval runner and the CPU are now
 No task queue, no multi-agent orchestration, no durable execution across a killed
 worker, no capability sandbox and no serving-side metrics — phase J, below,
 is those five, from the Agent Infra list kept in `AGENT-INFRA.md`.
+No retrieval that checks itself, no prompt/routing ops, no memory engine, no
+fine-tuning and no privacy gateway — phase K, below, is those five, from the
+interview and build lists kept in `AI-ENGINEER.md`.
 `rag-from-scratch/` (phase B1), `vector-index-from-scratch/` (phase B2),
 `evals-from-scratch/` (phase C1), `agents-from-scratch/` (phase C2),
 `mcp-from-scratch/` (phase D1) and `agent-harness-from-scratch` (phase E1) now
@@ -363,6 +366,38 @@ ten graded stages, DESIGN DECISION docstrings, and a check per stage with plante
 mutations behind it. None of them needs a network, a real server or a thread: the
 whole point is that a queue, a lease and a percentile are data structures whose
 failures are reproducible, which is what makes them checkable at all.
+
+---
+
+## Applied AI engineering (phase K) — two lists, as five courses
+
+Two more lists arrived from the user and are kept verbatim in `AI-ENGINEER.md`:
+**25 interview problems** (design a RAG system for 10M documents; your RAG gives
+wrong answers — debug it; cut LLM cost 70%; block prompt injection in a
+tool-using agent; …) and **15 things to build** (dynamic context assembler,
+durable state machine workflow, raw MCP server, triage router, self-correcting
+RAG, 3-tier memory, trajectory CI gate, PII gateway, …). That file maps every one
+of the 40 items to what already exists here — most of them are covered or partly
+covered by phases B, C, D, E and J — and collects what is not.
+
+Five gaps survived the mapping, and they are the five K slots. All of them are
+authorable in the house style (a provided simulator, ten graded stages, a check
+per stage, mutations behind every check), and none of them needs a server, a
+network or a thread:
+
+| Slot | Course to author | The mechanism | After |
+|---|---|---|---|
+| K1 | `agentic-retrieval-from-scratch` | Retrieval that checks itself: critique the results, rewrite an ambiguous query, decide grounded-or-abstain, and price each decision against the naive retrieve-and-answer — with contract-shaped chunking (clauses, cross-references) as a fixture | B1, B2, C2 |
+| K2 | `prompt-ops-from-scratch` | A prompt and a model choice as versioned artifacts: a typed triage router with a measured escalation rate, shadow mode mirroring a fraction of traffic and diffing trajectories and costs, a rollout/rollback gate, the cost kill-switch, and the degradation chain frontier → mid → local → cache | E1, F2, J1 |
+| K3 | `memory-engine-from-scratch` | The three tiers as data structures: a working scratchpad with a hard budget, episodic summaries with a consolidation rule, a semantic store with importance scoring and eviction, and recall measured over a long conversation | E1, B2 |
+| K4 | `fine-tuning-from-scratch` | LoRA and preference tuning over A8's exact engine: the low-rank update and why it trains, a 5K-example budget that refuses a plan it cannot pay for, DPO pairs built from recorded failures, and fine-tune-vs-RAG-vs-prompting defended against a number | A8, C1 |
+| K5 | `agent-privacy-from-scratch` | What leaves the process and what may come back: tokenize sensitive values before the context window and restore them after, an audit line that answers "what did it touch", per-agent least privilege, and one agent's output sanitized before it becomes another's input | C2, D1, J2 |
+
+Three of the 40 items deliberately have **no slot**, and `AI-ENGINEER.md` says
+why for each: serving at scale and 1M-user chat are systems exercises the repo
+already decomposes (phase I, `system-design`, the docs-only serving trio), and
+voice interruption and computer-use fallback are interface courses that would
+need a timeline and a DOM model — real gaps, not yet promises.
 
 ---
 

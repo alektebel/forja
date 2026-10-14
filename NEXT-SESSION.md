@@ -91,9 +91,17 @@ killed holding the lease, exactly-once effects — then J4
 OS course; salvage `origin/claude/linux-from-scratch-curriculum-2qokjd`) and
 G5/G6.
 
-One question left with the user, unanswered: whether to delete the legacy, thin
-`distributed-training/` directory now that `distributed-training-from-scratch`
-supersedes it (the roadmap marks it superseded; the directory is untouched).
+One question from the previous session is now **answered**: the legacy, thin
+`distributed-training/` directory stays exactly as it is (the user's call,
+2026-10-14) — the roadmap marks it superseded and nothing touches it.
+
+A second list arrived mid-session and is registered: **`AI-ENGINEER.md`** keeps
+two user lists verbatim (25 AI-engineer interview problems, 15 things to build)
+with a coverage table for all 40 items against the existing courses, and the five
+gaps it found are **phase K** in `codecraft/ROADMAP.md` and `path.py` (K1
+`agentic-retrieval-from-scratch`, K2 `prompt-ops-from-scratch`, K3
+`memory-engine-from-scratch`, K4 `fine-tuning-from-scratch`, K5
+`agent-privacy-from-scratch`, all `kind: "author"`).
 
 ## The workflow that produced G3, F2, J1, I9, H1, A8 and J2 — keep it
 

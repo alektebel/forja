@@ -367,6 +367,51 @@ PHASES = [
                 "windows that make those numbers stable. A7's percentile "
                 "pipeline and E1's six-key trace are its two halves."},
     ]),
+    ("K", "Applied AI engineering", [
+        {"id": "K1", "title": "Agentic Retrieval", "course": None,
+         "kind": "author", "prereq": ["B1", "B2", "C2"],
+         "why": "Retrieval that checks itself, from the two lists in "
+                "`AI-ENGINEER.md`: critique the results you got, rewrite a query "
+                "that is ambiguous, decide grounded-or-abstain, and price each "
+                "decision against the naive retrieve-and-answer. Author "
+                "agentic-retrieval-from-scratch. B1's rank fusion and reranking "
+                "and B2's recall accounting are its parts; what is missing is "
+                "the agent's own judgement about them."},
+        {"id": "K2", "title": "Prompt & Routing Ops", "course": None,
+         "kind": "author", "prereq": ["E1", "F2", "J1"],
+         "why": "A prompt and a model choice as versioned artifacts: a typed "
+                "triage router with a measured escalation rate, shadow mode "
+                "mirroring a fraction of traffic and diffing trajectories and "
+                "costs, a rollout/rollback gate, the cost kill-switch and the "
+                "degradation chain frontier → mid → local → cache. Author "
+                "prompt-ops-from-scratch; F2's gate and baseline diff and E1's "
+                "six-key trace are its halves."},
+        {"id": "K3", "title": "Memory Engine", "course": None,
+         "kind": "author", "prereq": ["E1", "B2"],
+         "why": "The three tiers as data structures: a working scratchpad with a "
+                "hard budget, episodic summaries with a consolidation rule, a "
+                "semantic store with importance scoring and eviction, and recall "
+                "measured over a long conversation. Author "
+                "memory-engine-from-scratch; E1's compaction is the one-tier "
+                "version of exactly this."},
+        {"id": "K4", "title": "Fine-Tuning", "course": None,
+         "kind": "author", "prereq": ["A8", "C1"],
+         "why": "LoRA and preference tuning over A8's exact engine: the "
+                "low-rank update and why it trains, a 5K-example budget that "
+                "refuses a plan it cannot pay for, DPO preference pairs built "
+                "from recorded failures, and the decision itself — fine-tune, "
+                "RAG or prompting — defended against a number. Author "
+                "fine-tuning-from-scratch; C1 is how the result is judged."},
+        {"id": "K5", "title": "Privacy & Injection", "course": None,
+         "kind": "author", "prereq": ["C2", "D1", "J2"],
+         "why": "What leaves the process and what may come back: a gateway that "
+                "tokenizes sensitive values before the context window and "
+                "restores them after, an audit line that answers 'what did it "
+                "touch', per-agent least privilege and scoped tool sets, and the "
+                "sanitization of one agent's output before it becomes another's "
+                "input. Author agent-privacy-from-scratch; J4 is the sandbox "
+                "half and this is the data-in-transit half."},
+    ]),
 ]
 
 _SYMBOL = {"ready": "\u25cb", "legacy": "\u00b7", "author": "\u270e", "salvage": "\u21bb"}
