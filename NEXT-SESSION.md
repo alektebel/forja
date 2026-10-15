@@ -1,12 +1,11 @@
 # Next session — where everything is
 
-Written at the end of the session that shipped **G4 (`os-from-scratch`)** — an
-operating system is what you write after the hardware breaks your last promise:
-ten stages on a provided machine, from the boot map's first frame to a capstone
-that runs the world's own userland on the kernel you wrote and then cross-checks
-the kernel's account of the run against the machine's, key by key — 641 planted
-mutations. Everything in *Done* is committed and pushed; the section after it is
-the commit that carries this file.
+Written at the end of the session that shipped **L1 (`tcp-ip-from-scratch`)** —
+the stack as data against a provided lossy wire: ten stages from a frame's type
+field to a capstone that runs a whole session and then argues about it with the
+wire's own segment log — 554 planted mutations — plus the `cz brief` layer and
+`cz run <course> --stage N`. Everything in *Done* is committed and pushed; the
+section after it is the commit that carries this file.
 
 ## Done, pushed, on `origin/main`
 
@@ -28,11 +27,104 @@ the commit that carries this file.
 | `0230b92` | **J5 `agent-metrics-from-scratch`** — 10 stages, provided `fleet.py` (J1's, byte-identical) and `telemetry.py`, 510 mutations, thesis *a trace is not a metric*, smoke green, registered |
 | `4755f5c` | **G4 `os-from-scratch`** — 10 stages, 641 mutations, the machine provided (`machine.py`, `devices.py`, `userland.py`), thesis *an operating system is what you write after the hardware breaks your last promise*; `linux-from-scratch/` staged beside it as prose; smoke green, registered |
 | `bfbdefb` | **`cz stage`, per-stage counts, six registered rows** — the stage page before the run, `codecraft/stats.py` (9,323 asserts and 4,079 caught mutations across the eighteen built courses), the 128 hardcoded repo roots replaced by `__file__`, and G7/G8/H5/H6/H7/L4 registered |
+| `6eb8f8d` | **`cz dag`** — the registry as a dependency DAG (`./cz dag`, `./cz dag <course>`, `cz tree` as an alias), the derived waves and the advisory `ADVICE` layer, and the fifteen-item AI-infrastructure list mapped onto three new rows (I13, I14, H8) |
 
-## Done, in the commit that follows this file
+## The unit this file carries — L1 `tcp-ip-from-scratch`
 
-**`cz dag` — the registry as a dependency DAG, and the fifteen-item
-AI-infrastructure list mapped onto it.**
+**L1 `tcp-ip-from-scratch`** — ten stages, **554 mutations**, the stack as data
+against a world that does not care: *the wire keeps the record, and the ledger
+that agrees with it is the only account of a session that cannot be argued with*.
+Provided: `wire.py` (a link that loses, reorders never, delivers on a tick you
+advance by hand, and keeps its own log of every frame with its ordinal) and
+`hosts.py` (five named hosts with MACs and addresses, a box each, and the router
+ports). Chain: 1 the frame and the type field that says what is inside → 2 ARP,
+the cache that ages and the broadcast that comes back → 3 IPv4, the routing
+table and the TTL that must be decremented → 4 ICMP echo and the checksum over
+the pseudo-header → 5 the handshake as a state machine → 6 the sliding window
+that must not be overrun → 7 the socket API as a table of descriptors → 8
+retransmission on the injected clock → 9 the close, with TIME_WAIT as a state
+rather than a sleep → 10 the capstone: one session, and the wire's own log as the
+tie-breaker.
+
+- `python3 /home/diego/Desarrollo/.l1-dev/verify_provided.py` → `PROVIDED: 93,
+  PROBLEMS: 0` for `wire.py` and `hosts.py`, which no stage is allowed to edit.
+- `run_all.py 01 … 10` → **`FAILED: 0`**; `mutate_all.py 01 … 10` → **`TOTAL
+  554/554`, `MISSED OR BROKEN: 0`**. Per stage: 42, 57, 70, 64, 77, 57, 43, 46,
+  58, 40 — the capstone carries the smallest count and the widest reach, because
+  what it grades is a *disagreement*: its check tampers with the ledger three
+  ways and the wire wins every one.
+- `audit_course.py 01 … 10` → `AUDITED: 10, PROBLEMS: 0`, and `probe_stages.py`
+  → **`PROBED: 148, PROBLEMS: 0`** — the parent's own reading of each stage,
+  written independently of the stage's check, so that a green check and a green
+  probe are two readings of the same promise.
+- `assemble.py` → `assembled 10 checks, 4711 lines, compiles`; `smoke.py` →
+  **`SMOKE: PASS`** (all ten green on the solutions, all ten red on the
+  templates).
+- `./cz run tcp-ip-from-scratch` → **`0/10`** on the templates, every stage
+  reporting `not implemented yet` at its own line; `./cz run tcp-ip-from-scratch
+  --stage 4` → `stage 4: 0/1 passing`, which is the new selector doing its job on
+  a course whose stages are stubs.
+- Registered: `path.py` L1 → `course: "tcp-ip-from-scratch"`, `kind: "ready"`, a
+  `why` that no longer says "author" (the row that was the *plan* page for L1 is
+  the course page now); `codecraft/stats.py` → the measured row, `cz stage
+  tcp-ip-from-scratch 10` printing `71 asserts · 40 planted mutations the check
+  must catch`; a bullet in the root `README.md`; and the course's own
+  `README.md` (265 lines: the ten-stage ladder, the frozen world and the mistake
+  catalogue in stage order).
+- **`cz brief <row>`** — the layer this unit added beside the course: per author
+  row the guidelines, what to read and the acceptance checklist, generalising the
+  contract that froze L1 (`codecraft/briefs.py`, `codecraft/contract.py`,
+  `render.render_brief`, `cli.cmd_brief`). `./cz brief` lists the 24 rows still to
+  author, `./cz brief L2` reads one in full, and the footer's example now points
+  at the first row in that list rather than a hardcoded L1.
+- **`cz run <course> --stage N`** — the selector that turns the ladder into one
+  rung: `_stage_flag` in `cli.cmd_run`, verified on `os-from-scratch --stage 3`
+  and on L1's own stubs.
+- The **capstone was written by hand**: `Stage10-2` returned zero files after
+  24m50s (a length-stop), and stage 10 is the one stage where the surface *is* the
+  contract — so the parent wrote `solutions/stage_10.py`, `stage_10.py`,
+  `check_10.py` and `mutate_10.py`, and the 40 mutations are the proof it is
+  graded like the rest.
+- Harness: `/home/diego/Desarrollo/.l1-dev/` (`CONTRACT.md` — frozen first, §0–§7
+  with ten stage specs and **fifteen** amendment rows — `DELEGATE.md`,
+  `course_head.py`, `course_tail.py`, ten `check_NN.py`, ten `mutate_NN.py`,
+  `run_all.py`, `mutate_all.py`, `audit_course.py`, `assemble.py`, `smoke.py`,
+  `verify_provided.py`, `probe_stages.py`, `STATE.md`). **Never in `/tmp`.**
+
+Shapes worth keeping: **the world is provided and frozen** — `wire.py` and
+`hosts.py` are read-only for every stage, and the only way to be wrong about them
+is to be wrong about the wire's log; **the wire's log is the tie-breaker** — the
+capstone's `cross_check` compares the session's ledger against `Wire.sent()`,
+`delivered()`, `dropped()`, the tick and the sends' own ordinals, so a session
+that reports what it *intended* is the failure the stage exists to catch, and the
+`received` side of the comparison is witnessed by the server's box rather than by
+the session's own claim; **a rule no run can reach is cut** — three mutations were
+planted on the capstone's reader (the server's own echo, a segment for another
+port, the settle before the final counts) and cut when no scenario could reach
+them, because an uncatchable mutation is worse than a missing one; **the
+capstone's own scenarios are the course's** — `plan()` ships a clean wire, one
+that eats a single segment and one that loses more than it has ticks, so
+`"expired": True` is a rule a scenario can actually break; and **the checks count
+their own rejections** — L1's checks use `_refuses(exc, what, call, names)` for
+the refusal sites, which is why `cz stage`'s `tests` metric counts those calls
+alongside `assert` and `raise` (the nineteen built courses now total **10,452
+assertions** and **4,633 caught mutations**).
+
+Four contract amendments the *stages* forced at the capstone, all in
+`.l1-dev/CONTRACT.md` §7 (fifteen rows in total, the course wins over the plan):
+the ledger's frozen key list is eleven and not the ten `run`'s bullet spelled out
+(`"expired"` is required by the same section's own rules); `open_session` drives
+the wire it is handed instead of building one, because the stage is graded against
+that object; the session drives both ends' stage 5 connections rather than stage
+7's table (which owns the connection behind each descriptor and gives no way back
+to it, and stage 9's close needs that object); and `plan()` ships three scenarios
+rather than two, so the `expired` rule is observable.
+
+
+### The unit before it — `cz dag`, the registry as a dependency DAG (`6eb8f8d`)
+
+**The registry as a dependency DAG, and the fifteen-item AI-infrastructure list
+mapped onto it.**
 
 - **`./cz dag`** prints the whole registry as waves: `60 projects · 87 hard edges ·
   9 waves`, each row once, in the wave its longest path reaches, with what it
@@ -77,8 +169,9 @@ looking for it, and the plan rows that came out of the same review.
   write in it, how big the tester is, the live status and the ladder. No argument
   lands on the first stage that is not passing. A slug, an id (`G4`) or a title
   (`"OS From Scratch"`) all resolve, and a registered-but-unwritten course prints
-  the row, its prerequisites and its thesis instead of "no course named …":
-  `cz stage tcp-ip-from-scratch` is L1's plan page today. New:
+  the row, its prerequisites and its thesis instead of "no course named …": that
+  was `cz stage tcp-ip-from-scratch` for L1 until the unit this file carries
+  wrote it. New:
   `cli.cmd_stage`, `render.render_stage`/`render.render_plan`, and
   `path.find`, the registry lookup the verb needs.
 - **`codecraft/stats.py`** — the measured size of every built course's stages,
@@ -89,8 +182,8 @@ looking for it, and the plan rows that came out of the same review.
   a course ships. Eight courses carry both numbers; the other ten say `None`
   rather than a zero, and the page says "not measured" rather than lying.
   `cz stage os-from-scratch 5` → `93 asserts · 69 planted mutations the check must
-  catch`; the eighteen built courses total **9,323 assertions** and **4,079
-  caught mutations**.
+  catch`; the eighteen built courses totalled **9,323 assertions** and **4,079
+  caught mutations** at the time (nineteen and 10,452/4,633 after L1).
 - **The hardcoded repo root is gone.** 128 lines across 14 assembled `course.py`
   files carried `DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"`,
   and five more carried the same path as a `COURSE_REPO` default; all of them now
@@ -198,17 +291,17 @@ stage 9 so the format's own vocabulary is readable from outside.
 
 ## In flight — nothing
 
-The next unit is **L1, `tcp-ip-from-scratch`** — the stack as data against a
-provided lossy `wire.py` — and then phase L's other two series: **L2
-`concurrent-servers-from-scratch`** (four models for one server, one workload,
-identical answers) and **L3 `mqtt-broker-from-scratch`** (the wire format itself),
-all three registered from `NETWORKING.md` and all three `author`. The nine rows
-registered in the two units before this one queue behind them, one per slot — G7,
-G8, H5, H6, H7, L4, then I13, I14, H8 — each carrying its own thesis in `path.py`,
-each with its place in `cz dag`. After those: G5/G6 (phase G's remaining two, which
-need checkers, not writing) and phase K's five. The backlog is **25 `author`, 6
-`legacy`, 2 `salvage`, 27 `ready` — 60 rows** — `./cz path`, `./cz dag` and the
-ROADMAP's own tables are authoritative over this file.
+The next unit is **L2, `concurrent-servers-from-scratch`** — four models for one
+server (blocking, thread-per-connection over J1's scheduler, a reactor, an event
+loop), one workload through all four, identical answers and a counted number of
+scheduler steps — and then **L3 `mqtt-broker-from-scratch`** (the wire format
+itself). The rows registered in the three units before this one queue behind
+them, one per slot — G7, G8, H5, H6, H7, L4, then I13, I14, H8 — each carrying its
+own thesis in `path.py`, each with its place in `cz dag`. After those: G5/G6
+(phase G's remaining two, which need checkers, not writing) and phase K's five.
+The backlog is **24 `author`, 6 `legacy`, 2 `salvage`, 28 `ready` — 60 rows** —
+`./cz path`, `./cz dag` and the ROADMAP's own tables are authoritative over this
+file.
 
 Two questions from earlier sessions are **answered**: the legacy, thin
 `distributed-training/` directory stays exactly as it is (the user's call,
@@ -216,7 +309,7 @@ Two questions from earlier sessions are **answered**: the legacy, thin
 two lists in `AI-ENGINEER.md` are handled: 40 items mapped to existing courses,
 five gaps registered as phase K.
 
-## The workflow that produced G3, F2, J1, I9, H1, A8, J2, J3, J4, J5 and G4 — keep it
+## The workflow that produced G3, F2, J1, I9, H1, A8, J2, J3, J4, J5, G4 and L1 — keep it
 
 1. **Recon**, then **freeze a contract** in a dev directory beside the repo
    (`/home/diego/Desarrollo/.g4-dev/CONTRACT.md`): thesis, conventions, the
@@ -224,7 +317,7 @@ five gaps registered as phase K.
    shapes and the *mistake catalogue*. Freeze it before writing any stage; amend
    it — never silently — the moment a stage's real surface differs, with a table
    recording what the plan said, what the course does and why (J3's §7 has eight
-   such rows, J4's nineteen, J5's three, G4's four).
+   such rows, J4's nineteen, J5's three, G4's four, L1's fifteen).
 2. **Never `/tmp`.** It was wiped three times and killed four delegates. The
    harness lives beside the repo and is re-synced after every change.
 3. **One delegate per stage**, four files each (`stage_NN.py`,
@@ -233,7 +326,10 @@ five gaps registered as phase K.
    `run_all.py NN`, `mutate_all.py NN`, `audit_course.py NN` — every time. Forty
    delegates across A8, J2, J3, J4 and J5, forty green; G4 ran the same drill one
    delegate at a time, and the one delegate that died after twenty-six minutes
-   with zero files written is why the capstone was written by hand.
+   with zero files written is why the capstone was written by hand — and L1's
+   `Stage10-2` did the same thing (twenty-four minutes, a length-stop, zero
+   files), so L1's capstone was written by hand too and proved by its own forty
+   mutations like any other stage.
 4. **Stages that import only stage 1 can be delegated concurrently** — in J5 all
    seven of 2–8 were spawned in one batch while stage 1 was already verified, then
    9 (composing 2–8) and only then the capstone, which imports all nine. G4's
@@ -274,9 +370,14 @@ five gaps registered as phase K.
    stopped at its own tick budget), and the one defect no world program can reach
    was cut rather than kept as a mutation — every program this userland has ends
    with an explicit `exit`, so the "ran out of ops" path is defensive code and not
-   a mutation target.
+   a mutation target. L1's capstone cut three the same way: the server's own
+   broadcast echo, a segment addressed to another port, and the settle before the
+   final counts — none is reachable from any scenario the course ships, so none is
+   a mutation worth keeping.
 10. **Register, then commit**: `path.py`, `ROADMAP.md` (the count in the header,
-    the ready row, the phase table, the plan paragraph), `AGENT-INFRA.md`'s two
+    the ready row, the phase table, the plan paragraph), the measured row in
+    `codecraft/stats.py` (`tests` recomputable from the assembled `course.py`,
+    `mutants` from the harness), `AGENT-INFRA.md`'s two
     tables when a slot closes a numbered item, the root `README.md` bullet, the
     course's own `README.md`, and this file — after deleting
     `codecraft/{history.jsonl, profile.json, mentor_cache.json}` and every

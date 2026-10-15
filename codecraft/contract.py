@@ -127,7 +127,7 @@ def _where(exc: BaseException) -> str:
     return ""
 
 
-def run_course_module(course_dir: str) -> dict:
+def run_course_module(course_dir: str, stage: Optional[int] = None) -> dict:
     # A previous authored course in this process may have left `stage_01` and
     # friends in sys.modules; drop them so this course's files are imported.
     for key in [k for k in sys.modules if re.match(r"^stage_?\d+$", k)]:
@@ -136,6 +136,8 @@ def run_course_module(course_dir: str) -> dict:
     stages_meta = getattr(module, "STAGES", [])
     stages: List[dict] = []
     for st in stages_meta:
+        if stage is not None and st.id != stage:
+            continue
         try:
             st.check()
             status, detail = "PASS", ""
@@ -158,17 +160,57 @@ def run_course_module(course_dir: str) -> dict:
 
 
 # ---------------------------------------------------------------------------
+# The stage selector
+# ---------------------------------------------------------------------------
+
+def stage_request(course: dict, stage=None, args=None) -> Optional[int]:
+    """The one stage an attempt is narrowed to — `cz run <course> --stage N`.
+
+    Returns None when the whole course was asked for. A bare number among the
+    checker args is the same request, in both modes: an authored course has no
+    argv of its own, and a `check.py` takes the number in its argv anyway
+    (`run_attempt` does not add it twice).
+
+    A number the course does not have raises ValueError, naming the stages it
+    does have — the caller prints that and runs nothing.
+    """
+    requested = stage
+    if requested is None:
+        numbers = [int(a) for a in (args or ()) if str(a).isdigit()]
+        requested = numbers[0] if numbers else None
+    if requested is None:
+        return None
+    if requested not in course["stages"]:
+        ids = sorted(course["stages"])
+        have = f"{ids[0]}..{ids[-1]}" if ids else "none"
+        raise ValueError(f"{course['name']} has stages {have} — no stage {requested}")
+    return requested
+
+
+
+# ---------------------------------------------------------------------------
 # Uniform entry point
 # ---------------------------------------------------------------------------
 
 def run_attempt(course: dict, args: Optional[List[str]] = None,
-                echo: bool = True) -> dict:
-    """Run one attempt for a loaded course dict (see manifests.load)."""
+                echo: bool = True, stage: Optional[int] = None) -> dict:
+    """Run one attempt for a loaded course dict (see manifests.load).
+
+    `stage` narrows the attempt to one stage (`cz run <course> --stage N`),
+    refused here — before anything runs — when the course has no such stage.
+    An authored course filters its own `STAGES`; a `check.py` course is handed
+    the number as the argument it already honours, and `--all` stays the
+    default when nothing is asked for.
+    """
+    stage = stage_request(course, stage=stage, args=args)
     if course["mode"] == MODE_COURSE:
-        result = run_course_module(course["dir"])
-        stdout = _render_module_stdout(course, result)
+        result = run_course_module(course["dir"], stage=stage)
+        stdout = _render_module_stdout(course, result, stage)
     else:
-        out = run_checker(course["dir"], args)
+        argv = list(args or ())
+        if stage is not None and str(stage) not in argv:
+            argv = [str(stage)] + argv
+        out = run_checker(course["dir"], argv or None)
         stdout = out["stdout"]
         result = out["result"]
     if echo:
@@ -176,11 +218,14 @@ def run_attempt(course: dict, args: Optional[List[str]] = None,
     return result
 
 
-def _render_module_stdout(course: dict, result: dict) -> str:
+def _render_module_stdout(course: dict, result: dict,
+                          stage: Optional[int] = None) -> str:
     """Print authored-course results in the same visual language as check.py."""
     green, red, grey, bold, reset = (
         "\033[32m", "\033[31m", "\033[90m", "\033[1m", "\033[0m")
-    out = [f"\n{bold}{course['title']} — progress check{reset}",
+    head = (f"{course['title']} \u2014 stage {stage} check" if stage is not None
+            else f"{course['title']} \u2014 progress check")
+    out = [f"\n{bold}{head}{reset}",
            f"{grey}run codecraft after each stage; read the nudge below{reset}\n"]
     for st in result["stages"]:
         if st["status"] == "PASS":
@@ -192,5 +237,6 @@ def _render_module_stdout(course: dict, result: dict) -> str:
             out.append(f"  {red}\u2717{reset} {st['id']:>2}. {st['file']:<18} {st['title']}")
             for line in st["detail"].splitlines():
                 out.append(f"      {red}{line}{reset}")
-    out.append(f"\n  {result['passed']}/{result['total']} passing")
+    scope = f"stage {stage}: " if stage is not None else ""
+    out.append(f"\n  {scope}{result['passed']}/{result['total']} passing")
     return "\n".join(out) + "\n"

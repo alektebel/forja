@@ -594,8 +594,8 @@ PHASES = [
                 "half and this is the data-in-transit half."},
     ]),
     ("L", "Programs that talk", [
-        {"id": "L1", "title": "TCP/IP From Scratch", "course": None,
-         "kind": "author", "prereq": ["G3", "J4"],
+        {"id": "L1", "title": "TCP/IP From Scratch",
+         "course": "tcp-ip-from-scratch", "kind": "ready", "prereq": ["G3", "J4"],
          "why": "The stack as data, from the first of the three series kept in "
                 "`NETWORKING.md`: a frame and its type field, ARP and a cache "
                 "that ages, IPv4 with a routing table and a TTL that has to be "
@@ -604,10 +604,10 @@ PHASES = [
                 "that must not be overrun, the socket API as a table, "
                 "retransmission on the injected clock, the close with TIME_WAIT "
                 "as a state rather than a sleep, and a session whose tie-breaker "
-                "is the wire's own segment log. Author tcp-ip-from-scratch "
-                "against a provided lossy `wire.py`; G3 is the house's example "
-                "of a simulator a course is written against, and J4 is the "
-                "method: the world keeps the record."},
+                "is the wire's own segment log. Ten stages against a provided "
+                "lossy `wire.py`; G3 is the house's example of a simulator a "
+                "course is written against, and J4 is the method: the world "
+                "keeps the record."},
         {"id": "L2", "title": "Concurrent Servers", "course": None,
          "kind": "author", "prereq": ["J1", "J3"],
          "why": "Four models for one server, from the second series: a blocking "
@@ -667,9 +667,9 @@ def _find(courses, name):
 def find(name):
     """The registry row for a slug, an id or a title, as (letter, phase, item).
 
-    `codecraft stage tcp-ip-from-scratch` has to work before the directory
-    exists, so it looks the row up here rather than in the discovered courses.
-    Returns (None, None, None) when nothing matches.
+    `codecraft stage L2` has to work before the directory exists — it did for
+    tcp-ip-from-scratch — so it looks the row up here rather than in the
+    discovered courses. Returns (None, None, None) when nothing matches.
     """
     want = re.sub(r"[^a-z0-9]+", "-", str(name or "").lower()).strip("-")
     if not want:

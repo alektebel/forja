@@ -29,7 +29,9 @@ see [The `cz` shim](#the-cz-shim) for putting it on your PATH.
 python3 codecraft/cli.py                      # your learning board
 python3 codecraft/cli.py path                 # the ordered plan, with live progress
 python3 codecraft/cli.py dag [<course>]       # the DAG: what must come first
+python3 codecraft/cli.py brief [<course>]     # how to author a row: rules, reading, bar
 python3 codecraft/cli.py run llm-from-scratch # run it; read the nudge
+python3 codecraft/cli.py run llm-from-scratch --stage 3   # one stage, not all of them
 python3 codecraft/cli.py stage llm-from-scratch 5  # one stage, before you write it
 python3 codecraft/cli.py next                 # just the next action
 python3 codecraft/cli.py hint llm-from-scratch# when the nudge is not enough
@@ -120,6 +122,53 @@ stops being acyclic.
 
 ---
 
+## One stage at a time
+
+A `run` takes the whole course unless you say otherwise:
+
+```bash
+python3 codecraft/cli.py run os-from-scratch            # every stage, in order
+python3 codecraft/cli.py run os-from-scratch --stage 3  # stage 3 and nothing else
+python3 codecraft/cli.py run os-from-scratch 3          # the same request, the older spelling
+```
+
+The stage is chosen where the manifest is actually filtered, not in the argument
+parser: an authored course narrows its own `STAGES`, and a `check.py` course is
+handed the number as the argument it already honours. One stage is one row of
+your record — the checker prints that stage's line, the coach still talks about
+the course's next step, and every other stage keeps the status it had, so a
+scoped run never rewrites the ladder. A number the course does not have is
+refused by name before anything runs (`os-from-scratch has stages 1..10 — no
+stage 99`), and `--stage x` answers that a stage is a number.
+
+## The authoring brief
+
+`path` says what to build and in what order, `dag` says what must come first, and
+`brief` says how a course here is written and what a finished one clears.
+
+```bash
+python3 codecraft/cli.py brief                        # every row still to author, one line each
+python3 codecraft/cli.py brief tcp-ip-from-scratch    # one row's brief, in full
+```
+
+A row is named by slug, id (`cz brief L1`) or title, the same as everywhere else,
+and the brief comes in three parts. **guidelines** state the house rules once:
+stdlib only, no float anywhere, the clock injected, no module-level mutable
+state, the banned imports, what a template and its solution owe each other, the
+check that must let `NotImplementedError` escape, the ≥34 mutations a stage's
+check is proven against, and the audit that enforces all of it. **resources** are
+where to read first: the row's own words in `path.py`, the ROADMAP section the
+row is a slot in, the workflow `NEXT-SESSION.md` records, the document the row
+itself names, and the courses to imitate. **requirements** are the acceptance
+checklist — the manifest and its ten stages, the stubs and their solutions, the
+per-stage counts in `stats.py`, `./cz self-test` green, the run green from an
+unrelated cwd, the row flipped to `ready` — together with the row's own frozen
+contract when it has one (`cz brief L1` points at `.l1-dev/CONTRACT.md`, the
+model for how specific a brief has to be), or the plain statement that it has
+none, in which case the row's own words are the spec.
+
+---
+
 ## The `cz` shim
 
 `cz` is a one-line forwarder to `codecraft/cli.py`, for when the full path is
@@ -127,9 +176,12 @@ noise:
 
 ```bash
 cz run aws-from-scratch     # same as python3 codecraft/cli.py run aws-from-scratch
+cz run os-from-scratch --stage 3   # one stage, not all of them
 cz path
 cz dag                       # the dependency DAG: waves, unlocks and advice
 cz dag J3                    # one row: what must come first, what it opens
+cz brief                     # every row still to author, one line each
+cz brief L1                  # one row's brief: the rules, the reading, the bar
 cz stage aws-from-scratch 3 # one stage: what to write, what the tester costs
 cz hint aws-from-scratch
 ```
@@ -317,6 +369,7 @@ codecraft/
 ├── mentor.py      # NAN client + prompt + cache
 ├── scaffold.py    # `codecraft new`
 ├── path.py        # the ordered plan (see ROADMAP.md)
+├── briefs.py      # a row's authoring brief: the rules, the reading, the bar
 └── history.jsonl / profile.json / mentor_cache.json   # your record (git-ignored)
 ```
 

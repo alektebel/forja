@@ -4,7 +4,9 @@
     python3 codecraft/cli.py                      # your learning board
     python3 codecraft/cli.py path                 # the ordered plan, with progress
     python3 codecraft/cli.py dag [<course>]       # the dependency DAG: what comes first
+    python3 codecraft/cli.py brief [<course>]     # how to author a row: rules, reading, bar
     python3 codecraft/cli.py run llm-from-scratch # run a course, get coached
+    python3 codecraft/cli.py run <course> --stage 3   # one stage, not all of them
     python3 codecraft/cli.py stage <course> [n]   # one stage: what you write, what it costs
     python3 codecraft/cli.py next                 # just the next action
     python3 codecraft/cli.py hint <course>        # one rung lower down the ladder
@@ -26,12 +28,13 @@ import urllib.request
 
 if __package__ in (None, ""):
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    from codecraft import (adapt, contract, dag, manifests, mentor, patterns,
-                           progress, render, scaffold, serve, stats, store, style)
+    from codecraft import (adapt, briefs, contract, dag, manifests, mentor,
+                           patterns, progress, render, scaffold, serve, stats,
+                           store, style)
     from codecraft import path as pathmod
 else:                                                          # pragma: no cover
-    from . import (adapt, contract, dag, manifests, mentor, patterns, progress,
-                   render, scaffold, serve, stats, store, style)
+    from . import (adapt, briefs, contract, dag, manifests, mentor, patterns,
+                   progress, render, scaffold, serve, stats, store, style)
     from . import path as pathmod
 
 HELP = __doc__
@@ -48,9 +51,27 @@ def _ink(colour):
 def _load_or_die(name):
     course = manifests.load(name)
     if course is None:
-        print(f"  no course named {name!r}. Try: python3 codecraft/cli.py list")
+        print(_missing(name))
         sys.exit(2)
     return course
+
+
+def _missing(name):
+    """What to say when a name is not a course on disk: the row, when it is one."""
+    _letter, _phase, entry = pathmod.find(name)
+    if entry is not None and entry["kind"] == "author":
+        slug = briefs.slug_of(entry)
+        return (f"  {slug} is a registry row ({entry['id']} {entry['title']}), "
+                f"not a course yet.\n"
+                f"  read it:  python3 codecraft/cli.py brief {entry['id']}\n"
+                f"  write it: python3 codecraft/cli.py new {slug} --stages 10")
+    if entry is not None:
+        where = (f"registered against {entry['course']!r}, which is not on disk"
+                 if entry.get("course") else
+                 "a registry row with no course of its own")
+        return (f"  {entry['id']} {entry['title']} is {where}.\n"
+                "  Try: python3 codecraft/cli.py path")
+    return f"  no course named {name!r}. Try: python3 codecraft/cli.py list"
 
 
 def _current_course(profile, courses, explicit=None):
@@ -83,24 +104,84 @@ def cmd_path(profile, courses, ink):
     return 0
 
 
+def _stage_flag(rest):
+    """Pull `--stage N` out of a run's arguments; the rest is the checker's."""
+    out, stage, index = [], None, 0
+    while index < len(rest):
+        arg = rest[index]
+        if arg == "--stage" or arg.startswith("--stage="):
+            value = arg.split("=", 1)[1] if "=" in arg else None
+            if value is None:
+                index += 1
+                value = rest[index] if index < len(rest) else ""
+            if not value.isdigit():
+                raise ValueError(f"a stage is a number, not {value!r}")
+            stage = int(value)
+        else:
+            out.append(arg)
+        index += 1
+    return stage, out
+
+
+def _course_ladder(course, prior, ran):
+    """One stage's attempt, read as the course's ladder.
+
+    A run of `--stage 3` touched one row of the profile; the banner, the coach
+    and the board still talk about the whole course, so the other stages keep
+    the last status their row recorded and the totals are read off that ladder.
+    """
+    ids = sorted(course["stages"])
+    done = {st["id"]: st for st in ran["stages"]}
+    stages = []
+    for sid in ids:
+        if sid in done:
+            stages.append(done[sid])
+            continue
+        meta, row = course["stages"][sid], prior.get(str(sid), {})
+        stages.append({"id": sid, "file": meta.get("file", ""),
+                       "title": meta.get("title", ""),
+                       "status": row.get("last_status", "TODO"),
+                       "detail": row.get("last_detail", "")})
+    next_step = next((s["id"] for s in stages if s["status"] != "PASS"), None)
+    return {
+        "total": len(stages),
+        "passed": sum(1 for s in stages if s["status"] == "PASS"),
+        "failed": sum(1 for s in stages if s["status"] in ("FAIL", "ERROR")),
+        "todo": sum(1 for s in stages if s["status"] == "TODO"),
+        "next_step": next_step, "stages": stages,
+    }
+
+
 def cmd_run(profile, rest, ink, courses):
     brief = "--brief" in rest or "--quiet" in rest
     no_mentor = "--no-mentor" in rest
     flags = ("--brief", "--quiet", "--no-mentor")
     rest = [a for a in rest if a not in flags]
+    try:
+        stage, rest = _stage_flag(rest)
+    except ValueError as exc:
+        print(f"  {exc}")
+        return 2
     if not rest:
-        print("  usage: python3 codecraft/cli.py run <course> [checker args]")
+        print("  usage: python3 codecraft/cli.py run <course> [--stage N] "
+              "[checker args]")
         return 1
     course = _load_or_die(rest[0])
     checker_args = rest[1:] or None
+    try:
+        stage = contract.stage_request(course, stage=stage, args=checker_args)
+    except ValueError as exc:                 # a stage this course does not have
+        print(f"  {exc}")
+        return 2
 
     prior = profile["courses"].get(course["name"], {}).get("stages", {})
     before_status = {sid: row.get("last_status") for sid, row in prior.items()}
 
-    result = contract.run_attempt(course, args=checker_args, echo=not brief)
+    ran = contract.run_attempt(course, args=checker_args, echo=not brief, stage=stage)
+    result = _course_ladder(course, prior, ran) if stage is not None else ran
 
     newly_passed, regressed = [], []
-    for st in result["stages"]:
+    for st in ran["stages"]:
         prev = before_status.get(str(st["id"]))
         if st["status"] == "PASS" and prev != "PASS":
             newly_passed.append(st)
@@ -108,12 +189,13 @@ def cmd_run(profile, rest, ink, courses):
             regressed.append(st)
 
     attempt = {"course": course["name"], "title": course["title"],
-               "mode": course["mode"], "ts": store.now(), **result}
+               "mode": course["mode"], "ts": store.now(), **result,
+               "stages": ran["stages"]}
     store.append_history({
         "ts": attempt["ts"], "course": course["name"], "mode": course["mode"],
-        "passed": result["passed"], "failed": result["failed"],
+        "stage": stage, "passed": result["passed"], "failed": result["failed"],
         "todo": result["todo"], "next_step": result["next_step"],
-        "stages": [{"id": s["id"], "status": s["status"]} for s in result["stages"]],
+        "stages": [{"id": s["id"], "status": s["status"]} for s in ran["stages"]],
     })
     store.record_attempt(profile, attempt, manifests.stage_meta(course))
     store.save_profile(profile)
@@ -121,7 +203,7 @@ def cmd_run(profile, rest, ink, courses):
     advice = adapt.decide(profile, course, result, all_courses=courses)
 
     complete = bool(result["total"]) and result["passed"] == result["total"]
-    failed_stage = next((s for s in result["stages"]
+    failed_stage = next((s for s in ran["stages"]
                          if s["status"] in ("FAIL", "ERROR")), None)
 
     if complete:
@@ -147,7 +229,7 @@ def cmd_run(profile, rest, ink, courses):
 
     _publish_attempt(profile, course, result)
     print(render.render_advice(advice, course["stages"].get(advice["stage"], {}), ink))
-    return 0 if result["failed"] == 0 else 1
+    return 0 if ran["failed"] == 0 else 1
 
 
 def _publish_attempt(profile, course, result) -> None:
@@ -374,6 +456,21 @@ def cmd_stage(profile, rest, ink, courses):
         stats.for_course(course["name"]).get(want),
         stages.get(str(want), {}), statuses, ink,
         f"python3 codecraft/cli.py run {course['name']}"))
+    return 0
+
+
+def cmd_brief(profile, rest, ink, courses):
+    """How to author a row: the house rules, what to read, and the bar."""
+    name = next((a for a in rest if not a.startswith("-")), None)
+    if not name:
+        print(render.render_briefs(briefs.briefs(), ink))
+        return 0
+    data = briefs.brief(name)
+    if data is None:
+        print(f"  no row named {name!r} in the registry. Try: "
+              "python3 codecraft/cli.py path")
+        return 2
+    print(render.render_brief(data, ink))
     return 0
 
 
@@ -627,6 +724,8 @@ def main(argv) -> int:
         return cmd_path(profile, courses, ink) or 0
     if cmd in ("dag", "tree"):
         return cmd_dag(profile, rest, ink, courses) or 0
+    if cmd == "brief":
+        return cmd_brief(profile, rest, ink, courses) or 0
     if cmd == "progress":
         print(progress.render(courses, ink))
         return 0

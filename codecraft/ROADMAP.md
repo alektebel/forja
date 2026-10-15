@@ -13,7 +13,7 @@ the rest.**
 
 ### Ready now — checker-driven, pure Python, `codecraft` runs them as-is
 
-Twenty-five courses, 281 graded checks between them, no dependencies.
+Twenty-six courses, 291 graded checks between them, no dependencies.
 
 | Course | Checks | What it teaches |
 |---|---|---|
@@ -31,6 +31,7 @@ Twenty-five courses, 281 graded checks between them, no dependencies.
 | `vector-index-from-scratch` | 10 | Exact scan, the metric, k-means, IVF, the frontier, HNSW, deletions, int8 |
 | `cpu-from-scratch` | 10 | A real datapath on a provided ISA and assembler (`isa.py`): word algebra and the four flags, a decoder that ignores the fields a format does not use, a register file whose zero register cannot be written and whose snapshots are copies, an ALU whose division truncates and whose remainder takes the dividend's sign, byte-addressed memory with alignment and bounds checked before anything is stored, a control unit where a fault is data and a trace records every effect, and then the same programs on a five-stage pipeline that must retire the identical trace — stalls first, then forwarding with the one-cycle load-use stall and a branch flush — measured by CPI. One program, two machines, one result |
 | `os-from-scratch` | 10 | An operating system as what you write after the hardware breaks its last promise, on a provided machine (`machine.py`, `devices.py`, `userland.py`): the boot map and the frames a kernel may actually hand out, a bitmap allocator that protects the frame its own bits live in and answers all or nothing, page tables whose entries cannot be confused with frame numbers and whose permission bits are checked on every walk, the fault word a trap carries so a handler decides from data rather than from an exception, a syscall boundary that checks a pointer before it uses it and writes a line with a promise before it acts, the process as a dict with a space, a ledger and a zombie at the end, a scheduler whose pick is priority and age behind a quantum that rotates, two CPUs on an interleaving where the critical section is a lock and its order is checked, a real on-disk filesystem with a superblock written last and a mount that reads only what a barrier made durable, and a capstone userland whose kernel report is recomputed from its own log and cross-checked against the machine's records |
+| `tcp-ip-from-scratch` | 10 | The stack as data against a provided lossy `wire.py` and five named hosts: the frame and the type field that says what is inside (and the padding a NIC adds, which nobody owns), ARP with a cache that ages and a broadcast that comes back to its sender, IPv4 with a routing table, a TTL decremented on every hop and a checksum recomputed over the header, ICMP echo whose reply carries the request's identifier, the handshake as a state machine you can be wrong about in six places, a sliding window that must not be overrun and a zero-window probe, the socket API as a table of descriptors that owns nothing a descriptor cannot reach, retransmission on the injected clock with a timer that stops only when the acknowledgement is *ahead*, the close as four segments and a state you wait in rather than a sleep, and a capstone that runs one whole session and then argues about it with the wire's own segment log — key by key, and the wire wins |
 | `eval-framework-from-scratch` | 10 | The runner under an eval, with the task set, the actors and the clock provided: a suite config that refuses a typo and materialises its defaults into the hashed form, metric plugins resolved before the first call, one record per case with the error taxonomy of a budgeted call, budgets checked before the call, an aggregation whose unit is the case and whose weights travel in the record, a judge session that caches by prompt/answer/reference and asks both orders, canonical records whose bytes two runs share, a gate ordered invalid-run-before-failed-gate with four exit codes, a baseline diff that needs the difference to beat the noise, and a resume that repairs a half-written tail and leaves the log of an uninterrupted run |
 | `benchmark-from-scratch` | 10 | The measurement machinery around a provided mus engine: a turn gate where a refusal is data and not a turn, a match loop with as-dealt snapshots and two rails, one ground-truth record per decision taken before the action, the link from an aggression to the answer it got, the strength reference drawn from the hands that could bet, a risk scorecard where a bluff is a weak hand and not a lost bet, an outcome that survives the 40-point vaca reset, Brier/log-loss/AUC/calibration probes with their degenerate cases, the publishability gate and its leaderboard, and the mirrored pair that cancels the seat advantage |
 | `queue-and-workers-from-scratch` | 10 | A scheduler as a data structure, not a thread pool, on a provided clock and worker fleet: typed specs that refuse a typo instead of defaulting it, admission that counts running work and refuses with `QueueFull` instead of growing, priority as a total order with the tie that makes two runs differ, the concurrency limit checked before a worker runs, leases that expire and hand the task and the slot back, retries with a growing backoff on the injected clock and dead letters at the attempt budget, the water mark with refuse/shed/block and nothing lost, ageing capped so the interactive tenant survives, a record whose every number is rebuilt from the run's own log, and two runs that print identical bytes |
@@ -86,11 +87,13 @@ all built now, from the Agent Infra list kept in `AGENT-INFRA.md`.
 No retrieval that checks itself, no prompt/routing ops, no memory engine, no
 fine-tuning and no privacy gateway — phase K, below, is those five, from the
 interview and build lists kept in `AI-ENGINEER.md`.
-No TCP/IP stack, no reactor and no broker — phase L, below, is those three, from
-the three C/C++ networking series kept in `NETWORKING.md`. The repo has an
-application protocol (legacy `http-server`, `dns-server`) and a modelled
-collective (`interconnects-from-scratch`), and has never parsed a wire format
-byte by byte.
+No reactor and no broker — phase L's two remaining rows, from the three C/C++
+networking series kept in `NETWORKING.md`; the stack itself is
+`tcp-ip-from-scratch` now, ten stages from the frame up to a session whose
+tie-breaker is the wire's own segment log. The repo has an application protocol
+(legacy `http-server`, `dns-server`) and a modelled
+collective (`interconnects-from-scratch`), and it parses a wire format byte by
+byte in exactly one place: `tcp-ip-from-scratch`.
 `rag-from-scratch/` (phase B1), `vector-index-from-scratch/` (phase B2),
 `evals-from-scratch/` (phase C1), `agents-from-scratch/` (phase C2),
 `mcp-from-scratch/` (phase D1) and `agent-harness-from-scratch` (phase E1) now
@@ -269,9 +272,18 @@ written before the act it predicts (`.g4-dev/CONTRACT.md`). The salvage the unit
 began as stays beside it as prose: `linux-from-scratch/`, nineteen files and the
 fifteen phase directories of
 `origin/claude/linux-from-scratch-curriculum-2qokjd`, whose 176 exercises are the
-reading and whose ten stages here are the writing. The next unit is **L1,
-`tcp-ip-from-scratch`** — the stack as data against a provided lossy `wire.py` —
-and then L2 and L3.
+reading and whose ten stages here are the writing. **L1, `tcp-ip-from-scratch`**,
+is built too: the stack as data against a provided lossy `wire.py` — ten checks
+and 554 mutations caught, from a frame's type field and the padding nobody owns,
+through ARP's ageing cache and a broadcast that comes back to its sender, a
+routing table with a TTL and a checksum over the pseudo-header, ICMP echo, the
+handshake as a state machine, the window that must not be overrun, the socket
+table, retransmission on the injected clock, the close as four segments and a
+state you wait in — to a capstone that runs one whole session and then argues
+about it with the wire's own segment log, key by key, and loses
+(`.l1-dev/CONTRACT.md`). The next unit is **L2,
+`concurrent-servers-from-scratch`** — four models for one server, one workload,
+identical answers — and then L3.
 
 F1 was a salvage, and it landed: `~/Desarrollo/mus-benchmark` had the turn-gated
 engine, the per-decision JSONL record, the scorecards and the calibration probes,
@@ -547,15 +559,16 @@ scratch`) and a house method for making a world out of data (`queue-and-workers`
 `durable-execution`, `sandbox-capabilities`); it has never built the layer under
 all of them.
 
-Three gaps survived the mapping, and they are the three L slots. All three are
-authorable in the house style, and none of them needs a socket or a thread — the
-link, the clock and the failure are data, which is what makes the interesting
-question answerable (which segment was retransmitted, how many scheduler steps a
-model took) instead of a matter of timing:
+Three gaps survived the mapping, and they were the three L slots — L1 was the
+first of them, and it is built: `tcp-ip-from-scratch`, ten checks and 554
+mutations caught, in the ready table above. The other two are still to author, and
+neither needs a socket or a thread — the link, the clock and the failure are data,
+which is what makes the interesting question answerable (how many scheduler steps
+a model took, which readiness event a reactor acted on) instead of a matter of
+timing:
 
 | Slot | Course to author | The mechanism | After |
 |---|---|---|---|
-| L1 | `tcp-ip-from-scratch` | The stack as data against a provided lossy `wire.py`: the frame and its type field, ARP and an ageing cache, IPv4 with a routing table and a TTL that has to be decremented, ICMP and a recomputed checksum, the handshake as a state machine, the sliding window, the socket API as a table, retransmission on the injected clock, the close with `TIME_WAIT` as a state, and a session whose tie-breaker is the wire's own segment log | G3, J4 |
 | L2 | `concurrent-servers-from-scratch` | Four models for one server over a provided in-memory `link.py`: blocking, thread-per-connection on J1's scheduler with the interleaving the check chooses, a reactor whose readiness is a set, the event loop and its timer queue, callbacks as a handle table, futures and `async`/`await` as a desugaring, backpressure and head-of-line blocking, the Redis case study as a command loop, and one workload through all four with identical answers and a counted number of scheduler steps | J1, J3 |
 | L3 | `mqtt-broker-from-scratch` | The wire format itself: the fixed header and its variable-length integer, CONNECT and the session flags, a topic trie where `+` and `#` are matched by components and never by prefix string, QoS 1 as state, QoS 2 as a four-way handshake, retained messages and the last will, a session that survives a reconnect, and a trace replayed twice byte-identically with every frame accepted by the course's own reader | L1, J4 |
 

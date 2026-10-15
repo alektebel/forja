@@ -6,19 +6,23 @@ how big that tester is. Two numbers, and only one of them can be recomputed:
 
   tests    the `assert` statements and explicit `raise`s inside the stage's
            check — the ways that check can reject your file. Always recomputable
-           from `<course>/course.py`, which is why it is safe to record it.
+           from `<course>/course.py`, which is why it is safe to record it. A
+           course whose checks are written around a helper that refuses with an
+           `AssertionError` of its own (`tcp-ip-from-scratch`'s `_refuses`) counts
+           those calls too: they are the same rejection, spelled once instead of
+           twenty times.
   mutants  the planted mistakes the stage's development harness proved the check
            catches. Each one is a wrong implementation the check must notice,
            and the harness that plants them lives *outside* this repository: it
            is built while a course is authored and cleaned up once the course is
-           assembled. For the eight courses below the harnesses still exist and
+           assembled. For the nine courses below the harnesses still exist and
            the number is exact; for the other ten it is recoverable nowhere, and
            `None` says so instead of pretending a zero.
 
 The pair is the honest answer to "how much does this stage test me": `tests` is
 what the check says about itself, `mutants` is what it was proven to catch.
 
-Measured 2026-10-15 against the eighteen courses that carry a `course.py`. A check
+Measured 2026-10-15 against the nineteen courses that carry a `course.py`. A check
 that changes invalidates its row: re-measure with the course's harness
 (`mutate_all.py <stage>` prints the caught and missed counts) and fix the tuple.
 """
@@ -79,6 +83,9 @@ STAGES = {
     "agent-metrics-from-scratch": [
         (75, 43), (50, 40), (51, 45), (47, 47), (43, 49),
         (41, 47), (48, 39), (89, 67), (92, 61), (115, 72)],
+    "tcp-ip-from-scratch": [
+        (95, 42), (109, 57), (169, 70), (123, 64), (174, 77),
+        (112, 57), (65, 43), (82, 46), (129, 58), (71, 40)],
 }
 
 

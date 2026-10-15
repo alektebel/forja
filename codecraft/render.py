@@ -36,7 +36,7 @@ def _wrap(label, text, ink, width=76):
     if not text:
         return []
     head = textwrap.wrap(text, width=width) or [""]
-    lines = [f"  {ink(label.ljust(8), BOLD)}{head[0]}"]
+    lines = [f"  {ink(label.ljust(7) + ' ', BOLD)}{head[0]}"]
     for extra in head[1:]:
         lines.append(f"  {' ' * 8}{extra}")
     return lines
@@ -308,6 +308,60 @@ def render_dag_row(info, g, ink: Ink):
     lines.append("")
     lines.append(f"  {ink('next'.ljust(8), BOLD)}python3 codecraft/cli.py stage "
                  f"{node['id']}")
+    return "\n".join(lines)
+
+
+def render_briefs(rows, ink: Ink):
+    """The rows still to author, one line each: what `cz brief` opens with."""
+    lines = ["", ink(f"  codecraft \u00b7 {len(rows)} rows still to author", BOLD),
+             ink("  each row carries its own thesis in codecraft/path.py; "
+                 "`brief <row>` reads one in full", GREY), ""]
+    for row in rows:
+        lines.append(f"  {ink(row['symbol'], GREY)} {row['id']:<4}"
+                     f"{_title(row['title']):<36}{ink(row['name'], GREY)}")
+    lines.append("")
+    first = rows[0]["id"] if rows else "L2"
+    lines.append(ink("  one in full: python3 codecraft/cli.py brief %s" % first,
+                     GREY))
+    return "\n".join(lines)
+
+
+def render_brief(brief, ink: Ink):
+    """One row's brief: the row and its place, the house rules, the reading, the bar."""
+    row = brief["row"]
+    head = f"{row['id']} \u00b7 {row['title']}"
+    head += f" \u00b7 {row['course']}" if row.get("course") else " \u00b7 not authored yet"
+    lines = ["", ink("  codecraft \u00b7 authoring brief \u00b7 " + head, BOLD), ""]
+    for label, text in brief["facts"]:
+        if label == "why":
+            lines.append("")
+        lines += _wrap(label, text, ink)
+
+    lines.append("")
+    lines.append(ink("  guidelines \u00b7 every course here is written under these",
+                     YELLOW))
+    for label, text in brief["guidelines"]:
+        lines += _wrap(label, text, ink)
+
+    lines.append("")
+    lines.append(ink("  read first", YELLOW))
+    for label, text in brief["resources"]:
+        lines += _wrap(label, text, ink)
+
+    lines.append("")
+    lines.append(ink("  the bar \u00b7 a finished course clears all of it", YELLOW))
+    label, text = brief["spec"]
+    lines += _wrap(label, text, ink)
+    lines.append("")
+    for number, req in enumerate(brief["requirements"], start=1):
+        body = textwrap.wrap(req, width=72) or [""]
+        lines.append(f"  {ink(str(number).rjust(2) + '.', BOLD)} {body[0]}")
+        for extra in body[1:]:
+            lines.append(f"      {extra}")
+
+    lines.append("")
+    lines.append(ink(f"  next: python3 codecraft/cli.py stage {brief['name']} "
+                     f"\u2014 the row, its prereqs and where to start", GREY))
     return "\n".join(lines)
 
 
