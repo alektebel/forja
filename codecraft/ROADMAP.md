@@ -13,7 +13,7 @@ the rest.**
 
 ### Ready now — checker-driven, pure Python, `codecraft` runs them as-is
 
-Twenty-four courses, 271 graded checks between them, no dependencies.
+Twenty-five courses, 281 graded checks between them, no dependencies.
 
 | Course | Checks | What it teaches |
 |---|---|---|
@@ -30,6 +30,7 @@ Twenty-four courses, 271 graded checks between them, no dependencies.
 | `agent-harness-from-scratch` | 10 | The runtime under an agent with the model as a callable: collect an event stream into one turn, a prompt budget recomputed from the bytes, the loop where a spent budget is an outcome, dispatch where an unknown tool is a message, streaming with TTFT and inter-token timings, retries that stop before anything is forwarded, compaction that summarizes the middle, a trace of six keys and no payloads, a process reward grounded in the previous result, and a verifier plus a self-generated data loop measured on held-out tasks |
 | `vector-index-from-scratch` | 10 | Exact scan, the metric, k-means, IVF, the frontier, HNSW, deletions, int8 |
 | `cpu-from-scratch` | 10 | A real datapath on a provided ISA and assembler (`isa.py`): word algebra and the four flags, a decoder that ignores the fields a format does not use, a register file whose zero register cannot be written and whose snapshots are copies, an ALU whose division truncates and whose remainder takes the dividend's sign, byte-addressed memory with alignment and bounds checked before anything is stored, a control unit where a fault is data and a trace records every effect, and then the same programs on a five-stage pipeline that must retire the identical trace — stalls first, then forwarding with the one-cycle load-use stall and a branch flush — measured by CPI. One program, two machines, one result |
+| `os-from-scratch` | 10 | An operating system as what you write after the hardware breaks its last promise, on a provided machine (`machine.py`, `devices.py`, `userland.py`): the boot map and the frames a kernel may actually hand out, a bitmap allocator that protects the frame its own bits live in and answers all or nothing, page tables whose entries cannot be confused with frame numbers and whose permission bits are checked on every walk, the fault word a trap carries so a handler decides from data rather than from an exception, a syscall boundary that checks a pointer before it uses it and writes a line with a promise before it acts, the process as a dict with a space, a ledger and a zombie at the end, a scheduler whose pick is priority and age behind a quantum that rotates, two CPUs on an interleaving where the critical section is a lock and its order is checked, a real on-disk filesystem with a superblock written last and a mount that reads only what a barrier made durable, and a capstone userland whose kernel report is recomputed from its own log and cross-checked against the machine's records |
 | `eval-framework-from-scratch` | 10 | The runner under an eval, with the task set, the actors and the clock provided: a suite config that refuses a typo and materialises its defaults into the hashed form, metric plugins resolved before the first call, one record per case with the error taxonomy of a budgeted call, budgets checked before the call, an aggregation whose unit is the case and whose weights travel in the record, a judge session that caches by prompt/answer/reference and asks both orders, canonical records whose bytes two runs share, a gate ordered invalid-run-before-failed-gate with four exit codes, a baseline diff that needs the difference to beat the noise, and a resume that repairs a half-written tail and leaves the log of an uninterrupted run |
 | `benchmark-from-scratch` | 10 | The measurement machinery around a provided mus engine: a turn gate where a refusal is data and not a turn, a match loop with as-dealt snapshots and two rails, one ground-truth record per decision taken before the action, the link from an aggression to the answer it got, the strength reference drawn from the hands that could bet, a risk scorecard where a bluff is a weak hand and not a lost bet, an outcome that survives the 40-point vaca reset, Brier/log-loss/AUC/calibration probes with their degenerate cases, the publishability gate and its leaderboard, and the mirrored pair that cancels the seat advantage |
 | `queue-and-workers-from-scratch` | 10 | A scheduler as a data structure, not a thread pool, on a provided clock and worker fleet: typed specs that refuse a typo instead of defaulting it, admission that counts running work and refuses with `QueueFull` instead of growing, priority as a total order with the tie that makes two runs differ, the concurrency limit checked before a worker runs, leases that expire and hand the task and the slot back, retries with a growing backoff on the injected clock and dead letters at the attempt budget, the water mark with refuse/shed/block and nothing lost, ageing capped so the interactive tenant survives, a record whose every number is rebuilt from the run's own log, and two runs that print identical bytes |
@@ -74,9 +75,11 @@ from scratch, not just a checker.
 
 ### Missing entirely — the half of your list the repo does not have yet
 
-No `OS` yet; the benchmark, the eval runner and the CPU are now
-`benchmark-from-scratch` (phase F1), `eval-framework-from-scratch` (phase F2) and
-`cpu-from-scratch` (phase G3).
+The benchmark, the eval runner, the CPU and the OS are now
+`benchmark-from-scratch` (phase F1), `eval-framework-from-scratch` (phase F2),
+`cpu-from-scratch` (phase G3) and `os-from-scratch` (phase G4) — the machine
+stack's second half, graded on the same rule as its first: the hardware is
+provided, and its promises are the thing the course makes you keep.
 Phase J's five — the task queue, multi-agent orchestration, durable execution
 across a killed worker, the capability sandbox and the fleet's own metrics — are
 all built now, from the Agent Infra list kept in `AGENT-INFRA.md`.
@@ -184,10 +187,20 @@ service and the retry gap, tokens and micros summed before they are divided and
 priced by the pool, rates that name their own denominators, and a report whose
 every number is recomputed from the events and cross-checked against the fleet's
 own count of the same run — the one comparison a fold that quietly lost an event
-cannot survive (`10 checks and 510 mutations caught`, `.j5-dev/CONTRACT.md`). The
-next unit is **G4**, the OS course — a salvage on
-`origin/claude/linux-from-scratch-curriculum-2qokjd` — and then phase L's three
-series, beginning with `tcp-ip-from-scratch`.
+cannot survive (`10 checks and 510 mutations caught`, `.j5-dev/CONTRACT.md`).
+**G4, `os-from-scratch`**, is built: an operating system as what you write after
+the hardware breaks its last promise, on a provided machine (`machine.py`,
+`devices.py`, `userland.py`) — ten checks and 641 mutations caught, from the boot
+map's first frame to a capstone that runs the world's own userland on the kernel
+you wrote and then asks the only question left, whether the kernel's account of
+the run agrees with the machine's key by key, with an audit line whose promise is
+written before the act it predicts (`.g4-dev/CONTRACT.md`). The salvage the unit
+began as stays beside it as prose: `linux-from-scratch/`, nineteen files and the
+fifteen phase directories of
+`origin/claude/linux-from-scratch-curriculum-2qokjd`, whose 176 exercises are the
+reading and whose ten stages here are the writing. The next unit is **L1,
+`tcp-ip-from-scratch`** — the stack as data against a provided lossy `wire.py` —
+and then L2 and L3.
 
 F1 was a salvage, and it landed: `~/Desarrollo/mus-benchmark` had the turn-gated
 engine, the per-decision JSONL record, the scorecards and the calibration probes,

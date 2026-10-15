@@ -174,10 +174,30 @@ PHASES = [
                 "forwarding with the one-cycle load-use stall and a branch flush "
                 "\u2014 before measuring both machines and reporting the CPI. One "
                 "program, two machines, one result."},
-        {"id": "G4", "title": "OS From Scratch", "course": None,
-         "kind": "salvage", "prereq": ["G3"],
-         "why": "A linux-from-scratch curriculum exists on a branch; port it, then "
-                "give it a checker."},
+        {"id": "G4", "title": "OS From Scratch", "course": "os-from-scratch",
+         "kind": "ready", "prereq": ["G3"],
+         "why": "Built, and the salvage is part of it: `linux-from-scratch/` (the "
+                "curriculum kept from the branch) is the prose, and ten graded "
+                "stages are the course, on a provided machine (`machine.py`, "
+                "`devices.py`, `userland.py`) whose promises break as soon as a "
+                "program does something it should not. The thesis: an operating "
+                "system is what you write after the hardware breaks your last "
+                "promise. Join a boot map's regions and derive the frames a kernel "
+                "may hand out; allocate frames from a bitmap that protects the frame "
+                "its own bits live in and answers all or nothing; build page tables "
+                "whose entries can never be read as frame numbers and check a "
+                "permission bit on every walk, not just on the first; take a fault "
+                "as a word a handler decides from rather than an exception; check a "
+                "pointer before it is used and write the line that promises the act "
+                "before the act; make a process a dict with a space, a ledger and a "
+                "zombie at the end, and `fork` copy frames rather than table "
+                "entries; pick by priority and age behind a quantum that rotates; "
+                "put two CPUs on an interleaving where the critical section is a "
+                "lock whose order is checked; format a real on-disk filesystem whose "
+                "superblock is written last and mount only what a barrier made "
+                "durable; and end on a userland whose kernel report is recomputed "
+                "from its own log and cross-checked, key by key, against the "
+                "machine's records."},
         {"id": "G5", "title": "C Compiler", "course": "c-compiler",
          "kind": "legacy", "prereq": ["G1"],
          "why": "Lexer, parser, semantic analysis, codegen, optimizer. Templates and "
