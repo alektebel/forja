@@ -29,6 +29,7 @@ see [The `cz` shim](#the-cz-shim) for putting it on your PATH.
 python3 codecraft/cli.py                      # your learning board
 python3 codecraft/cli.py path                 # the ordered plan, with live progress
 python3 codecraft/cli.py dag [<course>]       # the DAG: what must come first
+python3 codecraft/cli.py tracks [<course>]    # the same graph as tracks: what each row ends
 python3 codecraft/cli.py brief [<course>]     # how to author a row: rules, reading, bar
 python3 codecraft/cli.py run llm-from-scratch # run it; read the nudge
 python3 codecraft/cli.py run llm-from-scratch --stage 3   # one stage, not all of them
@@ -84,8 +85,8 @@ mistakes that check was *proven* to catch, and it is recorded in
 while a course is authored, outside this repository, so for ten of the eighteen
 courses the number is gone and the page says so rather than printing a zero.
 `stage <row>` also answers for a course that is registered but not written yet: it
-prints the row, its prerequisites and its thesis, which is what `cz stage
-tcp-ip-from-scratch` shows today.
+prints the row, its prerequisites and its thesis, which is what `cz stage L2`
+shows today.
 
 A `dag` is the same registry read the other way: what must come first, and what
 merely should.
@@ -119,6 +120,30 @@ must come first in wave order, everything it opens, and the advice. A row is nam
 by slug, id (`cz dag J3`) or title. The graph is also a self-test: `cz self-test`
 fails if a prereq names no row, if two rows share an id, or if the registry ever
 stops being acyclic.
+
+`tracks` is the same graph read a third way: not what comes first, but what each
+row *ends*. A track is not written down anywhere — it is the ancestor set of a
+terminal row (one nothing depends on), in wave order — so a prereq added to a row
+moves it into every track that row feeds, and the split cannot drift from the
+registry.
+
+```
+  codecraft · the tracks · 60 projects · 87 hard edges · 25 tracks · 9 waves
+
+  roots   A1, A2, A5, G1, G6, H4, H7 — nothing must come first for these
+  furthest I13 Serving Cluster From Scratch · 17 rows behind it
+  leverage A2 in 19 tracks · G1 in 15 tracks · A4 in 14 tracks · C1 in 14 tracks
+
+  → L2  Concurrent Servers                  9 rows · wave 0→6
+      A1 A2 A4 A7 B1 C1 C2 J1 J3
+```
+
+Tracks overlap on purpose, which is what makes them useful: a row in two or more
+of them (in yellow) is where two tracks merge, and moving it moves all of them at
+once. A2 sits in nineteen of the twenty-five, so six of them end without it; the
+seven roots are the rows nothing must come first for. `cz tracks <row>` zooms on
+one row: every track it is part of, the lane leading to it, and — when nothing
+depends on it yet — the track it ends.
 
 ---
 
@@ -180,6 +205,8 @@ cz run os-from-scratch --stage 3   # one stage, not all of them
 cz path
 cz dag                       # the dependency DAG: waves, unlocks and advice
 cz dag J3                    # one row: what must come first, what it opens
+cz tracks                    # the same graph as tracks: what each row ends
+cz tracks L2                 # one row: the track it ends, and where it merges
 cz brief                     # every row still to author, one line each
 cz brief L1                  # one row's brief: the rules, the reading, the bar
 cz stage aws-from-scratch 3 # one stage: what to write, what the tester costs

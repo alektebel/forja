@@ -4,6 +4,7 @@
     python3 codecraft/cli.py                      # your learning board
     python3 codecraft/cli.py path                 # the ordered plan, with progress
     python3 codecraft/cli.py dag [<course>]       # the dependency DAG: what comes first
+    python3 codecraft/cli.py tracks [<course>]    # the same graph as tracks: what each row ends
     python3 codecraft/cli.py brief [<course>]     # how to author a row: rules, reading, bar
     python3 codecraft/cli.py run llm-from-scratch # run a course, get coached
     python3 codecraft/cli.py run <course> --stage 3   # one stage, not all of them
@@ -474,6 +475,24 @@ def cmd_brief(profile, rest, ink, courses):
     return 0
 
 
+def cmd_tracks(profile, rest, ink, courses):
+    """The registry split into tracks: what each row nothing waits on ends."""
+    name = next((a for a in rest if not a.startswith("-")), None)
+    g = dag.graph()
+    t = dag.tracks(g)
+    if not name:
+        print(render.render_tracks(g, t, ink))
+        return 0
+    _letter, _phase, entry = pathmod.find(name)
+    info = dag.focus(entry["id"], g) if entry is not None else None
+    if info is None:
+        print(f"  no row named {name!r} in the registry. Try: "
+              "python3 codecraft/cli.py path")
+        return 2
+    print(render.render_tracks_row(info, g, t, ink))
+    return 0
+
+
 def cmd_dag(profile, rest, ink, courses):
     """The registry as one DAG, or one row's prerequisites and what it opens."""
     name = next((a for a in rest if not a.startswith("-")), None)
@@ -685,6 +704,24 @@ def self_test() -> int:
     ok(all(other in g["edges"] for ac in g["advice"].values()
            for other, _reason in ac), "every advisory target is a real row")
 
+    # tracks: derived from the same graph, so they cannot drift from the rows
+    t = dag.tracks(g)
+    ok(bool(t["spines"]), "the registry splits into tracks")
+    ok(all(not g["dependents"].get(s["id"]) for s in t["spines"]),
+       "every track ends on a row nothing depends on")
+    ok(all(s["rows"] == dag.before(s["id"], g) for s in t["spines"]),
+       "a track is exactly the ancestors of its terminal")
+    ok(all(g["levels"].get(rid, 0) < g["levels"][s["id"]] for s in t["spines"]
+           for rid in s["rows"]), "everything in a track comes before its end")
+    ok(t["shared"] == sorted((rid for rid, n in t["counts"].items() if n > 1),
+                             key=lambda rid: (-t["counts"][rid],
+                                              g["order"][rid])),
+       "the merge points are exactly the rows in two tracks")
+    ok(t["counts"][t["leverage"]] == max(t["counts"].values()),
+       "leverage names the row the most tracks run through")
+    ok(len(dag.track_of("J4", t)) == t["counts"]["J4"],
+       "track_of agrees with the counters")
+
     print("")
     if failures:
         print(f"  {len(failures)} self-test failure(s)\n")
@@ -724,6 +761,8 @@ def main(argv) -> int:
         return cmd_path(profile, courses, ink) or 0
     if cmd in ("dag", "tree"):
         return cmd_dag(profile, rest, ink, courses) or 0
+    if cmd == "tracks":
+        return cmd_tracks(profile, rest, ink, courses) or 0
     if cmd == "brief":
         return cmd_brief(profile, rest, ink, courses) or 0
     if cmd == "progress":

@@ -151,6 +151,51 @@ def advice(rid):
     return list(ADVICE.get(rid, ()))
 
 
+def tracks(g=None):
+    """The tracks: what each row nothing waits on ends, and where they merge.
+
+    A track is not written down anywhere. It is the ancestor set of a *terminal*
+    row — one nothing depends on — in wave order, so the tracks cannot drift from
+    the registry: a prereq added to a row moves it into every track that row
+    feeds.
+
+    Because a row can feed more than one terminal, a track is not a partition:
+    `shared` names the rows in two or more, which is where the tracks merge and
+    where a unit's leverage is. `furthest` is the terminal with the most behind
+    it, and `leverage` is the row the most tracks run through.
+    """
+    g = g or graph()
+    by_id = {n["id"]: n for n in g["nodes"]}
+    terminals = [rid for rid in g["ids"] if not g["dependents"].get(rid)]
+    spines = []
+    for rid in terminals:
+        coming = before(rid, g)
+        if not coming:
+            continue
+        spines.append({"id": rid, "terminal": by_id[rid], "rows": coming,
+                       "size": len(coming),
+                       "wave": g["levels"].get(rid, 0)})
+    spines.sort(key=lambda s: (-s["size"], g["order"][s["id"]]))
+    counts = {}
+    for spine in spines:
+        for rid in spine["rows"]:
+            counts[rid] = counts.get(rid, 0) + 1
+    shared = sorted((rid for rid, n in counts.items() if n > 1),
+                    key=lambda rid: (-counts[rid], g["order"][rid]))
+    return {"spines": spines, "shared": shared, "counts": counts,
+            "roots": list(g["roots"]), "terminals": terminals,
+            "wave_span": max((s["wave"] for s in spines), default=0),
+            "furthest": spines[0] if spines else None,
+            "leverage": shared[0] if shared else None}
+
+
+def track_of(rid, t=None):
+    """The tracks a row sits in: (which terminal, its size, its wave)."""
+    t = t or tracks()
+    return [(s["id"], s["size"], s["wave"]) for s in t["spines"]
+            if rid in s["rows"] or rid == s["id"]]
+
+
 def focus(rid, g=None):
     """One row with both closures, ready to render. None when there is no row."""
     g = g or graph()

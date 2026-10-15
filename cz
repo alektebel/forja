@@ -4,6 +4,7 @@
 #   cz                      your learning board
 #   cz path                 the ordered plan, with progress
 #   cz dag [<course>]       the dependency DAG: what must come first
+#   cz tracks [<course>]    the same graph as tracks: what each row ends
 #   cz brief [<course>]     how to author a row: the rules, the reading, the bar
 #   cz run aws-from-scratch run a course; read the nudge
 #   cz run aws-from-scratch --stage 3  one stage, not all of them

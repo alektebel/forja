@@ -311,6 +311,95 @@ def render_dag_row(info, g, ink: Ink):
     return "\n".join(lines)
 
 
+def render_tracks(g, t, ink: Ink):
+    """The tracks: one line per row nothing waits on, and where they merge."""
+    edges = sum(len(v) for v in g["edges"].values())
+    by_id = {n["id"]: n for n in g["nodes"]}
+    lines = ["", ink(f"  codecraft \u00b7 the tracks \u00b7 {len(g['ids'])} "
+                     f"projects \u00b7 {edges} hard edges \u00b7 "
+                     f"{len(t['spines'])} tracks \u00b7 {len(g['waves'])} waves",
+                     BOLD),
+             ink("  a track is everything that must come before one row nothing "
+                 "waits on; a row in two tracks is where they merge", GREY), ""]
+    lines += _wrap("roots", ", ".join(t["roots"]) + " \u2014 nothing must come "
+                   "first for these", ink)
+    if t["furthest"]:
+        node = t["furthest"]["terminal"]
+        lines += _wrap("furthest", f"{node['id']} {node['title']} \u00b7 "
+                       f"{t['furthest']['size']} rows behind it", ink)
+    if t["leverage"]:
+        top = t["shared"][:5]
+        lines += _wrap("leverage", " \u00b7 ".join(
+            f"{rid} in {t['counts'][rid]} tracks" for rid in top), ink)
+    lines.append("")
+    for spine in t["spines"]:
+        node = spine["terminal"]
+        wave = f"wave 0\u2192{spine['wave']}" if spine["wave"] else "wave 0"
+        size = "%d row%s \u00b7 %s" % (spine["size"],
+                                       "" if spine["size"] == 1 else "s", wave)
+        lines.append(f"  {ink('\u2192', GREY)} {spine['id']:<4}"
+                     f"{_title(node['title']):<36}{ink(size, GREY)}")
+        marks = " ".join(
+            (ink(rid, YELLOW) if t["counts"].get(rid, 0) > 1
+             else ink(rid, GREY)) for rid in spine["rows"])
+        lines.append("      " + marks)
+    lines.append("")
+    lines.append(ink("  the rows in yellow sit in two or more tracks \u2014 the "
+                     "units with the most behind them", GREY))
+    lines.append(ink("  zoom on one row: python3 codecraft/cli.py tracks <course>",
+                     GREY))
+    return "\n".join(lines)
+
+
+def render_tracks_row(info, g, t, ink: Ink):
+    """One row: every track it sits in, and the lane that leads to it."""
+    node = info["node"]
+    by_id = {n["id"]: n for n in g["nodes"]}
+    head = f"{node['id']} \u00b7 {node['title']}"
+    head += f" \u00b7 {node['course']}" if node.get("course") else " \u00b7 not authored yet"
+    lines = ["", ink("  codecraft \u00b7 tracks through " + head, BOLD), ""]
+    lines += _wrap("phase", f"{node['letter']} \u2014 {node['phase']}", ink)
+    same = [s for s in t["spines"] if node["id"] in s["rows"]]
+    lines += _wrap("feeds", f"{len(same)} track"
+                   f"{'' if len(same) == 1 else 's'} \u00b7 wave "
+                   f"{g['levels'].get(node['id'], 0)}", ink)
+    lines.append("")
+    if same:
+        lines.append(ink("  the tracks this row is part of", YELLOW))
+        for spine in same:
+            other = spine["terminal"]
+            ends = "%d row%s \u00b7 ends in wave %d" % (
+                spine["size"], "" if spine["size"] == 1 else "s", spine["wave"])
+            lines.append(f"  {ink('\u2192', GREY)} {spine['id']:<4}"
+                         f"{_title(other['title']):<36}{ink(ends, GREY)}")
+    elif info["before"]:
+        lines.append(ink("  the track it ends \u2014 nothing waits on this row",
+                         YELLOW))
+        ends = "%d row%s \u00b7 ends in wave %d" % (
+            len(info["before"]), "" if len(info["before"]) == 1 else "s",
+            info["wave"])
+        lines.append(f"  {ink('\u2192', GREY)} {node['id']:<4}"
+                     f"{_title(node['title']):<36}{ink(ends, GREY)}")
+        lines.append("      " + " ".join(
+            (ink(rid, YELLOW) if t["counts"].get(rid, 0) > 1 else ink(rid, GREY))
+            for rid in info["before"]))
+    else:
+        lines.append(ink("  nothing waits on this row yet \u2014 no track runs "
+                         "through it", YELLOW))
+    if node["id"] in t["counts"] and t["counts"][node["id"]] > 1:
+        lines += _wrap("merge", f"{t['counts'][node['id']]} tracks run through "
+                       "it, so a unit here moves all of them at once", ink)
+    coming = g["edges"].get(node["id"]) or []
+    lines += _wrap("needs", ", ".join(f"{rid} {by_id.get(rid, {}).get('title', '?')}"
+                                      for rid in coming) or "nothing", ink)
+    opens = g["dependents"].get(node["id"]) or []
+    lines += _wrap("opens", ", ".join(opens) or "nothing yet", ink)
+    lines.append("")
+    lines.append(f"  {ink('next'.ljust(8), BOLD)}python3 codecraft/cli.py dag "
+                 f"{node['id']}")
+    return "\n".join(lines)
+
+
 def render_briefs(rows, ink: Ink):
     """The rows still to author, one line each: what `cz brief` opens with."""
     lines = ["", ink(f"  codecraft \u00b7 {len(rows)} rows still to author", BOLD),
