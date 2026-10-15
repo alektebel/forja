@@ -4,10 +4,16 @@ Default output after a run is the checker's own block plus three or four
 coach lines. Detail escalates only when the history says you are stuck.
 """
 
+import re
 import textwrap
 
 GREEN, RED, YELLOW, GREY, BOLD, RESET = (
     "\033[32m", "\033[31m", "\033[33m", "\033[90m", "\033[1m", "\033[0m")
+
+# one glyph per stage state — the same four the web page draws
+_STAGE_SYMBOL = {"PASS": "\u2713", "FAIL": "\u2717", "ERROR": "\u2717",
+                 "TODO": "\u00b7"}
+_STAGE_COLOUR = {"PASS": GREEN, "FAIL": RED, "ERROR": RED, "TODO": GREY}
 
 
 class Ink:
@@ -138,6 +144,77 @@ def render_review(profile, items, ink: Ink):
         lines.append(f"    failed {c.get('fails', 0)}x, "
                      f"{store_label(c)}. Re-derive it from memory, then re-run "
                      f"the course to retire it.")
+    return "\n".join(lines)
+
+
+def _stage_slug(entry):
+    return entry.get("course") or re.sub(r"[^a-z0-9]+", "-",
+                                         entry["title"].lower()).strip("-")
+
+
+def render_stage(course, sid, meta, size, live, statuses, ink: Ink, command):
+    """One stage as a page: what you write, what it costs, where you are."""
+    ids = sorted(statuses)
+    lines = ["", ink(f"  codecraft \u00b7 {course['title']} \u00b7 stage {sid} "
+                     f"of {len(ids)}", BOLD), ""]
+    lines.append(f"  {ink(meta.get('file') or '\u2014', BOLD)}"
+                 f"  \u2014 {meta.get('title') or ''}")
+
+    status = live.get("last_status", "TODO")
+    attempts = live.get("attempts", 0)
+    note = ("nothing has run this stage yet" if not attempts else
+            f"{attempts} attempt{'' if attempts == 1 else 's'}")
+    lines.append(f"  {ink('status'.ljust(8), BOLD)}"
+                 f"{ink(status, _STAGE_COLOUR.get(status, GREY))}  {note}")
+    if live.get("last_detail"):
+        lines += _wrap("last", live["last_detail"], ink)
+    if size:
+        tests, mutants = size
+        text = f"{tests} asserts"
+        text += (f" \u00b7 {mutants} planted mutations the check must catch"
+                 if mutants is not None else
+                 " \u00b7 mutations not measured for this course")
+        lines += _wrap("size", text, ink)
+    else:
+        lines += _wrap("size", "not measured \u2014 this course predates the "
+                               "count", ink)
+    if meta.get("tags"):
+        lines += _wrap("tags", ", ".join(meta["tags"]), ink)
+
+    lines.append("")
+    lines += _wrap("what", meta.get("action") or "read the stage docstring.", ink)
+    if meta.get("predict"):
+        lines += _wrap("predict", meta["predict"], ink)
+    for hint in meta.get("hints") or []:
+        lines += _wrap("hint", hint, ink)
+    if meta.get("solution"):
+        lines += _wrap("solve", meta["solution"], ink)
+
+    passed = sum(1 for i in ids if statuses[i] == "PASS")
+    bar = "".join(ink(_STAGE_SYMBOL.get(statuses[i], "\u00b7"),
+                      _STAGE_COLOUR.get(statuses[i], GREY)) for i in ids)
+    lines.append("")
+    lines.append(f"  {ink('run'.ljust(8), BOLD)}{command}")
+    lines.append(f"  {ink('ladder'.ljust(8), BOLD)}{bar}  {passed} of "
+                 f"{len(ids)} passed")
+    lines.append(ink("  stops at the first stage that fails; add --brief to "
+                     "keep it to one", GREY))
+    return "\n".join(lines)
+
+
+def render_plan(letter, phase, entry, ink: Ink):
+    """A registered course with no directory yet: the row, and how to start it."""
+    slug = _stage_slug(entry)
+    lines = ["", ink(f"  codecraft \u00b7 {entry['title']} \u00b7 not authored yet",
+                     BOLD), ""]
+    lines += _wrap("phase", f"{letter} \u2014 {phase} \u00b7 {entry['kind']}", ink)
+    lines += _wrap("needs", ", ".join(entry["prereq"]) or "nothing", ink)
+    lines += [""]
+    lines += _wrap("why", entry["why"], ink)
+    lines += [""]
+    lines.append(f"  {ink('start'.ljust(8), BOLD)}"
+                 f"python3 codecraft/cli.py new {slug} --stages 10")
+    lines.append(ink(f"  then: python3 codecraft/cli.py run {slug}", GREY))
     return "\n".join(lines)
 
 

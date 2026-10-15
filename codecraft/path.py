@@ -17,6 +17,8 @@ Each item is one of:
 without its prereqs, but the stages assume them.
 """
 
+import re
+
 PHASES = [
     ("A", "Cloud and LLM internals", [
         {"id": "A1", "title": "AWS From Scratch", "course": "aws-from-scratch",
@@ -207,6 +209,36 @@ PHASES = [
          "why": "bash-from-scratch, http-server, dns-server, firewall-from-scratch, "
                 "toralizer, communication-protocols, cryptographic-library, "
                 "quantum-computing-lang. One at a time; each needs a checker."},
+        {"id": "G7", "title": "Shell From Scratch", "course": None,
+         "kind": "author", "prereq": ["G4"],
+         "why": "A shell is what a kernel looks like from the outside: a line of "
+                "text becomes a process tree, and every promise G4's kernel makes "
+                "is on show — what a child inherits, what a pipe costs, who waits "
+                "for whom, and what a signal does to a job. Parse a line into words "
+                "and operators; expand variables, tilde, globs and here-documents "
+                "in the order a shell must; fork, exec and wait for real exit "
+                "codes; build pipes and redirections as a descriptor table before "
+                "anything runs; keep a job table that knows a background job from a "
+                "stopped one; send signals and reap a child without losing it; and "
+                "end on a session the harness replays byte for byte, where `set -e`, "
+                "`&&` and a pipeline's exit status are decided by the rules and not "
+                "by luck. Author shell-from-scratch against the kernel of G4."},
+        {"id": "G8", "title": "Runtime From Scratch", "course": None,
+         "kind": "author", "prereq": ["G3", "G4"],
+         "why": "A language runtime makes two promises — the program runs, and "
+                "memory stops being your problem — and a provided bytecode, "
+                "assembler and heap are where you keep both. Execute a stack "
+                "machine with calls, frames and exact step accounting; lay out a "
+                "heap of objects with headers and references; then collect, in the "
+                "order the field settled it: mark and sweep, reference counting "
+                "that cannot free a cycle, a tri-colour incremental collector that "
+                "must not lose an object the mutator can still reach, write "
+                "barriers and a remembered set, a nursery, and a copying collector "
+                "that moves objects without breaking a reference. The acceptance is "
+                "a program's own output plus its collection counts, and the one "
+                "invariant a collector may never break: nothing reachable is ever "
+                "collected, and no uncollected frame is ever read. Author "
+                "runtime-from-scratch."},
     ]),
     ("H", "The rest", [
         {"id": "H1", "title": "Distributed Training",
@@ -236,6 +268,50 @@ PHASES = [
         {"id": "H4", "title": "Long tail", "course": None, "kind": "legacy", "prereq": [],
          "why": "quantitative-trading, spectral-graphs, lean-proofs, haskell-projects, "
                 "mlops, ml-in-production, sas-lineage-tool, web-scraping."},
+        {"id": "H5", "title": "Query Engine From Scratch", "course": None,
+         "kind": "author", "prereq": ["G4"],
+         "why": "A database is a file format plus a promise about what a query "
+                "returns. A heap file of pages on a disk that can lose what was not "
+                "synced, a catalog, and tables to query are provided. Parse a SQL "
+                "subset into a tree; resolve names against a catalog that may be "
+                "wrong; plan it — predicate pushdown, join order, an index chosen or "
+                "refused; execute with iterators over a page buffer and a B+tree you "
+                "split yourself; make a transaction a log and a commit a rule; and "
+                "prove it: the same rows as the reference for a hundred queries, a "
+                "plan that uses the index only when the predicate earns it, and a "
+                "crash schedule where the log decides which tuples exist. Author "
+                "query-engine-from-scratch; G4 is the format and the barrier, and A6 "
+                "is the distributed half this repo already has."},
+        {"id": "H6", "title": "Consensus From Scratch", "course": None,
+         "kind": "author", "prereq": ["J3", "I9"],
+         "why": "Consensus is the one thing a replicated system cannot fake: a "
+                "leader is a number a majority agreed on, and a log entry is "
+                "committed when a majority holds it. Five nodes, a deterministic "
+                "network with partitions and delays, a clock, and durable storage "
+                "that can lose its last write are provided. Elect a leader with "
+                "terms and votes; replicate a log whose entries match term by term; "
+                "commit only what a majority holds and refuse a stale leader; keep a "
+                "membership change safe; snapshot a log without losing a committed "
+                "entry; and recover a node whose disk lied. The acceptance is a "
+                "linearizability check over the history the world itself recorded, "
+                "plus a partition schedule on which the wrong implementation splits "
+                "the brain. Author consensus-from-scratch; J3 is durability and I9 "
+                "is the fabric."},
+        {"id": "H7", "title": "Compression From Scratch", "course": None,
+         "kind": "author", "prereq": [],
+         "why": "A compressor is a byte format you can be exactly wrong about, and "
+                "it is judged on a ratio: Huffman with canonical codes and a length "
+                "limit; LZ77's window and why its size is the whole trade; LZ4's "
+                "block format with its nibble lengths; DEFLATE bit by bit — dynamic "
+                "trees, the matched pairs, the end-of-block symbol, and the "
+                "stored/static/dynamic choice per block; then FSE/ANS with a table "
+                "you build, and a frame with a real header and a checksum. The "
+                "reference decoders (inflate, LZ4, a zstd-compatible frame reader) "
+                "and the corpora are provided. A stage passes when the decoder "
+                "accepts your bytes and the ratio clears the bar, and the tester "
+                "flips one bit to see whether the checksum you wrote notices. Author "
+                "compression-from-scratch; nothing to read first — it is bytes and "
+                "integers the whole way."},
     ]),
     ("I", "Inference engineering: from silicon to serving", [
         {"id": "I1", "title": "Systems & GPU Foundations", "course": "compiler-and-vgpu",
@@ -514,6 +590,21 @@ PHASES = [
                 "every frame the broker wrote accepted by the course's own "
                 "reader. Author mqtt-broker-from-scratch; L1 is the framing and "
                 "J4 is the policy that decides who may publish where."},
+        {"id": "L4", "title": "Git From Scratch", "course": None,
+         "kind": "author", "prereq": ["G4"],
+         "why": "The one artefact in this repository that another program "
+                "validates: a `.git` directory that real `git` reads. Blobs "
+                "addressed by their own digest, trees whose entries are sorted and "
+                "whose modes are exact, a commit with an author, a message and a "
+                "parent, refs and a HEAD that can be detached; then the half that "
+                "makes it a tool — an index that stages, a diff that names a hunk, a "
+                "merge that finds the base and marks a conflict instead of guessing, "
+                "and a packfile whose objects are delta-compressed and whose index "
+                "lets a random read land without walking the file. A byte-oriented "
+                "filesystem and a git-compatible reader are provided, and where "
+                "`git` is on PATH the tester runs it: `git fsck` and `git log` have "
+                "to accept your objects. Author git-from-scratch; G4 is the "
+                "format-and-barrier course."},
     ]),
 ]
 
@@ -525,6 +616,25 @@ def _find(courses, name):
         if c["name"] == name:
             return c
     return None
+
+
+def find(name):
+    """The registry row for a slug, an id or a title, as (letter, phase, item).
+
+    `codecraft stage tcp-ip-from-scratch` has to work before the directory
+    exists, so it looks the row up here rather than in the discovered courses.
+    Returns (None, None, None) when nothing matches.
+    """
+    want = re.sub(r"[^a-z0-9]+", "-", str(name or "").lower()).strip("-")
+    if not want:
+        return None, None, None
+    for letter, phase, items in PHASES:
+        for item in items:
+            names = [item["id"].lower(), (item.get("course") or "").lower(),
+                     re.sub(r"[^a-z0-9]+", "-", item["title"].lower()).strip("-")]
+            if want in names:
+                return letter, phase, item
+    return None, None, None
 
 
 def render_path(profile, courses, ink):

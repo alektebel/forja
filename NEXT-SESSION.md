@@ -26,8 +26,55 @@ the commit that carries this file.
 | `b926158` | **J3 `durable-execution-from-scratch`** — 10 stages, provided `disk.py` + `work.py`, 558 mutations, thesis *a run is not the process that started it; it is the log on disk*, registered |
 | `83e7a55` | **J4 `sandbox-capabilities-from-scratch`** — 10 stages, provided `fleet.py` (J1's, byte-identical), `vfs.py` and `tools.py`, 494 mutations, thesis *an agent's power is the intersection of what its tools declare, what its principal granted and what the world will still afford*, registered |
 | `0230b92` | **J5 `agent-metrics-from-scratch`** — 10 stages, provided `fleet.py` (J1's, byte-identical) and `telemetry.py`, 510 mutations, thesis *a trace is not a metric*, smoke green, registered |
+| `4755f5c` | **G4 `os-from-scratch`** — 10 stages, 641 mutations, the machine provided (`machine.py`, `devices.py`, `userland.py`), thesis *an operating system is what you write after the hardware breaks your last promise*; `linux-from-scratch/` staged beside it as prose; smoke green, registered |
 
 ## Done, in the commit that follows this file
+
+**`cz stage`, per-stage counts in the repo, six registered rows** — the
+CodeCrafters-shaped surface the CLI was missing, the two defects found while
+looking for it, and the plan rows that came out of the same review.
+
+- **`cz stage <course> [n]`** — the page *before* the run: the file, what you
+  write in it, how big the tester is, the live status and the ladder. No argument
+  lands on the first stage that is not passing. A slug, an id (`G4`) or a title
+  (`"OS From Scratch"`) all resolve, and a registered-but-unwritten course prints
+  the row, its prerequisites and its thesis instead of "no course named …":
+  `cz stage tcp-ip-from-scratch` is L1's plan page today. New:
+  `cli.cmd_stage`, `render.render_stage`/`render.render_plan`, and
+  `path.find`, the registry lookup the verb needs.
+- **`codecraft/stats.py`** — the measured size of every built course's stages,
+  recorded *in* the repo because half of it is unrecoverable: `tests` counts the
+  `assert`/`raise` sites in a stage's check (recomputable from `course.py` at any
+  time), while `mutants` is what that check was *proven* to catch by the
+  development harness — which lives outside this repository and is cleaned up once
+  a course ships. Eight courses carry both numbers; the other ten say `None`
+  rather than a zero, and the page says "not measured" rather than lying.
+  `cz stage os-from-scratch 5` → `93 asserts · 69 planted mutations the check must
+  catch`; the eighteen built courses total **9,323 assertions** and **4,079
+  caught mutations**.
+- **The hardcoded repo root is gone.** 128 lines across 14 assembled `course.py`
+  files carried `DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"`,
+  and five more carried the same path as a `COURSE_REPO` default; all of them now
+  derive the root from `__file__`. Verified by running **all fourteen courses from
+  `/tmp`** with the templates in place — every stage reported `not implemented
+  yet`, which is the proof the check found the repo and reached the stub — and G4
+  with the solutions overlaid (`10/10 passing`, templates restored
+  byte-for-byte). Two `# --- from /tmp/…` provenance comments were normalised in
+  the same pass (they are the only stage separators in `mcp-` and
+  `agents-from-scratch`).
+- **Six registered rows**, in `path.py` (the authority `./cz path` renders) and in
+  a new ROADMAP section that names each one's world, ladder and prerequisite:
+  `G7 shell-from-scratch`, `G8 runtime-from-scratch`, `H5
+  query-engine-from-scratch`, `H6 consensus-from-scratch`, `H7
+  compression-from-scratch`, `L4 git-from-scratch`. `author` rows are **22** now.
+  Two candidates were *not* registered, and the ROADMAP says why: a regex engine
+  belongs as a stage of G5, and a hand-rolled crypto handshake duplicates the
+  `cryptographic-library` project the G6 legacy slot already owns.
+- Docs touched: `codecraft/README.md` (quickstart, the `cz` block, a worked stage
+  page and what `asserts`/`mutants` mean), the root `README.md`, the `cz` shim's
+  header, the web page's footer verb list, `ROADMAP.md`, and this file.
+
+### The unit before it — G4 `os-from-scratch`, shipped in `4755f5c`
 
 **G4 `os-from-scratch`** — ten stages, **641 mutations**, the thesis *an operating
 system is what you write after the hardware breaks your last promise*. Provided:
@@ -116,10 +163,12 @@ The next unit is **L1, `tcp-ip-from-scratch`** — the stack as data against a
 provided lossy `wire.py` — and then phase L's other two series: **L2
 `concurrent-servers-from-scratch`** (four models for one server, one workload,
 identical answers) and **L3 `mqtt-broker-from-scratch`** (the wire format itself),
-all three registered from `NETWORKING.md` and all three `author`. After those:
-G5/G6 (phase G's remaining two) and phase K's five. The backlog is **16 `author`,
-6 `legacy`, 2 `salvage`, 27 `ready`** — `./cz path` and the ROADMAP's own tables
-are authoritative over this file.
+all three registered from `NETWORKING.md` and all three `author`. The six rows
+this commit registers queue behind them, one per slot — G7, G8, H5, H6, H7, L4 —
+each carrying its own thesis in `path.py`. After those: G5/G6 (phase G's remaining
+two, which need checkers, not writing) and phase K's five. The backlog is **22
+`author`, 6 `legacy`, 2 `salvage`, 27 `ready`** — `./cz path` and the ROADMAP's
+own tables are authoritative over this file.
 
 Two questions from earlier sessions are **answered**: the legacy, thin
 `distributed-training/` directory stays exactly as it is (the user's call,

@@ -100,6 +100,32 @@ builds on, and the SIROM/MUS benchmark work in phase F is its last stage.
 
 ---
 
+## What this repo has never built — six registered rows (G7, G8, H5, H6, H7, L4)
+
+Six rows came out of reviewing the corpus by subject rather than by project: each
+is the artefact its own field is normally taught from, each is gradeable on the
+house rule (a provided world, a ladder of decisions, planted mutations the checks
+must catch), and none of them exists here in any form — the repo has never built
+a shell, a bytecode runtime, a query engine, a consensus protocol, a compressor
+or a git object store. They are registered in `codecraft/path.py`, which is what
+`codecraft path` renders.
+
+| Slot | Course to author | The mechanism | After |
+|---|---|---|---|
+| G7 | `shell-from-scratch` | A line of text becomes a process tree over G4's kernel: word splitting and expansion order, `fork`/`exec`/`wait` with real exit codes, pipes and redirections as a descriptor table built before anything runs, a job table that knows a background job from a stopped one, signals and reaping, and a session the harness replays byte for byte | G4 |
+| G8 | `runtime-from-scratch` | A bytecode, an assembler and a heap are given; the runtime is yours: a stack machine with calls, frames and exact step accounting, then mark-sweep, reference counting that cannot free a cycle, a tri-colour incremental collector with write barriers and a remembered set, a nursery, and a copying collector — accepted on a program's output and its collection counts, never on a reachable object being freed | G3, G4 |
+| H5 | `query-engine-from-scratch` | A SQL subset parsed, resolved against a catalog that may be wrong, planned (pushdown, join order, an index chosen or refused) and executed with iterators over a page buffer and a B+tree you split yourself — judged by the same rows as the reference for a hundred queries, a plan that earns its index, and a crash schedule where the log decides which tuples exist | G4 |
+| H6 | `consensus-from-scratch` | Raft on five nodes, with a deterministic partitioned network, a clock and storage that can lose its last write: terms and votes, a log that matches term by term, commit by majority, a stale leader refused, membership changes, snapshots, and recovery from a lying disk — accepted by a linearizability check over the history the world itself recorded | J3, I9 |
+| H7 | `compression-from-scratch` | Huffman with canonical codes, LZ77's window, LZ4's nibble lengths, DEFLATE bit by bit with dynamic trees and the stored/static/dynamic choice, then FSE/ANS and a frame with a real header and checksum — accepted when the provided decoder accepts your bytes, the ratio clears the bar, and the checksum you wrote notices the one bit the tester flips | — |
+| L4 | `git-from-scratch` | A `.git` directory real `git` reads: blobs addressed by their own digest, sorted trees with exact modes, commits, refs and a detachable HEAD, an index, a diff that names a hunk, a merge that finds the base and marks conflicts instead of guessing, and a packfile whose delta-compressed objects are reachable through its index — where `git` is on PATH, `git fsck` and `git log` are the judge | G4 |
+
+Two more were considered and left out rather than registered: a regex engine and
+a hand-rolled crypto handshake. The first is small enough to be a stage of G5
+rather than a course, and the second duplicates the `cryptographic-library`
+project the G6 legacy slot already carries.
+
+---
+
 ## Do you need anything before AWS?
 
 **No.** `aws-from-scratch` is self-contained: pure Python, no dependencies, and
@@ -477,6 +503,9 @@ model took) instead of a matter of timing:
 | L1 | `tcp-ip-from-scratch` | The stack as data against a provided lossy `wire.py`: the frame and its type field, ARP and an ageing cache, IPv4 with a routing table and a TTL that has to be decremented, ICMP and a recomputed checksum, the handshake as a state machine, the sliding window, the socket API as a table, retransmission on the injected clock, the close with `TIME_WAIT` as a state, and a session whose tie-breaker is the wire's own segment log | G3, J4 |
 | L2 | `concurrent-servers-from-scratch` | Four models for one server over a provided in-memory `link.py`: blocking, thread-per-connection on J1's scheduler with the interleaving the check chooses, a reactor whose readiness is a set, the event loop and its timer queue, callbacks as a handle table, futures and `async`/`await` as a desugaring, backpressure and head-of-line blocking, the Redis case study as a command loop, and one workload through all four with identical answers and a counted number of scheduler steps | J1, J3 |
 | L3 | `mqtt-broker-from-scratch` | The wire format itself: the fixed header and its variable-length integer, CONNECT and the session flags, a topic trie where `+` and `#` are matched by components and never by prefix string, QoS 1 as state, QoS 2 as a four-way handshake, retained messages and the last will, a session that survives a reconnect, and a trace replayed twice byte-identically with every frame accepted by the course's own reader | L1, J4 |
+
+`L4 git-from-scratch` joined the phase later, from the review of what this repo
+has never built; its row is in *What this repo has never built*, above.
 
 What has no slot: the blog posts (the links are the source, not the course), the C
 implementations (the house authors Python; the C versions are what the legacy

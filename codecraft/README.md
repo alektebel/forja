@@ -29,6 +29,7 @@ see [The `cz` shim](#the-cz-shim) for putting it on your PATH.
 python3 codecraft/cli.py                      # your learning board
 python3 codecraft/cli.py path                 # the ordered plan, with live progress
 python3 codecraft/cli.py run llm-from-scratch # run it; read the nudge
+python3 codecraft/cli.py stage llm-from-scratch 5  # one stage, before you write it
 python3 codecraft/cli.py next                 # just the next action
 python3 codecraft/cli.py hint llm-from-scratch# when the nudge is not enough
 python3 codecraft/cli.py explain              # ask the NAN mentor what you're getting wrong
@@ -53,6 +54,36 @@ The `cause` is condensed from the checker; `now` is the single micro-action;
 `predict` is the number to commit to *before* you run, which is where the
 learning actually consolidates.
 
+A `stage` is the page *before* the run — the file you edit, what goes in it, how
+big the tester is, and where you are on the ladder:
+
+```
+  codecraft · OS From Scratch · stage 5 of 10
+
+  stage_05.py  — The syscall boundary, and the pointer you did not check
+  status  TODO  nothing has run this stage yet
+  size    93 asserts · 69 planted mutations the check must catch
+  tags    syscalls, user pointers
+
+  what    Write `SyscallError`, `SYSCALLS`, `ERRNOS`, `number`, `user_range`,
+          `copy_in`, `copy_out`, `dispatch` and `audit_line` in stage_05.py.
+  predict What a kernel has to know about a pointer before it may read through
+          it, and why the line about a call is written before it.
+
+  run     python3 codecraft/cli.py run os-from-scratch
+  ladder  ··········  0 of 10 passed
+```
+
+`asserts` counts the `assert` and `raise` sites in the stage's check — that number
+can be recomputed from `course.py` at any time. `mutants` counts the planted
+mistakes that check was *proven* to catch, and it is recorded in
+`codecraft/stats.py` on purpose: the harness that plants them is built and deleted
+while a course is authored, outside this repository, so for ten of the eighteen
+courses the number is gone and the page says so rather than printing a zero.
+`stage <row>` also answers for a course that is registered but not written yet: it
+prints the row, its prerequisites and its thesis, which is what `cz stage
+tcp-ip-from-scratch` shows today.
+
 ---
 
 ## The `cz` shim
@@ -63,6 +94,7 @@ noise:
 ```bash
 cz run aws-from-scratch     # same as python3 codecraft/cli.py run aws-from-scratch
 cz path
+cz stage aws-from-scratch 3 # one stage: what to write, what the tester costs
 cz hint aws-from-scratch
 ```
 

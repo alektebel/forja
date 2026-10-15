@@ -42,7 +42,7 @@ import shutil
 import sys
 import tempfile
 
-# --- from /tmp/d1-checks/check_mine.py
+# --- from checks/check_mine.py
 def check_1():
     """The envelope: what a message is, and the four ways to answer it."""
     from stage_01 import (ERRORS, Dispatcher, ProtocolError, decode, encode, error,
@@ -188,7 +188,7 @@ def check_1():
         "error, not a crash after the result was promised, got %r" % (out,))
 
 
-# --- from /tmp/d1-checks/check_02.py
+# --- from checks/check_02.py
 def check_2():
     import json
 
@@ -392,7 +392,7 @@ def check_2():
         f".sse_events is {http.sse_events!r}: the events written through SseWriter")
 
 
-# --- from /tmp/d1-checks/check_mine.py
+# --- from checks/check_mine.py
 def check_3():
     """The handshake: a gate, a negotiated revision, and a capability table that
     only claims what is there."""
@@ -638,7 +638,7 @@ def check_3():
         "install(module) must call module.install(self) so a stage can join a server")
 
 
-# --- from /tmp/d1-checks/check_04.py
+# --- from checks/check_04.py
 def check_4():
     HERE = os.path.dirname(os.path.abspath(__file__))
 
@@ -1298,7 +1298,7 @@ def check_4():
         f"{other.session['steps']!r}")
 
 
-# --- from /tmp/d1-checks/check_05.py
+# --- from checks/check_05.py
 def check_5():
     def _load(name):
         """The course's copy of `name`, whichever layout put it on the path."""
@@ -1618,7 +1618,7 @@ def check_5():
         "arguments it got back must not rewrite the server's prompt")
 
 
-# --- from /tmp/d1-checks/check_06.py
+# --- from checks/check_06.py
 def check_6():
     from stage_01 import Dispatcher, ERRORS, ProtocolError, notification, result
     from stage_06 import Cancellations, Progress, Subscriptions, install
@@ -2010,9 +2010,9 @@ def check_6():
             f"got {full.session['data']!r}")
 
 
-# --- from /tmp/d1-checks/check_07.py
+# --- from checks/check_07.py
 def check_7():
-    REPO = os.environ.get("COURSE_REPO", "/home/diego/Desarrollo/learn-stuff-from-scratch")
+    REPO = os.environ.get("COURSE_REPO", os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
     COURSE = os.path.join(REPO, "mcp-from-scratch")
 
@@ -2676,9 +2676,9 @@ def check_7():
             _fail("after the flip (%s) another stage's tool must run" % order)
 
 
-# --- from /tmp/d1-checks/check_08.py
+# --- from checks/check_08.py
 def check_8():
-    DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"
+    DEFAULT_REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
     """Raise AssertionError naming the mistake; return None when correct."""
     for name in ("stage_01", "erp", "stage_08"):
@@ -2902,9 +2902,9 @@ def check_8():
     assert erp.orders == {}, erp.orders
 
 
-# --- from /tmp/d1-checks/check_09.py
+# --- from checks/check_09.py
 def check_9():
-    DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"
+    DEFAULT_REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
     HERE = os.path.dirname(os.path.abspath(__file__))
 
@@ -3368,7 +3368,7 @@ def check_9():
         "the ERP refused the change, so the round did not apply")
 
 
-# --- from /tmp/d1-checks/check_mine.py
+# --- from checks/check_mine.py
 def check_10():
     """The trajectory: a window of writes with two limits, an approval bound to a
     state, and an audit line with no clock and no payload."""

@@ -62,7 +62,7 @@ def check_1():
 
     HERE = os.path.dirname(os.path.abspath(__file__))
 
-    DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"
+    DEFAULT_REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
     def _repo(start=None):
         for candidate_start in (os.environ.get("J2_REPO"), start, os.getcwd(),
@@ -549,7 +549,7 @@ def check_2():
 
     HERE = os.path.dirname(os.path.abspath(__file__))
 
-    DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"
+    DEFAULT_REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
     def _repo(start=None):
         for candidate_start in (os.environ.get("J2_REPO"), start, os.getcwd(),
@@ -998,7 +998,7 @@ def check_3():
 
     HERE = os.path.dirname(os.path.abspath(__file__))
 
-    DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"
+    DEFAULT_REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
     def _repo(start=None):
         for candidate_start in (os.environ.get("J2_REPO"), start, os.getcwd(),
@@ -1442,7 +1442,7 @@ def check_4():
 
     HERE = os.path.dirname(os.path.abspath(__file__))
 
-    DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"
+    DEFAULT_REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
     def _repo(start=None):
         for candidate_start in (os.environ.get("J2_REPO"), start, os.getcwd(),
@@ -1821,7 +1821,7 @@ def check_5():
 
     HERE = os.path.dirname(os.path.abspath(__file__))
 
-    DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"
+    DEFAULT_REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
     def _repo(start=None):
         for candidate_start in (os.environ.get("J2_REPO"), start, os.getcwd(),
@@ -2169,7 +2169,7 @@ def check_6():
 
     HERE = os.path.dirname(os.path.abspath(__file__))
 
-    DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"
+    DEFAULT_REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
     def _repo(start=None):
         for candidate_start in (os.environ.get("J2_REPO"), start, os.getcwd(),
@@ -2516,7 +2516,7 @@ def check_7():
 
     HERE = os.path.dirname(os.path.abspath(__file__))
 
-    DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"
+    DEFAULT_REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
     def _repo(start=None):
         for candidate_start in (os.environ.get("J2_REPO"), start, os.getcwd(),
@@ -2811,7 +2811,7 @@ def check_8():
 
     HERE = os.path.dirname(os.path.abspath(__file__))
 
-    DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"
+    DEFAULT_REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
     def _repo(start=None):
         for candidate_start in (os.environ.get("J2_REPO"), start, os.getcwd(),
@@ -3250,7 +3250,7 @@ def check_9():
 
     HERE = os.path.dirname(os.path.abspath(__file__))
 
-    DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"
+    DEFAULT_REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
     def _repo(start=None):
         for candidate_start in (os.environ.get("J2_REPO"), start, os.getcwd(),
@@ -3733,7 +3733,7 @@ def check_10():
 
     HERE = os.path.dirname(os.path.abspath(__file__))
 
-    DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"
+    DEFAULT_REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
     EVENT_KEYS = ("tick", "node", "kind", "actor", "status", "tokens")
 

@@ -33,7 +33,7 @@ ORDER = 11
 
 # --- the graded checks ------------------------------------------------------
 
-# --- from /tmp/c2-checks/check_mine.py
+# --- from checks/check_mine.py
 def check_1():
     def _close(a, b, tol=1e-9):
         return abs(a - b) <= tol
@@ -184,7 +184,7 @@ def check_1():
     assert run["status"] == "answered" and run["steps"] == 1
 
 
-# --- from /tmp/c2-checks/check_02.py
+# --- from checks/check_02.py
 def check_2():
     class Box:
         """A fake tool body that records exactly what the validator let through."""
@@ -381,7 +381,7 @@ def check_2():
             "arguments, so the schema root is an object")
 
 
-# --- from /tmp/c2-checks/check_03.py
+# --- from checks/check_03.py
 def check_3():
     _T3_RESULT_KEYS = {"tool", "ok", "content", "truncated", "error", "args"}
 
@@ -753,7 +753,7 @@ def check_3():
         f"name; ran={ran!r}")
 
 
-# --- from /tmp/c2-checks/check_mine.py
+# --- from checks/check_mine.py
 def check_4():
     def _close(a, b, tol=1e-9):
         return abs(a - b) <= tol
@@ -916,7 +916,7 @@ def check_4():
         f"model, so the count stays where it was")
 
 
-# --- from /tmp/c2-checks/check_mine.py
+# --- from checks/check_mine.py
 def check_5():
     def _close(a, b, tol=1e-9):
         return abs(a - b) <= tol
@@ -1122,7 +1122,7 @@ def check_5():
     assert effects.reused == 1, f"{effects.reused}: the second attempt was answered from the effect"
 
 
-# --- from /tmp/c2-checks/check_06.py
+# --- from checks/check_06.py
 def check_6():
     class FakeToolbox:
         """Deterministic: `add` works, `tick` is a no-op, anything else is an
@@ -1379,7 +1379,7 @@ def check_6():
             f"{len(s.messages)} messages")
 
 
-# --- from /tmp/c2-checks/check_07.py
+# --- from checks/check_07.py
 def check_7():
     EXPECTED_ROOT_LISTING = [
         "aaa_dir/",
@@ -1621,7 +1621,7 @@ def check_7():
             _fail("the list_dir tool must be the sandbox's list()")
 
 
-# --- from /tmp/c2-checks/check_mine.py
+# --- from checks/check_mine.py
 def check_8():
     def _close(a, b, tol=1e-9):
         return abs(a - b) <= tol
@@ -1791,7 +1791,7 @@ def check_8():
     assert "refused" in run["answer"]
 
 
-# --- from /tmp/c2-checks/check_09.py
+# --- from checks/check_09.py
 def check_9():
     TOOL_CALL = {"tool": "echo", "args": {}}
 
@@ -2135,7 +2135,7 @@ def check_9():
         "the run, the cap is only a limit on it")
 
 
-# --- from /tmp/c2-checks/check_mine.py
+# --- from checks/check_mine.py
 def check_10():
     def _close(a, b, tol=1e-9):
         return abs(a - b) <= tol

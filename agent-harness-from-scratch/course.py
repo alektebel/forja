@@ -49,7 +49,7 @@ import json
 def check_1():
     HERE = os.path.dirname(os.path.abspath(__file__))
 
-    DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"
+    DEFAULT_REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
     import stage_01 as s
     from tiny_env import HarnessError, ScriptedModel, text_events, tool_call_events
@@ -171,7 +171,7 @@ def check_1():
             "a token count that is a string")
 
 def check_2():
-    REPO = os.environ.get("COURSE_REPO", "/home/diego/Desarrollo/learn-stuff-from-scratch")
+    REPO = os.environ.get("COURSE_REPO", os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
     COURSE = os.path.join(REPO, "agent-harness-from-scratch")
 
@@ -493,7 +493,7 @@ def check_2():
 def check_3():
     HERE = os.path.dirname(os.path.abspath(__file__))
 
-    DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"
+    DEFAULT_REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
     class FakeTrace:
         """Whatever stage 3 needs of stage 8: a `.step(**kwargs)` sink."""
@@ -679,7 +679,7 @@ def check_3():
         "that hit an error was clean: %r" % (trace.lines,))
 
 def check_4():
-    REPO = os.environ.get("COURSE_REPO", "/home/diego/Desarrollo/learn-stuff-from-scratch")
+    REPO = os.environ.get("COURSE_REPO", os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
     COURSE = os.path.join(REPO, "agent-harness-from-scratch")
 
@@ -987,7 +987,7 @@ def check_4():
         _fail("the row-count line must be the number of rows printed: got %r" % (counted,))
 
 def check_5():
-    REPO = os.environ.get("COURSE_REPO", "/home/diego/Desarrollo/learn-stuff-from-scratch")
+    REPO = os.environ.get("COURSE_REPO", os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
     COURSE = os.path.join(REPO, "agent-harness-from-scratch")
 
@@ -1217,7 +1217,7 @@ def check_5():
 def check_6():
     HERE = os.path.dirname(os.path.abspath(__file__))
 
-    DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"
+    DEFAULT_REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
     import time
 
@@ -1486,7 +1486,7 @@ def check_6():
         time.sleep = real_sleep
 
 def check_7():
-    REPO = os.environ.get("COURSE_REPO", "/home/diego/Desarrollo/learn-stuff-from-scratch")
+    REPO = os.environ.get("COURSE_REPO", os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
     COURSE = os.path.join(REPO, "agent-harness-from-scratch")
 
@@ -1766,7 +1766,7 @@ def check_7():
 def check_8():
     HERE = os.path.dirname(os.path.abspath(__file__))
 
-    DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"
+    DEFAULT_REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
     KEYS = ("turn", "kind", "tokens", "duration_ms", "tool", "ok")
 
@@ -2061,7 +2061,7 @@ def check_8():
 def check_9():
     HERE = os.path.dirname(os.path.abspath(__file__))
 
-    DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"
+    DEFAULT_REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
     import stage_09 as s
     from tiny_env import ANALYTIC_TASKS, EnvError, HarnessError, SQLEnv
@@ -2221,7 +2221,7 @@ def check_9():
 def check_10():
     HERE = os.path.dirname(os.path.abspath(__file__))
 
-    DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"
+    DEFAULT_REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
     def _ghost_template():
         return {"name": "ghost_country",

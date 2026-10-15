@@ -63,7 +63,7 @@ def check_1():
 
     HERE = os.path.dirname(os.path.abspath(__file__))
 
-    DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"
+    DEFAULT_REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
     def _repo(start=None):
         for candidate_start in (os.environ.get("I9_REPO"), start, os.getcwd(), DEFAULT_REPO):
@@ -367,7 +367,7 @@ def check_2():
 
     HERE = os.path.dirname(os.path.abspath(__file__))
 
-    DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"
+    DEFAULT_REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
     def _repo(start=None):
         for candidate_start in (os.environ.get("I9_REPO"), start, os.getcwd(), DEFAULT_REPO):
@@ -580,7 +580,7 @@ def check_3():
 
     HERE = os.path.dirname(os.path.abspath(__file__))
 
-    DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"
+    DEFAULT_REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
     def _repo(start=None):
         for candidate_start in (os.environ.get("I9_REPO"), start, os.getcwd(), DEFAULT_REPO):
@@ -1060,7 +1060,7 @@ def check_4():
 
     HERE = os.path.dirname(os.path.abspath(__file__))
 
-    DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"
+    DEFAULT_REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
     def _repo(start=None):
         for candidate_start in (os.environ.get("I9_REPO"), start, os.getcwd(), DEFAULT_REPO):
@@ -1264,7 +1264,7 @@ def check_5():
 
     HERE = os.path.dirname(os.path.abspath(__file__))
 
-    DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"
+    DEFAULT_REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
     def _repo(start=None):
         for candidate_start in (os.environ.get("I9_REPO"), start, os.getcwd(), DEFAULT_REPO):
@@ -1679,7 +1679,7 @@ def check_6():
 
     HERE = os.path.dirname(os.path.abspath(__file__))
 
-    DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"
+    DEFAULT_REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
     def _repo(start=None):
         for candidate_start in (os.environ.get("I9_REPO"), start, os.getcwd(), DEFAULT_REPO):
@@ -2030,7 +2030,7 @@ def check_7():
 
     HERE = os.path.dirname(os.path.abspath(__file__))
 
-    DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"
+    DEFAULT_REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
     def _repo(start=None):
         for candidate_start in (os.environ.get("I9_REPO"), start, os.getcwd(), DEFAULT_REPO):
@@ -2410,7 +2410,7 @@ def check_8():
 
     HERE = os.path.dirname(os.path.abspath(__file__))
 
-    DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"
+    DEFAULT_REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
     def _repo(start=None):
         for candidate_start in (os.environ.get("I9_REPO"), start, os.getcwd(), DEFAULT_REPO):
@@ -2697,7 +2697,7 @@ def check_9():
 
     HERE = os.path.dirname(os.path.abspath(__file__))
 
-    DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"
+    DEFAULT_REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
     COURSE = "interconnects-from-scratch"
 
@@ -3230,7 +3230,7 @@ def check_10():
 
     HERE = os.path.dirname(os.path.abspath(__file__))
 
-    DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"
+    DEFAULT_REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
     def _repo(start=None):
         for candidate_start in (os.environ.get("I9_REPO"), start, os.getcwd(), DEFAULT_REPO):

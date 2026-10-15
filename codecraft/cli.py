@@ -4,6 +4,7 @@
     python3 codecraft/cli.py                      # your learning board
     python3 codecraft/cli.py path                 # the ordered plan, with progress
     python3 codecraft/cli.py run llm-from-scratch # run a course, get coached
+    python3 codecraft/cli.py stage <course> [n]   # one stage: what you write, what it costs
     python3 codecraft/cli.py next                 # just the next action
     python3 codecraft/cli.py hint <course>        # one rung lower down the ladder
     python3 codecraft/cli.py explain [<course>]   # NAN model: what you're getting wrong
@@ -25,11 +26,11 @@ import urllib.request
 if __package__ in (None, ""):
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     from codecraft import (adapt, contract, manifests, mentor, patterns, progress,
-                           render, scaffold, serve, store, style)
+                           render, scaffold, serve, stats, store, style)
     from codecraft import path as pathmod
 else:                                                          # pragma: no cover
     from . import (adapt, contract, manifests, mentor, patterns, progress, render,
-                   scaffold, serve, store, style)
+                   scaffold, serve, stats, store, style)
     from . import path as pathmod
 
 HELP = __doc__
@@ -327,6 +328,54 @@ def cmd_status(profile, rest, ink, courses):
     return 0
 
 
+def cmd_stage(profile, rest, ink, courses):
+    """One stage's page: the file, what you write in it, what the tester costs."""
+    positional = [a for a in rest if not a.startswith("-")]
+    name = positional[0] if positional else None
+    want = None
+    if len(positional) > 1:
+        try:
+            want = int(positional[1])
+        except ValueError:
+            print(f"  a stage is a number, not {positional[1]!r}")
+            return 2
+
+    course = manifests.load(name) if name else _current_course(profile, courses)
+    if course is None:
+        if not name:
+            print("  no course to show. Name one: python3 codecraft/cli.py "
+                  "stage <course>")
+            return 2
+        letter, phase, entry = pathmod.find(name)
+        if entry is not None:
+            course = manifests.load(entry["course"]) if entry.get("course") else None
+            if course is None:
+                print(render.render_plan(letter, phase, entry, ink))
+                return 0
+    if course is None:
+        print(f"  no course named {name!r}. Try: python3 codecraft/cli.py list")
+        return 2
+
+    ids = sorted(course["stages"])
+    if not ids:
+        print(f"  {course['name']} has no stages yet.")
+        return 1
+    stages = profile["courses"].get(course["name"], {}).get("stages", {})
+    statuses = {i: stages.get(str(i), {}).get("last_status", "TODO") for i in ids}
+    if want is None:
+        want = next((i for i in ids if statuses[i] != "PASS"), ids[-1])
+    if want not in course["stages"]:
+        print(f"  {course['name']} has stages 1..{ids[-1]}")
+        return 2
+
+    print(render.render_stage(
+        course, want, course["stages"][want],
+        stats.for_course(course["name"]).get(want),
+        stages.get(str(want), {}), statuses, ink,
+        f"python3 codecraft/cli.py run {course['name']}"))
+    return 0
+
+
 def cmd_review(profile, ink, courses):
     items = adapt._due_review(profile, limit=8)
     print(render.render_review(profile, items, ink))
@@ -561,6 +610,8 @@ def main(argv) -> int:
         return cmd_hint(profile, rest, ink, courses) or 0
     if cmd == "status":
         return cmd_status(profile, rest, ink, courses) or 0
+    if cmd == "stage":
+        return cmd_stage(profile, rest, ink, courses) or 0
     if cmd == "explain":
         return cmd_explain(profile, rest, ink, courses) or 0
     if cmd == "ask":

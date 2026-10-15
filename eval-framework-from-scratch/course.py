@@ -58,7 +58,7 @@ import re
 def check_1():
     HERE = os.path.dirname(os.path.abspath(__file__))
 
-    DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"
+    DEFAULT_REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
     def _refused(fn, *args, **kwargs):
         """The error message when a call is refused, or None when it is not."""
@@ -266,7 +266,7 @@ def check_1():
 def check_2():
     HERE = os.path.dirname(os.path.abspath(__file__))
 
-    DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"
+    DEFAULT_REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
     def _refused(fn, *args, **kwargs):
         """The error message when a call is refused, or None when it is not."""
@@ -434,7 +434,7 @@ def check_2():
 def check_3():
     HERE = os.path.dirname(os.path.abspath(__file__))
 
-    DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"
+    DEFAULT_REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
     def _identity(case, answer):
         """A metric that scores exactly the answers the strict judge would."""
@@ -646,7 +646,7 @@ def check_3():
 def check_4():
     HERE = os.path.dirname(os.path.abspath(__file__))
 
-    DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"
+    DEFAULT_REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
     def _identity(case, answer):
         return 1.0 if answer is not None and answer.strip() == case.answer.strip() else 0.0
@@ -850,7 +850,7 @@ def check_4():
 def check_5():
     HERE = os.path.dirname(os.path.abspath(__file__))
 
-    DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"
+    DEFAULT_REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
     STATUSES = ("ok", "no_answer", "solver_error", "timeout", "case_error")
 
@@ -1095,7 +1095,7 @@ def check_5():
 def check_6():
     HERE = os.path.dirname(os.path.abspath(__file__))
 
-    DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"
+    DEFAULT_REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
     def _refused(fn, *args, **kwargs):
         """The error message when a call is refused, or None when it is not."""
@@ -1393,7 +1393,7 @@ def check_6():
 def check_7():
     HERE = os.path.dirname(os.path.abspath(__file__))
 
-    DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"
+    DEFAULT_REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
     def _refused(fn, *args, **kwargs):
         """The error message when a call is refused, or None when it is not."""
@@ -1623,7 +1623,7 @@ def check_7():
 def check_8():
     HERE = os.path.dirname(os.path.abspath(__file__))
 
-    DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"
+    DEFAULT_REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
     def _refused(fn, *args, **kwargs):
         """The refusal message when a call is refused, or None when it is not.
@@ -1912,7 +1912,7 @@ def check_8():
 def check_9():
     HERE = os.path.dirname(os.path.abspath(__file__))
 
-    DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"
+    DEFAULT_REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
     STATUS_NAMES = ("ok", "no_answer", "solver_error", "timeout", "case_error")
 
@@ -2122,7 +2122,7 @@ def check_9():
 def check_10():
     HERE = os.path.dirname(os.path.abspath(__file__))
 
-    DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"
+    DEFAULT_REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
     def _identity(case, answer):
         return 1.0 if answer is not None and answer.strip() == case.answer.strip() else 0.0

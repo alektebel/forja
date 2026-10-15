@@ -56,7 +56,7 @@ import math
 def check_1():
     HERE = os.path.dirname(os.path.abspath(__file__))
 
-    DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"
+    DEFAULT_REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
     def _snapshot(table):
         """Everything about the position that a refusal must not have touched."""
@@ -188,7 +188,7 @@ def check_1():
 def check_2():
     HERE = os.path.dirname(os.path.abspath(__file__))
 
-    DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"
+    DEFAULT_REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
     ROW_KEYS = ("matchup", "seed", "teams", "names", "llm", "status", "hands",
                 "turns", "llm_turns", "fallbacks", "rejections", "vacas_a",
@@ -437,7 +437,7 @@ def check_2():
 def check_3():
     HERE = os.path.dirname(os.path.abspath(__file__))
 
-    DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"
+    DEFAULT_REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
     RECORD_KEYS = ("phase", "lance", "mano", "seat", "team", "legal", "strength",
                    "would_win", "points_a", "points_b", "vacas_a", "vacas_b",
@@ -688,7 +688,7 @@ def check_3():
 def check_4():
     HERE = os.path.dirname(os.path.abspath(__file__))
 
-    DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"
+    DEFAULT_REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
     def dec(hand, lance, seat, team, action, *, turn=0, model=None, stake=0,
             previous=0):
@@ -981,7 +981,7 @@ def check_4():
 def check_5():
     HERE = os.path.dirname(os.path.abspath(__file__))
 
-    DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"
+    DEFAULT_REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
     BETTING = ("envido", "y-yo", "reenvido", "ordago")
 
@@ -1179,7 +1179,7 @@ def check_5():
 def check_6():
     HERE = os.path.dirname(os.path.abspath(__file__))
 
-    DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"
+    DEFAULT_REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
     BET_LEGAL = ("paso", "envido", "ordago")
 
@@ -1547,7 +1547,7 @@ def check_6():
 def check_7():
     HERE = os.path.dirname(os.path.abspath(__file__))
 
-    DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"
+    DEFAULT_REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
     import stage_07 as s
 
@@ -1735,7 +1735,7 @@ def check_7():
 def check_8():
     HERE = os.path.dirname(os.path.abspath(__file__))
 
-    DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"
+    DEFAULT_REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
     import stage_08 as s
 
@@ -1954,7 +1954,7 @@ def check_8():
 def check_9():
     HERE = os.path.dirname(os.path.abspath(__file__))
 
-    DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"
+    DEFAULT_REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
     REQUIRED_KEYS = ("label", "matches", "publishable", "degraded", "hands",
                      "piedras_for", "piedras_against", "piedras_per_hand",
@@ -2223,7 +2223,7 @@ def check_9():
 def check_10():
     HERE = os.path.dirname(os.path.abspath(__file__))
 
-    DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"
+    DEFAULT_REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
     def _row(m0, m1, seed, gain_a, gain_b, hands=4, status="done"):
         return {"teams": [m0, m1], "seed": seed, "status": status, "hands": hands,

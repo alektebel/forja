@@ -57,7 +57,7 @@ import hashlib
 def check_1():
     HERE = os.path.dirname(os.path.abspath(__file__))
 
-    DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"
+    DEFAULT_REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
     def _is_refused(fn, *args, **kwargs):
         """True when the call raises `ValueError` (a refusal, not a crash)."""
@@ -262,7 +262,7 @@ def check_2():
 
     COURSE = "cpu-from-scratch"
 
-    DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"
+    DEFAULT_REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
     def _refused(fn, *args, **kwargs):
         """`(exception, message)` when a call is refused, or `(None, None)`."""
@@ -487,7 +487,7 @@ def check_2():
         "encode(sw) must not write an rd field that is not a destination"
 
 def check_3():
-    DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"
+    DEFAULT_REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
     def _refusal(fn, *args, **kwargs):
         """The message when a call is refused with `ValueError`, or None otherwise."""
@@ -669,7 +669,7 @@ def check_3():
 def check_4():
     HERE = os.path.dirname(os.path.abspath(__file__))
 
-    DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"
+    DEFAULT_REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
     def _word(value):
         return value & 0xFFFFFFFF
@@ -870,7 +870,7 @@ def check_4():
 def check_5():
     HERE = os.path.dirname(os.path.abspath(__file__))
 
-    DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"
+    DEFAULT_REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
     def _repo(start=None):
         for candidate_start in (os.environ.get("F3_REPO"), start, os.getcwd(), DEFAULT_REPO):
@@ -1081,7 +1081,7 @@ def check_5():
 def check_6():
     HERE = os.path.dirname(os.path.abspath(__file__))
 
-    DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"
+    DEFAULT_REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
     def _started(program, regs=None, **kwargs):
         """A machine on ``program`` (source text or words), seeded with ``regs``."""
@@ -1409,7 +1409,7 @@ def check_6():
 def check_7():
     HERE = os.path.dirname(os.path.abspath(__file__))
 
-    DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"
+    DEFAULT_REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
     SUM = """\
     # t0 = 0 .. a0, summed
@@ -1655,7 +1655,7 @@ def check_7():
 def check_8():
     HERE = os.path.dirname(os.path.abspath(__file__))
 
-    DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"
+    DEFAULT_REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
     CYCLE_CAP = 5000
 
@@ -1949,7 +1949,7 @@ def check_8():
 def check_9():
     HERE = os.path.dirname(os.path.abspath(__file__))
 
-    DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"
+    DEFAULT_REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
     LOAD_USE = """\
             li   t0, 42
@@ -2340,7 +2340,7 @@ def check_9():
 def check_10():
     HERE = os.path.dirname(os.path.abspath(__file__))
 
-    DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"
+    DEFAULT_REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
     FORWARDING_KEYS = ("data", "load_use", "control")
 
