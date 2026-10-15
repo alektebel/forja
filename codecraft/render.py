@@ -218,6 +218,99 @@ def render_plan(letter, phase, entry, ink: Ink):
     return "\n".join(lines)
 
 
+def _title(text, width=34):
+    """A row title squeezed into the DAG's column, with a visible cut."""
+    return text if len(text) <= width else text[:width - 1] + "\u2026"
+
+
+def render_dag(g, ink: Ink):
+    """The registry as one DAG: waves of work, then the advisory layer."""
+    edges = sum(len(v) for v in g["edges"].values())
+    lines = ["", ink(f"  codecraft \u00b7 the dependency DAG \u00b7 {len(g['ids'])} "
+                     f"projects \u00b7 {edges} hard edges \u00b7 {len(g['waves'])} "
+                     f"waves", BOLD),
+             ink("  a row appears once, in the wave its longest path puts it in; "
+                 "only `prereq` is an edge", GREY)]
+    if g["cycles"]:
+        lines += _wrap("cycle", " | ".join("\u2192".join(c) for c in g["cycles"]),
+                       ink)
+    if g["dangles"]:
+        lines += _wrap("dangling", ", ".join(g["dangles"]) + " \u2014 named as a "
+                       "prereq, no such row", ink)
+    by_id = {n["id"]: n for n in g["nodes"]}
+    for n, wave in enumerate(g["waves"]):
+        after = "nothing must come first" if not n else (
+            "after 1 wave" if n == 1 else f"after {n} waves")
+        lines.append("")
+        lines.append(ink(f"  wave {n} \u00b7 {after}", YELLOW))
+        for rid in wave:
+            node = by_id[rid]
+            opens = g["dependents"].get(rid) or []
+            tail = ("unlocks " + " ".join(opens)) if opens else "unlocks nothing yet"
+            lines.append(f"  {ink(node['symbol'], GREY)} {rid:<4}"
+                         f"{_title(node['title']):<36}{node['kind']:<8}"
+                         f"{ink(tail, GREY)}")
+    lines.append("")
+    lines.append(ink("  good first \u00b7 nothing forces these, a thesis asks for "
+                     "them", YELLOW))
+    for rid in g["ids"]:
+        for other, reason in g["advice"].get(rid, ()):
+            lines.append(f"  {ink('\u00b7', GREY)} {rid:<4}after {other}")
+            lines += _wrap("", reason, ink)
+    lines.append("")
+    lines.append(ink("  \u25cb ready  \u270e to author  \u00b7 legacy, no checker  "
+                     "\u21bb port a branch", GREY))
+    lines.append(ink(f"  zoom on one row: python3 codecraft/cli.py dag <course>",
+                     GREY))
+    return "\n".join(lines)
+
+
+def render_dag_row(info, g, ink: Ink):
+    """One row: everything that must come first, in wave order, and what it opens."""
+    node = info["node"]
+    by_id = {n["id"]: n for n in g["nodes"]}
+    head = f"{node['id']} \u00b7 {node['title']}"
+    head += f" \u00b7 {node['course']}" if node.get("course") else " \u00b7 not authored yet"
+    lines = ["", ink("  codecraft \u00b7 " + head, BOLD), ""]
+    lines += _wrap("phase", f"{node['letter']} \u2014 {node['phase']}", ink)
+    lines += _wrap("wave", f"{info['wave']} of {info['waves'] - 1} \u00b7 "
+                           f"{node['kind']} \u00b7 {len(info['before'])} row"
+                           f"{'' if len(info['before']) == 1 else 's'} before it", ink)
+    if info["needs"]:
+        lines += _wrap("needs", ", ".join(
+            f"{rid} {by_id.get(rid, {}).get('title', '?')}" for rid in info["needs"]),
+            ink)
+    else:
+        lines += _wrap("needs", "nothing", ink)
+
+    for title, ids in (("everything that must come first, in wave order",
+                        info["before"]),
+                       ("what it opens, transitively", info["after"])):
+        if not ids:
+            continue
+        lines.append("")
+        lines.append(ink("  " + title, YELLOW))
+        for rid in ids:
+            other = by_id.get(rid)
+            lines.append(f"  {ink(other['symbol'], GREY)} {rid:<4}"
+                         f"{_title(other['title']):<36}"
+                         f"{ink('wave ' + str(g['levels'].get(rid, 0)), GREY)}")
+
+    lines.append("")
+    if info["advice"]:
+        for other, reason in info["advice"]:
+            lines.append(f"  {ink('advice'.ljust(8), BOLD)}after {other}")
+            lines += _wrap("", reason, ink)
+    else:
+        lines += _wrap("advice", "nothing extra \u2014 the prereqs are the whole "
+                                 "story", ink)
+    lines += _wrap("why", node["why"], ink)
+    lines.append("")
+    lines.append(f"  {ink('next'.ljust(8), BOLD)}python3 codecraft/cli.py stage "
+                 f"{node['id']}")
+    return "\n".join(lines)
+
+
 def store_label(c):
     return {0: "shaky", 1: "learning", 2: "getting there",
             3: "solid"}.get(c.get("box", 0), "learning")

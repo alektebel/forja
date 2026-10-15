@@ -28,6 +28,7 @@ see [The `cz` shim](#the-cz-shim) for putting it on your PATH.
 ```bash
 python3 codecraft/cli.py                      # your learning board
 python3 codecraft/cli.py path                 # the ordered plan, with live progress
+python3 codecraft/cli.py dag [<course>]       # the DAG: what must come first
 python3 codecraft/cli.py run llm-from-scratch # run it; read the nudge
 python3 codecraft/cli.py stage llm-from-scratch 5  # one stage, before you write it
 python3 codecraft/cli.py next                 # just the next action
@@ -84,6 +85,39 @@ courses the number is gone and the page says so rather than printing a zero.
 prints the row, its prerequisites and its thesis, which is what `cz stage
 tcp-ip-from-scratch` shows today.
 
+A `dag` is the same registry read the other way: what must come first, and what
+merely should.
+
+```
+  codecraft · the dependency DAG · 60 projects · 87 hard edges · 9 waves
+
+  wave 0 · nothing must come first
+  ○ A1  AWS From Scratch                    ready   unlocks A6 A7
+  ○ A2  LLM From Scratch                    ready   unlocks A3 A4 A8 B1 H1 I2
+
+  wave 3 · after 3 waves
+  ○ J3  Durable Execution From Scratch      ready   unlocks H6 L2
+
+  good first · nothing forces these, a thesis asks for them
+  · A1  after A5
+        A5's thesis: 'Makes sqs/dynamodb in A1 click' — and A5 is 'optional but cheap'
+```
+
+Two layers, and the difference is the point. **`prereq` is the honest
+dependency**: it is what the row's own thesis says the course is built on, it is
+the only thing that becomes an edge, and every row lands in the wave its longest
+path reaches — wave 0 has nothing in front of it, and anything sharing a wave can
+be worked in parallel. **`advice` is advice**: nine places where a row's thesis
+says something would be *good* to have done first even though nothing forces it,
+each stored with the sentence that asks for it, so the advisory layer can be
+audited in `codecraft/path.py` instead of trusted from `codecraft/dag.py`.
+
+`dag <course>` zooms on one row: its wave, its direct prereqs, everything that
+must come first in wave order, everything it opens, and the advice. A row is named
+by slug, id (`cz dag J3`) or title. The graph is also a self-test: `cz self-test`
+fails if a prereq names no row, if two rows share an id, or if the registry ever
+stops being acyclic.
+
 ---
 
 ## The `cz` shim
@@ -94,6 +128,8 @@ noise:
 ```bash
 cz run aws-from-scratch     # same as python3 codecraft/cli.py run aws-from-scratch
 cz path
+cz dag                       # the dependency DAG: waves, unlocks and advice
+cz dag J3                    # one row: what must come first, what it opens
 cz stage aws-from-scratch 3 # one stage: what to write, what the tester costs
 cz hint aws-from-scratch
 ```

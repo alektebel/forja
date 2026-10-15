@@ -27,8 +27,47 @@ the commit that carries this file.
 | `83e7a55` | **J4 `sandbox-capabilities-from-scratch`** — 10 stages, provided `fleet.py` (J1's, byte-identical), `vfs.py` and `tools.py`, 494 mutations, thesis *an agent's power is the intersection of what its tools declare, what its principal granted and what the world will still afford*, registered |
 | `0230b92` | **J5 `agent-metrics-from-scratch`** — 10 stages, provided `fleet.py` (J1's, byte-identical) and `telemetry.py`, 510 mutations, thesis *a trace is not a metric*, smoke green, registered |
 | `4755f5c` | **G4 `os-from-scratch`** — 10 stages, 641 mutations, the machine provided (`machine.py`, `devices.py`, `userland.py`), thesis *an operating system is what you write after the hardware breaks your last promise*; `linux-from-scratch/` staged beside it as prose; smoke green, registered |
+| `bfbdefb` | **`cz stage`, per-stage counts, six registered rows** — the stage page before the run, `codecraft/stats.py` (9,323 asserts and 4,079 caught mutations across the eighteen built courses), the 128 hardcoded repo roots replaced by `__file__`, and G7/G8/H5/H6/H7/L4 registered |
 
 ## Done, in the commit that follows this file
+
+**`cz dag` — the registry as a dependency DAG, and the fifteen-item
+AI-infrastructure list mapped onto it.**
+
+- **`./cz dag`** prints the whole registry as waves: `60 projects · 87 hard edges ·
+  9 waves`, each row once, in the wave its longest path reaches, with what it
+  unlocks. **`./cz dag <course>`** zooms on one row — its wave, its direct prereqs,
+  everything that must come first *in wave order*, everything it opens,
+  transitively, and the advice. Rows resolve by slug, id (`cz dag J3`) or title.
+  New: `codecraft/dag.py` (`graph`, `before`, `unlocks`, `advice`, `focus`),
+  `render.render_dag`/`render_dag_row`, `cli.cmd_dag` (`cz tree` is an alias).
+- **The graph is derived, not written.** `path.PHASES` owns the rows and their
+  `prereq` lists; `dag.py` reads them and nothing else, so the plan and the DAG
+  cannot drift. `_level` is the longest path from a root, and the module reports
+  the only two defects a registry can have — a prereq that names no row, and a
+  cycle — instead of hiding them. All six of those invariants are now `cz
+  self-test` failures, including "every prereq sits in an earlier wave" and
+  "a row's closure is transitive and excludes itself".
+- **A second, advisory layer.** `prereq` is the honest dependency; `ADVICE` is
+  advice, is never an edge, and holds the nine places where a row's own thesis asks
+  for something that nothing forces — A1 after A5 ("makes sqs/dynamodb in A1
+  click"), F2 after C1 ("phase C1 owns what to measure"), H5 after A6, I11 after
+  A3, I12 after F2, J5 after E1, K5 after J4, C2 after A5, H1 after A8. Every
+  entry names the thesis it came from, and the self-test checks that each target is
+  a real row.
+- **Three more rows, from the list that arrived mid-unit** (I13
+  `serving-cluster-from-scratch`, I14 `weight-delivery-from-scratch`, H8
+  `failover-from-scratch`). Twelve of the fifteen items were already the subject of
+  a registered course; #5 (weight delivery) and #14 (multi-region failover) were
+  covered nowhere, and #1 (the cluster) was scattered across I3, I7 and I10 with no
+  row of its own. The new ROADMAP section carries the full fifteen-row mapping plus
+  the three mechanisms, and the inference-spine table gained its I13/I14 lines.
+  `author` rows are **25** now, and the registry is **60 rows**.
+- Docs touched: `codecraft/README.md` (the verb, a worked DAG, the two layers
+  explained), the root `README.md`, the `cz` shim header, the web page's footer,
+  `ROADMAP.md`, and this file.
+
+### The unit before it — `cz stage`, per-stage counts, six registered rows (`bfbdefb`)
 
 **`cz stage`, per-stage counts in the repo, six registered rows** — the
 CodeCrafters-shaped surface the CLI was missing, the two defects found while
@@ -163,12 +202,13 @@ The next unit is **L1, `tcp-ip-from-scratch`** — the stack as data against a
 provided lossy `wire.py` — and then phase L's other two series: **L2
 `concurrent-servers-from-scratch`** (four models for one server, one workload,
 identical answers) and **L3 `mqtt-broker-from-scratch`** (the wire format itself),
-all three registered from `NETWORKING.md` and all three `author`. The six rows
-this commit registers queue behind them, one per slot — G7, G8, H5, H6, H7, L4 —
-each carrying its own thesis in `path.py`. After those: G5/G6 (phase G's remaining
-two, which need checkers, not writing) and phase K's five. The backlog is **22
-`author`, 6 `legacy`, 2 `salvage`, 27 `ready`** — `./cz path` and the ROADMAP's
-own tables are authoritative over this file.
+all three registered from `NETWORKING.md` and all three `author`. The nine rows
+registered in the two units before this one queue behind them, one per slot — G7,
+G8, H5, H6, H7, L4, then I13, I14, H8 — each carrying its own thesis in `path.py`,
+each with its place in `cz dag`. After those: G5/G6 (phase G's remaining two, which
+need checkers, not writing) and phase K's five. The backlog is **25 `author`, 6
+`legacy`, 2 `salvage`, 27 `ready` — 60 rows** — `./cz path`, `./cz dag` and the
+ROADMAP's own tables are authoritative over this file.
 
 Two questions from earlier sessions are **answered**: the legacy, thin
 `distributed-training/` directory stays exactly as it is (the user's call,

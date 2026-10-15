@@ -3,6 +3,7 @@
 #
 #   cz                      your learning board
 #   cz path                 the ordered plan, with progress
+#   cz dag [<course>]       the dependency DAG: what must come first
 #   cz run aws-from-scratch run a course; read the nudge
 #   cz stage aws-from-scratch 3  one stage: what to write, what it costs
 #   cz hint aws-from-scratch  a bigger nudge

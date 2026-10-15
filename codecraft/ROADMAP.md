@@ -94,9 +94,11 @@ byte by byte.
 `rag-from-scratch/` (phase B1), `vector-index-from-scratch/` (phase B2),
 `evals-from-scratch/` (phase C1), `agents-from-scratch/` (phase C2),
 `mcp-from-scratch/` (phase D1) and `agent-harness-from-scratch` (phase E1) now
-exist and are graded. Phase I adds eleven
-more "to author" lines: the inference spine below names the artifact each stage
-builds on, and the SIROM/MUS benchmark work in phase F is its last stage.
+exist and are graded. Phase I adds the "to author" lines below — the inference
+spine names the artifact each stage builds on, and the SIROM/MUS benchmark work
+in phase F is its last stage. Nothing here has ever served two regions against each
+other either: multi-region failover is registered as H8, and it is A6's data half
+joined to H6's agreement half.
 
 ---
 
@@ -123,6 +125,49 @@ Two more were considered and left out rather than registered: a regex engine and
 a hand-rolled crypto handshake. The first is small enough to be a stage of G5
 rather than a course, and the second duplicates the `cryptographic-library`
 project the G6 legacy slot already carries.
+
+---
+
+## The AI-infrastructure list — three more registered rows, and where the other twelve live (I13, I14, H8)
+
+A fifteen-item list arrived from outside — *systems that prove you can serve, scale
+& keep GPUs honest* — and the useful answer was not yes or no but the row each item
+already has, or the row it should have. Twelve of the fifteen were already the
+subject of a registered course. Two were covered nowhere. One — the cluster itself
+— was scattered across three rows with no row of its own, which is how a serving
+stack ends up being nobody's course. Those three are now registered in
+`codecraft/path.py`, the file `cz path` and `cz dag` render.
+
+| # | The item | Where it lives |
+|---|---|---|
+| 1 | Self-hosted inference cluster | **I13 `serving-cluster-from-scratch`** — new: I3 schedules, I7 shards, I10 places, and nothing kept the cluster up, drained it, or published what it saw |
+| 2 | Cost-per-token dashboard | I11 (`ai-gateway-from-scratch`: SLO, percentile pipeline, cost accounting) + I12 (cost per token pinned to a price and a utilisation) + A7 (the ops thread) + J5 (a trace is not a metric) |
+| 3 | Queue-based GPU autoscaler | I10 — "Kubernetes GPU operators, Ray, Slurm, MIG partitioning, KEDA" and "queue-based autoscaling, spot preemption" are its own thesis |
+| 4 | Continuous-batching load test | I3 (continuous batching, chunked prefill, the starvation curve a throughput number hides) + I12 (the methodology) + F1 (the harness) |
+| 5 | Model weight delivery | **I14 `weight-delivery-from-scratch`** — new: nothing here treated cold start as a storage problem pretending to be a compute problem |
+| 6 | Multi-model AI gateway | I11 (routing, retries, fallbacks) + K2 (versioned prompts and models, shadow mode, the degradation chain, the cost kill-switch) + J1 (admission that refuses rather than grows) |
+| 7 | Quantized-serving bakeoff | I5 (`quantization-from-scratch`: scales and zero points, KL calibration, and the quality/latency/VRAM trade-off measured on a tiny model instead of promised) |
+| 8 | Secure multi-tenant inference | J4 (capabilities declared, granted and intersected — built) + K5 (what leaves the process and what may come back) + G6's `cryptographic-library` for the keys |
+| 9 | Checkpointed distributed training | H1 (DDP, the ZeRO ladder, FSDP — built) + J3 (a run as a log: replay, leases, recovery — built) + I10 for the Ray/Slurm half |
+| 10 | Speculative decoding prototype | I8 (the acceptance-rate math, the 2x claim made checkable) + A3/I4 (prefix reuse, paged KV) + I3 (chunked prefill) |
+| 11 | GPU partitioning lab | I10 (MIG slices, fair scheduling, spot preemption, the cost model that makes an idle H100 a bug) |
+| 12 | Triton / custom kernel path | I6 (tiling and online softmax by hand, a small Triton-shaped IR with a fusion pass, and a check that the fused path is bit-identical) |
+| 13 | Observability spine for non-determinism | J5 (kinds, half-open windows, a gauge derived from a state machine — built) + A7 + I11 (DCGM and OTel) + F2 (the error taxonomy) |
+| 14 | Multi-region failover drill | **H8 `failover-from-scratch`** — new: A6 owns the data half, H6 the agreement half, and nobody ran the drill |
+| 15 | Public benchmark teardown | I12 — "capture the full config, sweep the knobs, plot the frontier, pin cost per token to a price, and fail the run when a config is missing" is verbatim its thesis |
+
+The three new rows, in the same shape as the six above:
+
+| Slot | Course to author | The mechanism | After |
+|---|---|---|---|
+| I13 | `serving-cluster-from-scratch` | A cluster that stays ready: bring-up order, the liveness/readiness split where readiness means the weights are in VRAM rather than the process is alive, a drain that finishes what it accepted, a rolling upgrade that never drops a request, a retry budget at the edge rather than per call, and the TTFT/ITL report the cluster publishes about itself with the node that failed the drill named | I3, I7, I10 |
+| I14 | `weight-delivery-from-scratch` | Cold start as a storage problem: a manifest of digests, the shard-to-rank map, lazy loading with a prefetch order derived from the first tokens, a CDN whose cache key *is* the digest and whose invalidation is a new digest, and the measurement — bytes fetched, time to first token, hit rate — that says which of them actually cut it | I3, I7 |
+| H8 | `failover-from-scratch` | Two regions with independent clocks and a link that drops for a chosen window: the health signal that is not a heartbeat, promotion with both halves (H6's quorum, A6's hinted handoff and Merkle anti-entropy), a redirect that does not apply a write twice, and RTO/RPO stated as measured with the writes it lost named | A6, H6 |
+
+The list's framing — *most people watch tutorials, builders ship systems* — is the
+house rule already: each of these is graded on the mechanism it gets wrong, offline
+and deterministic, and each carries the real-hardware runbook the way
+`deploy-and-debug` does.
 
 ---
 
@@ -251,7 +296,7 @@ of the standard: every check catches the stage's own characteristic error.
 
 ---
 
-## The inference spine (phase I) — twelve stages, silicon to serving
+## The inference spine (phase I) — fourteen stages, silicon to serving
 
 The serving track, in order. Each stage is a real piece of infrastructure
 knowledge; each one is graded the way the rest of this repo grades — by the
@@ -275,6 +320,8 @@ a cluster to be graded is a stage that will never be graded.
 | I10 Cluster orchestration & GPU scheduling | `gpu-scheduling-from-scratch` (+ A7) | to author |
 | I11 AI gateways, routing & observability | `ai-gateway-from-scratch` (+ A3's routing, A7's percentiles) | to author |
 | I12 Public benchmarks & teardowns | `inference-benchmark-from-scratch` (+ F1/F2) | to author |
+| I13 Serving cluster | `serving-cluster-from-scratch` (+ I7, I10) | to author |
+| I14 Model weight delivery | `weight-delivery-from-scratch` (+ I3, I7) | to author |
 
 The stages, verbatim as they were set out, with what the offline course does about
 each:
@@ -412,10 +459,18 @@ price and a utilisation, and fail the comparison when two runs differ in a knob
 nobody recorded. F1 (`mus-benchmark`) and F2 own the measurement machinery it
 reuses, and the `benchmark-methodology` skill is the checklist behind it.
 
+Two rows sit past this twelve-stage framing, added from the AI-infrastructure list
+at the end of this file: **I13 `serving-cluster-from-scratch`** (the cluster that
+stays ready — nothing above keeps a rank up, drains it or publishes what it saw) and
+**I14 `weight-delivery-from-scratch`** (cold start as a storage problem — the
+manifest, the shard map and the prefetch order that decide it).
+
 The honest sequence: I1–I2 before I3 (the cost model is what makes a scheduler
 decision checkable), I9 before I7 (you cannot shard without knowing what a link
-costs), and I4/I5 before I11 (a gateway routes to what exists). Everything else is
-parallel.
+costs), and I4/I5 before I11 (a gateway routes to what exists). I13 sits at the end
+of the serving track because it needs a scheduler, a sharding plan and a placer to
+be worth keeping up; I14 needs the same two halves for a smaller question. The rest
+is parallel.
 
 ---
 

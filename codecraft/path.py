@@ -312,6 +312,20 @@ PHASES = [
                 "flips one bit to see whether the checksum you wrote notices. Author "
                 "compression-from-scratch; nothing to read first — it is bytes and "
                 "integers the whole way."},
+        {"id": "H8", "title": "Multi-Region Failover", "course": None,
+         "kind": "author", "prereq": ["A6", "H6"],
+         "why": "A replica is not a strategy until you have failed it over: the "
+                "region that answers has to be a decision with a rule, the write "
+                "that arrived late has to be reconciled rather than guessed at, "
+                "and the RTO you claim has to be a number your own drill "
+                "produced. Two simulated regions with independent clocks, a link "
+                "that drops for a chosen window, and clients with pinned sessions "
+                "are provided. Write the health signal that is not a heartbeat, "
+                "the promotion rule with both of its halves — H6's quorum and "
+                "A6's hinted handoff and Merkle anti-entropy — the redirect that "
+                "does not apply a write twice, and the report that states RTO and "
+                "RPO as measured, with the writes it lost named. Author "
+                "failover-from-scratch; A6 and H6 are the two halves it joins."},
     ]),
     ("I", "Inference engineering: from silicon to serving", [
         {"id": "I1", "title": "Systems & GPU Foundations", "course": "compiler-and-vgpu",
@@ -407,6 +421,37 @@ PHASES = [
                 "inference-benchmark-from-scratch is the teardown: capture the full "
                 "config, sweep the knobs, plot the frontier, pin cost per token to a "
                 "price, and fail the run when a config is missing."},
+        {"id": "I13", "title": "Serving Cluster From Scratch", "course": None,
+         "kind": "author", "prereq": ["I3", "I7", "I10"],
+         "why": "The last mile of serving is not a model, it is a cluster that "
+                "stays ready: a supervisor that brings a rank back without "
+                "losing the mesh, readiness that means the weights are in VRAM "
+                "rather than the process is alive, and a drain that finishes the "
+                "requests it already accepted instead of dropping them at the "
+                "load balancer. A node simulator with health probes, a sharded "
+                "weight store and a client fleet that measures what it saw are "
+                "provided. Write the bring-up order, the liveness/readiness "
+                "split, the rolling upgrade that never drops a request, the "
+                "retry budget at the edge rather than per call, and the latency "
+                "report the cluster publishes about itself — TTFT and ITL "
+                "percentiles per node, with the node that failed the drill named. "
+                "Author serving-cluster-from-scratch; I3, I7 and I10 are its "
+                "parts."},
+        {"id": "I14", "title": "Model Weight Delivery", "course": None,
+         "kind": "author", "prereq": ["I3", "I7"],
+         "why": "Cold starts are usually a storage problem wearing compute "
+                "clothes: getting the right shard onto the node is the bring-up "
+                "cost, and every byte fetched eagerly is paid again on every "
+                "replica. A content-addressed store of safetensors-shaped "
+                "shards, a node with a fixed disk and a clock, and a client that "
+                "reports only bytes and time are provided. Write the manifest and "
+                "its digests, the shard-to-rank map, the lazy load with a "
+                "prefetch order derived from the first tokens, the CDN layer "
+                "whose cache key is the digest and whose invalidation is a new "
+                "digest, and the measurement that says which of those actually "
+                "cut cold start — bytes fetched, time to first token, cache hit "
+                "rate per node. Author weight-delivery-from-scratch; I3 says what "
+                "the node needs and I7 says how it was cut."},
     ]),
     ("J", "Agent infrastructure", [
         {"id": "J1", "title": "Queue & Workers",
@@ -608,7 +653,8 @@ PHASES = [
     ]),
 ]
 
-_SYMBOL = {"ready": "\u25cb", "legacy": "\u00b7", "author": "\u270e", "salvage": "\u21bb"}
+# one glyph per row kind — the same four `render_dag` draws
+SYMBOL = {"ready": "\u25cb", "legacy": "\u00b7", "author": "\u270e", "salvage": "\u21bb"}
 
 
 def _find(courses, name):

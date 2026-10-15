@@ -19,6 +19,7 @@ author yourself:
 ```bash
 cz run llm-from-scratch       # run a course, get coached (cz = the CLI shim)
 cz path                       # the ordered plan, with progress
+cz dag                        # the dependency DAG: what must come first
 cz stage llm-from-scratch 5   # one stage: what to write, what the tester costs
 python3 codecraft/cli.py new my-course --title "Build X" --stages 3
 ```

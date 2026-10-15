@@ -3,6 +3,7 @@
 
     python3 codecraft/cli.py                      # your learning board
     python3 codecraft/cli.py path                 # the ordered plan, with progress
+    python3 codecraft/cli.py dag [<course>]       # the dependency DAG: what comes first
     python3 codecraft/cli.py run llm-from-scratch # run a course, get coached
     python3 codecraft/cli.py stage <course> [n]   # one stage: what you write, what it costs
     python3 codecraft/cli.py next                 # just the next action
@@ -25,12 +26,12 @@ import urllib.request
 
 if __package__ in (None, ""):
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    from codecraft import (adapt, contract, manifests, mentor, patterns, progress,
-                           render, scaffold, serve, stats, store, style)
+    from codecraft import (adapt, contract, dag, manifests, mentor, patterns,
+                           progress, render, scaffold, serve, stats, store, style)
     from codecraft import path as pathmod
 else:                                                          # pragma: no cover
-    from . import (adapt, contract, manifests, mentor, patterns, progress, render,
-                   scaffold, serve, stats, store, style)
+    from . import (adapt, contract, dag, manifests, mentor, patterns, progress,
+                   render, scaffold, serve, stats, store, style)
     from . import path as pathmod
 
 HELP = __doc__
@@ -376,6 +377,23 @@ def cmd_stage(profile, rest, ink, courses):
     return 0
 
 
+def cmd_dag(profile, rest, ink, courses):
+    """The registry as one DAG, or one row's prerequisites and what it opens."""
+    name = next((a for a in rest if not a.startswith("-")), None)
+    g = dag.graph()
+    if not name:
+        print(render.render_dag(g, ink))
+        return 0
+    _letter, _phase, entry = pathmod.find(name)
+    info = dag.focus(entry["id"], g) if entry is not None else None
+    if info is None:
+        print(f"  no row named {name!r} in the registry. Try: "
+              "python3 codecraft/cli.py path")
+        return 2
+    print(render.render_dag_row(info, g, ink))
+    return 0
+
+
 def cmd_review(profile, ink, courses):
     items = adapt._due_review(profile, limit=8)
     print(render.render_review(profile, items, ink))
@@ -552,6 +570,24 @@ def self_test() -> int:
     ok(advice2["kind"] in ("accelerate", "focused"),
        "clean streak yields accelerate/focused")
 
+    # the registry is a DAG: every prereq resolves, and no row sits in a cycle
+    g = dag.graph()
+    ok(len(g["ids"]) == len(set(g["ids"])), "no duplicate row ids")
+    ok(not g["dangles"], "every prereq names a row")
+    ok(not g["cycles"], "the registry has no cycle")
+    ok(sorted(i for w in g["waves"] for i in w) == sorted(g["ids"]),
+       "every row lands in exactly one wave")
+    ok(all(not g["edges"][i] for i in g["waves"][0]),
+       "wave 0 is the rows with no prereq")
+    ok(all(g["levels"][p] < g["levels"][i]
+           for i, pres in g["edges"].items() for p in pres),
+       "every prereq sits in an earlier wave")
+    ok("A2" in dag.before("K5") and "K5" not in dag.before("K5"),
+       "a row's closure is transitive and excludes itself")
+    ok("H6" in dag.unlocks("J3"), "unlocks walks down the DAG")
+    ok(all(other in g["edges"] for ac in g["advice"].values()
+           for other, _reason in ac), "every advisory target is a real row")
+
     print("")
     if failures:
         print(f"  {len(failures)} self-test failure(s)\n")
@@ -589,6 +625,8 @@ def main(argv) -> int:
         return cmd_dashboard(profile, courses, ink) or 0
     if cmd == "path":
         return cmd_path(profile, courses, ink) or 0
+    if cmd in ("dag", "tree"):
+        return cmd_dag(profile, rest, ink, courses) or 0
     if cmd == "progress":
         print(progress.render(courses, ink))
         return 0
