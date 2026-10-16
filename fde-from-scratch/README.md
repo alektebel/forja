@@ -371,3 +371,11 @@ customer's own conversations. What it hands on is the shape of the argument: an 
 deliverable is a scope, a deployment that survives the security review, and a handoff
 that outlives them, and all three of those are data structures before they are
 services.
+
+A course is not the whole of that work, and the rest of it is written down in this
+same repository: `ENTERPRISE.md` queues the twelve enterprise-AI projects to build
+against a *real* system somebody else wrote, and its last section names the ones this
+course's stages have already covered in simulation — 2, 3, 4, 5, 7, 10, 11 and 12
+whole, and 1 in one direction only — and the three it leaves to those guides alone
+(6, 8, 9). The guides are where you are surprised by a system you did not write; this
+is where the decisions are graded before you meet it.

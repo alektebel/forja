@@ -126,6 +126,12 @@ that remains. They are projects rather than courses: no provided world, no
 template, no check, so `path.py` does not carry them, and building one starts by
 turning its guide into a contract.
 
+The neighbouring list that was built is not theirs: the twelve-stage FDE skill list
+became `fde-from-scratch` (**K6**, phase K) — a provided customer, twelve graded
+stages, 884 mutations — and it covers, simulated, the decision space of nine of the
+twelve projects above, eight of them whole. `ENTERPRISE.md`'s last section names them
+one by one and says which three have a course nowhere.
+
 ---
 
 ## What this repo has never built — six registered rows (G7, G8, H5, H6, H7, L4)

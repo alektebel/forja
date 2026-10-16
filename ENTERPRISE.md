@@ -16,6 +16,11 @@ somebody else's system, and a mock you wrote yourself cannot surprise you — be
 surprised by a system you did not write *is* the skill on display. Where one of them
 overlaps something already sitting here, the row says so, so that nobody rebuilds it.
 
+That habit has now run the other way once, and it was not one of these twelve: the
+twelve-stage FDE skill list became a graded course, `fde-from-scratch` (K6, phase K),
+and the last section of this file says which of the rows below it covers in
+simulation and which three it leaves to these guides alone.
+
 ## The twelve
 
 | # | Project | What it is | Already in this repo | The gap to build |
@@ -58,3 +63,18 @@ starts, and `codecraft/ROADMAP.md` is where the slot would be registered.
 
 Until then: they are work to do **after** the curriculum, listed here so the queue is
 written down where the rest of the queue is.
+
+That "if one of them is ever made a course" has since happened once, and not to a
+project from these guides: the twelve-stage FDE skill list became
+**`fde-from-scratch`** (K6, phase K) — a provided customer, twelve graded stages, 884
+mutations, `AUDITED: 12, PROBLEMS: 0` — and it covers the decision space of **2**
+(stage 4), **3** (stage 6), **4** (stage 2), **5** (stage 9), **7** (stage 1), **10**
+(stage 5), **11** (stage 10) and **12** (stage 12), plus half of **1** (stage 3
+reconciles a dirty feed one way and never merges a conflict). *Simulated* is the
+operative word: a stage is graded against a tenant directory, a bundle and a meter
+that are data, while the project is still built against a system somebody else wrote
+and still starts by reading its guide — the surprise is the exercise, and a course
+cannot grade it. **6, 8 and 9 are covered by no course anywhere**, in this repository
+or in the guides: the stage closest to 6 reconciles documents and knows nothing of
+at-least-once delivery, and nothing in either list is a fallback chain (8) or a
+control-by-control audit (9).
