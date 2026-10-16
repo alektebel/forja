@@ -1,11 +1,13 @@
 # Next session — where everything is
 
-Written at the end of the session that shipped **L1 (`tcp-ip-from-scratch`)** —
-the stack as data against a provided lossy wire: ten stages from a frame's type
-field to a capstone that runs a whole session and then argues about it with the
-wire's own segment log — 554 planted mutations — plus the `cz brief` layer and
-`cz run <course> --stage N`. Everything in *Done* is committed and pushed; the
-section after it is the commit that carries this file.
+Written at the end of the session that shipped **L2
+(`concurrent-servers-from-scratch`)** — four models for one server on a provided
+in-memory link whose own log is the tie-breaker: ten stages from a connection as
+a state machine to a capstone that runs one workload through all four models,
+delivering 148 bytes each for 42, 54, 19 and 23 steps — **757 planted
+mutations** — plus `cz tracks`, the registry read as tracks and weakly-connected
+components. Everything in *Done* is committed and pushed; the section after it is
+the commit that carries this file.
 
 ## Done, pushed, on `origin/main`
 
@@ -28,8 +30,113 @@ section after it is the commit that carries this file.
 | `4755f5c` | **G4 `os-from-scratch`** — 10 stages, 641 mutations, the machine provided (`machine.py`, `devices.py`, `userland.py`), thesis *an operating system is what you write after the hardware breaks your last promise*; `linux-from-scratch/` staged beside it as prose; smoke green, registered |
 | `bfbdefb` | **`cz stage`, per-stage counts, six registered rows** — the stage page before the run, `codecraft/stats.py` (9,323 asserts and 4,079 caught mutations across the eighteen built courses), the 128 hardcoded repo roots replaced by `__file__`, and G7/G8/H5/H6/H7/L4 registered |
 | `6eb8f8d` | **`cz dag`** — the registry as a dependency DAG (`./cz dag`, `./cz dag <course>`, `cz tree` as an alias), the derived waves and the advisory `ADVICE` layer, and the fifteen-item AI-infrastructure list mapped onto three new rows (I13, I14, H8) |
+| `246003c` | **`cz tracks`** — the registry read as tracks and weakly-connected components: `./cz tracks` (roots, terminals, leverage, merge points, the five components) and `./cz tracks <row>`, answering both "is this row a dependency of most others" and "where does it sit", with the measured reading the command prints — 60 rows · 87 hard edges · 25 tracks · 9 waves, roots `A1, A2, A5, G1, G6, H4, H7`, `A2` in 19 of 25 tracks, `I13` furthest with 17 behind it, 53 of 60 rows carrying at least one prerequisite |
 
-## The unit this file carries — L1 `tcp-ip-from-scratch`
+## The unit this file carries — L2 `concurrent-servers-from-scratch`
+
+**L2 `concurrent-servers-from-scratch`** — ten stages, **757 mutations**, four
+models for one server: *a server is a policy about who gets the processor, and
+the link whose log every claim is measured against is not written by the model it
+grades*. Provided: `link.py`, written by this unit (a `Link` that carries bytes
+on named connections and moves them only when its own clock is stepped, 64 bytes
+a move, an outbox of 8, a listener backlog of 4, a client whose `patience` is a
+count of ticks, seven kinds of event in its own log and fourteen counters in
+`stats()`, including the drops nobody wants to read), and `fleet.py`, J1's file
+copied byte for byte (`cmp` clean) — the clock this link is handed when you would
+rather not use the one inside it. Chain: 1 the connection as a state machine →
+2 the blocking server and the one slow client that starves the rest → 3 threads,
+with the interleaving the *check* chooses → 4 the reactor: readiness as a set,
+no busy-waiting → 5 the event loop and its timer queue → 6 callbacks as data,
+and the one that must not run → 7 futures and `async`/`await` as a desugaring →
+8 backpressure and the write that has to be deferred → 9 the Redis case study as
+a command loop with per-connection state → 10 the capstone: one workload through
+all four models, and the link's own log as the tie-breaker.
+
+- `python3 /home/diego/Desarrollo/.l2-dev/verify_provided.py` → **`PROVIDED: 98,
+  PROBLEMS: 0`** for `link.py` and `fleet.py`, neither of which any stage may
+  edit (`fleet.py` is compared against J1's copy byte for byte, and the link is
+  checked with `fleet.Clock()` injected).
+- `run_all.py 01 … 10` → **`FAILED: 0`**; `mutate_all.py 01 … 10` → **`TOTAL
+  757/757`, `MISSED OR BROKEN: 0`**. Per stage: 64, 60, 89, 61, 70, 84, 90, 71,
+  118, 50 — the capstone and the blocking server are the smallest counts and the
+  widest reach, because what they grade is a *disagreement*: the capstone's check
+  doctors the link's own report three ways (one byte drained, one close missing,
+  one tick too many) and the log wins every one.
+- `audit_course.py 01 … 10` → `AUDITED: 10, PROBLEMS: 0`, and `probe_stages.py`
+  → **`PROBED: 10, PROBLEMS: 0`** — the parent's own reading of each stage,
+  written from `CONTRACT.md` before the stage's check was read: stage 8's `send`
+  probed turn by turn against an outbox of 8 until the 42-byte reply is handed
+  over in outbox-fulls (`8, 8, 8, 8, 8, 2`) and its state is reading again; stage
+  9's store probed by hand for `+OK`, bulk, `$-1`, `:n`, the error line, byte
+  order in `KEYS` and a key forgotten at its deadline; the capstone probed with a
+  one-client workload wrapped into a run by hand and then doctored.
+- `assemble.py` → `assembled 10 checks, 5477 lines, compiles`; `smoke.py` →
+  **`SMOKE: PASS`** (all ten green on the solutions, all ten red on the
+  templates), and the both-ways run was repeated on a *copy* of the repo outside
+  it: `./cz run concurrent-servers-from-scratch` → `0/10` on the templates, the
+  same command with `solutions/` overlaid → **`10/10 passing`**, and the real
+  course's twelve files the same checksums afterwards as before.
+- Registered: `path.py` L2 → `course: "concurrent-servers-from-scratch"`,
+  `kind: "ready"`, a `why` that no longer says "author"; `codecraft/stats.py` →
+  the measured row (133, 72, 138, 88, 110, 91, 114, 114, 174, 71 rejections and
+  64, 60, 89, 61, 70, 84, 90, 71, 118, 50 mutations), `cz stage
+  concurrent-servers-from-scratch 10` printing `71 asserts · 50 planted mutations
+  the check must catch`; the ROADMAP's ready-table row, its counts (**27
+  courses, 301 graded checks**) and its phase-L table; a bullet in the root
+  `README.md`; and the course's own `README.md` (the provided world, the ten-stage
+  ladder, the failure catalogue in stage order, and where the course deliberately
+  stops).
+- **Stage 8's check arrived red, and that was the useful part**: its solution read
+  a client's next request while that client's previous reply was still in flight,
+  so an answer was lost — found by the mutation harness, not by the check. The
+  check grew four scenarios (a request of 71 bytes, more than one `MAX_CHUNK`,
+  assembled from exactly two reads; a dead head whose client's patience expired
+  with a live reply queued behind it; a `seed=8` staggered arrival; and refusals
+  for the phase and for both offset ranges that name the offender), the solution's
+  read side now honours the phase, and the six mutations that no scenario can
+  reach were cut with their reasons recorded in `mutate_08.py`'s docstring.
+- The **capstone was written by hand** (`Stage10-2` had already died in the L1
+  session as a length-stop, so the parent wrote `stage_10.py`,
+  `solutions/stage_10.py`, `check_10.py` and `mutate_10.py`), and the workload is
+  tuned so that all four models agree by bytes: 148 delivered by each for 42, 54,
+  19 and 23 steps, with `compare` reporting that the reactor is cheapest *here*
+  and asserting nothing.
+- Harness: `/home/diego/Desarrollo/.l2-dev/` (`CONTRACT.md` — frozen first, §0–§7
+  with ten stage specs and **three** amendment rows — `DELEGATE.md`,
+  `course_head.py`, `course_tail.py`, ten `check_NN.py`, ten `mutate_NN.py`,
+  `run_all.py`, `mutate_all.py`, `audit_course.py`, `assemble.py`, `smoke.py`,
+  `verify_provided.py`, `probe_stages.py`, `STATE.md`). **Never in `/tmp`.**
+
+Shapes worth keeping: **the world's log is the only account that cannot argue
+with itself** — every stage returns what it decided, the capstone's `cross_check`
+holds it against the link's own counters key by key, and the check proves the
+comparison is real by doctoring the log rather than by trusting the model;
+**steps, not seconds** — the unit of comparison is a turn the model counts, and
+`time`, `threading` and `asyncio` are banned *because they are the subject*;
+**a reply in flight lives in a connection's state** — stage 8's `pending` and
+`offset` are the difference between a reply that takes turns and a reply a loop
+variable lost, and `stalled` names the connections the head-of-line blocking cost
+nobody could see; **a check that arrives red is worth more than nine that arrive
+green** — stage 8's lost reply was a real bug the mutations found, and the fix
+made the check's queue guard exact rather than clever; **the parent's probe is a
+second reading** — where it disagreed with a stage, the prose was wrong once (the
+template's `send` docstring named three of the state's five keys) and the
+solution was wrong zero times; and **the `tests` metric is the check's own
+rejections** — `assert` plus `raise` plus `_refuses(` calls, which is why L2's
+checks count 1,105 of them.
+
+Three contract amendments the *stages* forced, all in `.l2-dev/CONTRACT.md` §7
+(the course wins over the plan): the state a `send` is handed is stage 1's
+connection and phase plus `buffer`, `pending` and `offset`, and a send is a
+`"writing"` move that returns the state to `"reading"` when the reply is drained;
+the capstone's `tie_breaker` is `cross_check(runs[cheapest])` rather than the
+plan's pair of unnamed numbers, so a disagreement says *which* key disagreed; and
+`fleet.py` ships byte-identical while a client's patience is an int on the client
+instead of a scripted worker from J1 — one clock, still moved only by
+`Link.step()`, and a check's fixture is a number a reader can see.
+
+
+### The unit before it — L1 `tcp-ip-from-scratch` (`5ab0f55`)
 
 **L1 `tcp-ip-from-scratch`** — ten stages, **554 mutations**, the stack as data
 against a world that does not care: *the wire keeps the record, and the ledger
@@ -291,16 +398,19 @@ stage 9 so the format's own vocabulary is readable from outside.
 
 ## In flight — nothing
 
-The next unit is **L2, `concurrent-servers-from-scratch`** — four models for one
-server (blocking, thread-per-connection over J1's scheduler, a reactor, an event
-loop), one workload through all four, identical answers and a counted number of
-scheduler steps — and then **L3 `mqtt-broker-from-scratch`** (the wire format
-itself). The rows registered in the three units before this one queue behind
-them, one per slot — G7, G8, H5, H6, H7, L4, then I13, I14, H8 — each carrying its
-own thesis in `path.py`, each with its place in `cz dag`. After those: G5/G6
-(phase G's remaining two, which need checkers, not writing) and phase K's five.
-The backlog is **24 `author`, 6 `legacy`, 2 `salvage`, 28 `ready` — 60 rows** —
-`./cz path`, `./cz dag` and the ROADMAP's own tables are authoritative over this
+The next unit is **L3, `mqtt-broker-from-scratch`** — the wire format itself, built
+byte by byte: the fixed header and its variable-length integer, CONNECT and its
+session flags, a topic trie where `+` and `#` match by component and never by
+prefix string, QoS 1 as state, QoS 2 as a four-way handshake, retained messages
+and the last will, a session that survives a reconnect, and a trace replayed twice
+byte-identically with every frame accepted by the course's own reader. It follows
+L1's framing half and J4's policy half, and it is the last of the three L slots.
+The rows registered in the units before this one queue behind it, one per slot —
+G7, G8, H5, H6, H7, L4, then I13, I14, H8 — each carrying its own thesis in
+`path.py`, each with its place in `cz dag`. After those: G5/G6 (phase G's
+remaining two, which need checkers, not writing) and phase K's five. The backlog
+is **23 `author`, 6 `legacy`, 2 `salvage`, 29 `ready` — 60 rows** — `./cz path`,
+`./cz dag`, `./cz tracks` and the ROADMAP's own tables are authoritative over this
 file.
 
 Two questions from earlier sessions are **answered**: the legacy, thin
@@ -309,7 +419,7 @@ Two questions from earlier sessions are **answered**: the legacy, thin
 two lists in `AI-ENGINEER.md` are handled: 40 items mapped to existing courses,
 five gaps registered as phase K.
 
-## The workflow that produced G3, F2, J1, I9, H1, A8, J2, J3, J4, J5, G4 and L1 — keep it
+## The workflow that produced G3, F2, J1, I9, H1, A8, J2, J3, J4, J5, G4, L1 and L2 — keep it
 
 1. **Recon**, then **freeze a contract** in a dev directory beside the repo
    (`/home/diego/Desarrollo/.g4-dev/CONTRACT.md`): thesis, conventions, the
@@ -317,7 +427,7 @@ five gaps registered as phase K.
    shapes and the *mistake catalogue*. Freeze it before writing any stage; amend
    it — never silently — the moment a stage's real surface differs, with a table
    recording what the plan said, what the course does and why (J3's §7 has eight
-   such rows, J4's nineteen, J5's three, G4's four, L1's fifteen).
+   such rows, J4's nineteen, J5's three, G4's four, L1's fifteen, L2's three).
 2. **Never `/tmp`.** It was wiped three times and killed four delegates. The
    harness lives beside the repo and is re-synced after every change.
 3. **One delegate per stage**, four files each (`stage_NN.py`,

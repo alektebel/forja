@@ -608,8 +608,9 @@ PHASES = [
                 "lossy `wire.py`; G3 is the house's example of a simulator a "
                 "course is written against, and J4 is the method: the world "
                 "keeps the record."},
-        {"id": "L2", "title": "Concurrent Servers", "course": None,
-         "kind": "author", "prereq": ["J1", "J3"],
+        {"id": "L2", "title": "Concurrent Servers",
+         "course": "concurrent-servers-from-scratch", "kind": "ready",
+         "prereq": ["J1", "J3"],
          "why": "Four models for one server, from the second series: a blocking "
                 "server and the one slow client that stops everyone, "
                 "thread-per-connection over J1's scheduler with the interleaving "
@@ -619,9 +620,11 @@ PHASES = [
                 "futures and async/await as a desugaring, backpressure and "
                 "head-of-line blocking, the Redis case study as a command loop, "
                 "and one workload through all four models with identical answers "
-                "and a counted number of scheduler steps. Author "
-                "concurrent-servers-from-scratch; J1 is the queueing half and J3 "
-                "is the durability half of the same problem."},
+                "and a counted number of scheduler steps. Ten stages against a "
+                "provided `link.py` — the world whose own log every claim of "
+                "every model is held against, and which no model writes — over "
+                "J1's `fleet.py` copied byte for byte; J1 is the queueing half "
+                "and J3 is the durability half of the same problem."},
         {"id": "L3", "title": "MQTT Broker", "course": None,
          "kind": "author", "prereq": ["L1", "J4"],
          "why": "The wire format itself, from the third series: the fixed header "
@@ -633,8 +636,9 @@ PHASES = [
                 "messages and the last will, a session that survives a "
                 "reconnect, and a trace replayed twice byte-identically with "
                 "every frame the broker wrote accepted by the course's own "
-                "reader. Author mqtt-broker-from-scratch; L1 is the framing and "
-                "J4 is the policy that decides who may publish where."},
+                "reader. Author mqtt-broker-from-scratch; L1 is the framing half "
+                "of a wire, and it is built, while J4 is the policy that decides "
+                "who may publish where."},
         {"id": "L4", "title": "Git From Scratch", "course": None,
          "kind": "author", "prereq": ["G4"],
          "why": "The one artefact in this repository that another program "
