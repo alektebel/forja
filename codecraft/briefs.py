@@ -42,6 +42,7 @@ CONTRACTS = {
     "J4": ".j4-dev/CONTRACT.md",
     "J5": ".j5-dev/CONTRACT.md",
     "L1": ".l1-dev/CONTRACT.md",
+    "L2": ".l2-dev/CONTRACT.md",
 }
 
 # ---------------------------------------------------------------------------
@@ -162,7 +163,7 @@ _HEADING = re.compile(r"^#{2,3} +(.+?)\s*$", re.M)
 def slug_of(entry) -> str:
     """What the row's course is called: its own slug when it has a directory.
 
-    For a row still to author, `Author tcp-ip-from-scratch` is the house's way
+    For a row still to author, `Author mqtt-broker-from-scratch` is the house's way
     of naming the thing to write; where a row does not name one, its title's own
     slug is the name a `codecraft new` would give it.
     """

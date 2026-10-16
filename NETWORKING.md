@@ -12,8 +12,8 @@ and a gap is stated as work or not stated at all.** "Covered" below means *a sta
 builds the mechanism and a check catches the mistake*, not that a course mentions
 it.
 
-Phase **L** of `codecraft/ROADMAP.md`; `path.py` carries the three slots (L1–L3)
-as `author`.
+Phase **L** of `codecraft/ROADMAP.md`; `path.py` carries L1 and L2 as `ready`
+and L3 as `author`.
 
 ---
 

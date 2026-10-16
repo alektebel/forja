@@ -88,10 +88,12 @@ all built now, from the Agent Infra list kept in `AGENT-INFRA.md`.
 No retrieval that checks itself, no prompt/routing ops, no memory engine, no
 fine-tuning and no privacy gateway — phase K, below, is those five, from the
 interview and build lists kept in `AI-ENGINEER.md`.
-No reactor and no broker — phase L's two remaining rows, from the three C/C++
-networking series kept in `NETWORKING.md`; the stack itself is
-`tcp-ip-from-scratch` now, ten stages from the frame up to a session whose
-tie-breaker is the wire's own segment log. The repo has an application protocol
+No broker — phase L's one remaining row, from the three C/C++
+networking series kept in `NETWORKING.md`; the stack is `tcp-ip-from-scratch` and
+the reactor is `concurrent-servers-from-scratch` now, twenty stages between them,
+from the frame up to a session whose tie-breaker is the wire's own segment log,
+and from one slow client to one workload served four ways with identical answers.
+The repo has an application protocol
 (legacy `http-server`, `dns-server`) and a modelled
 collective (`interconnects-from-scratch`), and it parses a wire format byte by
 byte in exactly one place: `tcp-ip-from-scratch`.
@@ -581,7 +583,6 @@ timing:
 
 | Slot | Course | The mechanism | After |
 |---|---|---|---|
-| L2 | `concurrent-servers-from-scratch` — **built** | Four models for one server over a provided in-memory `link.py`: blocking, thread-per-connection on a scheduler with the interleaving the check chooses, a reactor whose readiness is a set, the event loop and its timer queue, callbacks as a handle table, futures and `async`/`await` as a desugaring, backpressure and head-of-line blocking, the Redis case study as a command loop, and one workload through all four with identical answers (148 bytes each, 42/54/19/23 steps) and the link's own log as the tie-breaker | J1, J3 |
 | L3 | `mqtt-broker-from-scratch` — to author | The wire format itself: the fixed header and its variable-length integer, CONNECT and the session flags, a topic trie where `+` and `#` are matched by components and never by prefix string, QoS 1 as state, QoS 2 as a four-way handshake, retained messages and the last will, a session that survives a reconnect, and a trace replayed twice byte-identically with every frame accepted by the course's own reader | L1, J4 |
 
 `L4 git-from-scratch` joined the phase later, from the review of what this repo

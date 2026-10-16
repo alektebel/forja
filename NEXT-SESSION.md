@@ -30,6 +30,7 @@ the commit that carries this file.
 | `4755f5c` | **G4 `os-from-scratch`** — 10 stages, 641 mutations, the machine provided (`machine.py`, `devices.py`, `userland.py`), thesis *an operating system is what you write after the hardware breaks your last promise*; `linux-from-scratch/` staged beside it as prose; smoke green, registered |
 | `bfbdefb` | **`cz stage`, per-stage counts, six registered rows** — the stage page before the run, `codecraft/stats.py` (9,323 asserts and 4,079 caught mutations across the eighteen built courses), the 128 hardcoded repo roots replaced by `__file__`, and G7/G8/H5/H6/H7/L4 registered |
 | `6eb8f8d` | **`cz dag`** — the registry as a dependency DAG (`./cz dag`, `./cz dag <course>`, `cz tree` as an alias), the derived waves and the advisory `ADVICE` layer, and the fifteen-item AI-infrastructure list mapped onto three new rows (I13, I14, H8) |
+| `5ab0f55` | **L1 `tcp-ip-from-scratch`** — 10 stages, provided `wire.py` and `hosts.py` (J1's world, `fleet.py`'s cross-check discipline), 554 mutations, smoke green, registered |
 | `246003c` | **`cz tracks`** — the registry read as tracks and weakly-connected components: `./cz tracks` (roots, terminals, leverage, merge points, the five components) and `./cz tracks <row>`, answering both "is this row a dependency of most others" and "where does it sit", with the measured reading the command prints — 60 rows · 87 hard edges · 25 tracks · 9 waves, roots `A1, A2, A5, G1, G6, H4, H7`, `A2` in 19 of 25 tracks, `I13` furthest with 17 behind it, 53 of 60 rows carrying at least one prerequisite |
 
 ## The unit this file carries — L2 `concurrent-servers-from-scratch`
@@ -123,7 +124,9 @@ second reading** — where it disagreed with a stage, the prose was wrong once (
 template's `send` docstring named three of the state's five keys) and the
 solution was wrong zero times; and **the `tests` metric is the check's own
 rejections** — `assert` plus `raise` plus `_refuses(` calls, which is why L2's
-checks count 1,105 of them.
+checks count 1,105 of them. Across the twenty courses that carry a `course.py`
+the measured totals are now **11,557 assertions and 5,390 caught mutations**,
+recomputed from the rows in `codecraft/stats.py`.
 
 Three contract amendments the *stages* forced, all in `.l2-dev/CONTRACT.md` §7
 (the course wins over the plan): the state a `send` is handed is stage 1's
