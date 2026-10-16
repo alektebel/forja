@@ -13,7 +13,7 @@ the rest.**
 
 ### Ready now — checker-driven, pure Python, `codecraft` runs them as-is
 
-Twenty-eight courses, 311 graded checks between them, no dependencies.
+Twenty-nine courses, 323 graded checks between them, no dependencies.
 
 | Course | Checks | What it teaches |
 |---|---|---|
@@ -24,6 +24,7 @@ Twenty-eight courses, 311 graded checks between them, no dependencies.
 | `llm-from-scratch` | 13 | BPE, attention, sampling, KV cache, RoPE |
 | `compiler-and-vgpu` | 12 | ISA, assembler, front end, register allocation, SIMT divergence |
 | `deploy-and-debug` | 12 | Capacity math, percentiles, SLOs, fault diagnosis, rollout |
+| `fde-from-scratch` | 12 | Enterprise AI delivery end to end: identity and the row, air-gapped deployment, dirty invoices reconciled into a hybrid store, retrieval that filters before the limit, the ERP as tools with the credential staying in the vault, PII masked out and restored back, a gate a person answers, the model that fits the customer's GPU, the work counted in hours and cents, shadow evals and one verdict, a vague ask scoped to four weeks, a runbook drilled against armed faults |
 | `evals-from-scratch` | 10 | Group-wise splits, EM/F1, nDCG, judge bias, kappa, paired significance, Holm, the gate |
 | `agents-from-scratch` | 10 | The tool loop and its transcript, tool schemas, errors as observations, parsing a reply, retries + idempotent effects, turn-aware memory, a path sandbox, an approval gate, budgets, a state-based audit |
 | `mcp-from-scratch` | 10 | The JSON-RPC envelope and its codes, stdio/SSE/HTTP framing, the handshake and derived capabilities, tools with the protocol/execution error split, resources and prompts, subscriptions/progress/cancellation, read-only first, idempotency keys, a diff-bound confirmation, the trajectory policy and the audit line (spec 2025-06-18) |
@@ -88,7 +89,8 @@ across a killed worker, the capability sandbox and the fleet's own metrics — a
 all built now, from the Agent Infra list kept in `AGENT-INFRA.md`.
 No retrieval that checks itself, no prompt/routing ops, no memory engine, no
 fine-tuning and no privacy gateway — phase K, below, is those five, from the
-interview and build lists kept in `AI-ENGINEER.md`.
+interview and build lists kept in `AI-ENGINEER.md`; its sixth slot is a list of its
+own, the twelve-stage FDE skill list, built whole as `fde-from-scratch`.
 No broker — that gap is closed too: `mqtt-broker-from-scratch` (L3) is the wire
 format itself, built byte by byte against the three C/C++ networking series kept
 in `NETWORKING.md`. The stack is `tcp-ip-from-scratch`, the reactor is
@@ -558,7 +560,7 @@ failures are reproducible, which is what makes them checkable at all.
 
 ---
 
-## Applied AI engineering (phase K) — two lists, as five courses
+## Applied AI engineering (phase K) — two lists and one skill list, as six courses
 
 Two more lists arrived from the user and are kept verbatim in `AI-ENGINEER.md`:
 **25 interview problems** (design a RAG system for 10M documents; your RAG gives
@@ -569,9 +571,13 @@ RAG, 3-tier memory, trajectory CI gate, PII gateway, …). That file maps every 
 of the 40 items to what already exists here — most of them are covered or partly
 covered by phases B, C, D, E and J — and collects what is not.
 
-Five gaps survived the mapping, and they are the five K slots. All of them are
-authorable in the house style (a provided simulator, ten graded stages, a check
-per stage, mutations behind every check), and none of them needs a server, a
+Five gaps survived that mapping, and they are the first five K slots. The sixth is
+not from those two lists at all: the **twelve-stage FDE skill list** — what a
+forward deployed engineer is hired to do, learned, practised and defended, stage by
+stage — and it is built whole as `fde-from-scratch` rather than left as prose, over
+a customer that is data (`estate.py`, `network.py`, `meter.py`). All six are
+authorable in the house style (a provided simulator, ten or twelve graded stages, a
+check per stage, mutations behind every check), and none of them needs a server, a
 network or a thread:
 
 | Slot | Course to author | The mechanism | After |
@@ -581,6 +587,7 @@ network or a thread:
 | K3 | `memory-engine-from-scratch` | The three tiers as data structures: a working scratchpad with a hard budget, episodic summaries with a consolidation rule, a semantic store with importance scoring and eviction, and recall measured over a long conversation | E1, B2 |
 | K4 | `fine-tuning-from-scratch` | LoRA and preference tuning over A8's exact engine: the low-rank update and why it trains, a 5K-example budget that refuses a plan it cannot pay for, DPO pairs built from recorded failures, and fine-tune-vs-RAG-vs-prompting defended against a number | A8, C1 |
 | K5 | `agent-privacy-from-scratch` | What leaves the process and what may come back: tokenize sensitive values before the context window and restore them after, an audit line that answers "what did it touch", per-agent least privilege, and one agent's output sanitized before it becomes another's input | C2, D1, J2 |
+| K6 | `fde-from-scratch` | The twelve skills an FDE is hired for, over a customer that is data: identity and the row, an air-gapped deployment, dirty invoices reconciled into a hybrid store, retrieval that filters before the limit, the legacy ERP as tools with the credential staying in the vault, PII masked out and restored back, a workflow that stops at a person, the model that fits the customer's GPU, the work counted in hours and cents, their own tickets run in shadow, a vague ask scoped to four weeks, and a runbook drilled against armed faults handed to an admin who is not you | B1, C1, D1, J4 |
 
 Three of the 40 items deliberately have **no slot**, and `AI-ENGINEER.md` says
 why for each: serving at scale and 1M-user chat are systems exercises the repo

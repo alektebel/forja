@@ -82,7 +82,7 @@ big the tester is, and where you are on the ladder:
 can be recomputed from `course.py` at any time. `mutants` counts the planted
 mistakes that check was *proven* to catch, and it is recorded in
 `codecraft/stats.py` on purpose: the harness that plants them is built and deleted
-while a course is authored, outside this repository, so for ten of the twenty-one
+while a course is authored, outside this repository, so for ten of the twenty-two
 courses the number is gone and the page says so rather than printing a zero.
 `stage <row>` also answers for a course that is registered but not written yet: it
 prints the row, its prerequisites and its thesis, which is what `cz stage G7`

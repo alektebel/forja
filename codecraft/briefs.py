@@ -40,6 +40,7 @@ CONTRACTS = {
     "J2": ".j2-dev/CONTRACT.md",
     "J3": ".j3-dev/CONTRACT.md",
     "J4": ".j4-dev/CONTRACT.md",
+    "K6": ".fde-dev/CONTRACT.md",
     "J5": ".j5-dev/CONTRACT.md",
     "L1": ".l1-dev/CONTRACT.md",
     "L2": ".l2-dev/CONTRACT.md",

@@ -592,6 +592,27 @@ PHASES = [
                 "sanitization of one agent's output before it becomes another's "
                 "input. Author agent-privacy-from-scratch; J4 is the sandbox "
                 "half and this is the data-in-transit half."},
+        {"id": "K6", "title": "Forward Deployed Engineer",
+         "course": "fde-from-scratch", "kind": "ready",
+         "prereq": ["B1", "C1", "D1", "J4"],
+         "why": "The twelve skills an FDE is hired for, as twelve stages against a "
+                "customer that is data: the assertion, the session and the row; a "
+                "deployment that cannot reach out; an invoice feed reconciled into a "
+                "hybrid store; a retriever that filters before the limit; the legacy "
+                "system as tools with the credential staying in the vault; PII masked "
+                "on the way out and restored on the way back; a workflow that stops "
+                "at a person and journals the decision; the model that fits the GPU "
+                "somebody else owns; the AI's work counted in hours and cents; the "
+                "customer's own tickets run in shadow and answered with one verdict; a "
+                "vague ask turned into a scoped four weeks; and a runbook drilled "
+                "against armed faults, handed to an admin who is not you. Built as "
+                "`fde-from-scratch`: twelve stages over a provided `estate.py`, "
+                "`network.py` and `meter.py` — the customer's directory, its basement "
+                "and its meter — where every claim is held against the world's own "
+                "log and no stage may write it. B1 is the retriever this course makes "
+                "refuse a row, C1 the harness it points at the customer's tickets, D1 "
+                "the protocol behind its tools, and J4 the discipline its credentials "
+                "follow."},
     ]),
     ("L", "Programs that talk", [
         {"id": "L1", "title": "TCP/IP From Scratch",

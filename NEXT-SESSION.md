@@ -1,13 +1,16 @@
 # Next session — where everything is
 
-Written at the end of the session that shipped **L3
-(`mqtt-broker-from-scratch`)** — a broker whose every frame its own reader takes
-back, on a provided byte-pipe transport (`streams.py`) and a provided policy table
-(`grants.py`): ten stages from the fixed header and its variable-length integer to
-a capstone that runs one scenario twice, re-reads its own trace and holds its
-report against the transport's log — **600 planted mutations**. Phase L is closed:
-L1, L2 and L3 are all in the ready table. Everything in *Done* is committed and
-pushed; the section after it is the commit that carries this file.
+Written at the end of the session that shipped **K6 (`fde-from-scratch`)** — the
+twelve-stage FDE skill list built whole instead of left as prose, over a provided
+customer that *is* data: identity and the row, an air-gapped deployment, dirty
+invoices reconciled into a hybrid store, retrieval that filters before the limit,
+the legacy ERP as tools with the credential staying in the vault, PII masked out and
+restored back, a workflow that stops at a person, the model that fits somebody
+else's GPU, the work counted in hours and cents, the customer's own tickets run in
+shadow, a vague ask scoped to four weeks, and a runbook drilled against armed faults
+— **884 planted mutations**. Phase K now has one built slot and five promised ones.
+Everything in *Done* is committed and pushed; the section after it is the commit
+that carries this file.
 
 ## Done, pushed, on `origin/main`
 
@@ -35,8 +38,106 @@ pushed; the section after it is the commit that carries this file.
 
 | `d7c9d3e` | **L2 `concurrent-servers-from-scratch`** — 10 stages, provided `link.py` (J1's `fleet.py` byte-identical), 757 mutations, smoke green, registered |
 | `4856935` | the L2 doc follow-up: the six files the flip left stale (`NETWORKING.md`, `NEXT-SESSION.md`, root `README.md`, `codecraft/README.md`, `codecraft/ROADMAP.md`, `codecraft/briefs.py`) |
+| `1268705` | **L3 `mqtt-broker-from-scratch`** — 10 stages, provided `streams.py` (the byte-pipe transport) and `grants.py` (the policy table), 600 mutations, smoke green, registered; phase L closed |
+| `eaf0a64` | **`ENTERPRISE.md`** — the twelve enterprise-AI projects kept verbatim with a per-project "already in this repo / the gap to build" table, and the queue folded into `path.py` |
 
-## The unit this file carries — L3 `mqtt-broker-from-scratch`
+## The unit this file carries — K6 `fde-from-scratch`
+
+**K6 `fde-from-scratch`** — twelve stages, **884 mutations**, and the first built
+slot of phase K: *an FDE builds the smallest thing that survives the customer's own
+reality — a boundary enforced by the system rather than remembered by the author,
+and an artifact checked against the customer's own record rather than against a
+belief*. The twelve are the twelve-stage FDE skill list, one stage each and none
+invented: the assertion, the session and the row; a deployment that cannot reach
+out; the invoice, the reconciliation and the hybrid store; retrieval that cannot
+leak a row; the legacy system as tools, and the credentials that stay behind; mask,
+forward, restore, and prove nothing leaked; the workflow that waits for a human; the
+model that fits the customer's GPU; what the AI did for this team, in hours and
+cents; shadow traffic and a verdict; from a vague ask to a scoped four weeks; and a
+runbook that is tested, and an admin who is not you.
+
+The world is provided and frozen, three modules no stage may write: `estate.py`,
+the customer itself — a directory of roles, groups and clearances (`IdP`), the
+twenty-five rows across two tenants in four classifications, the eight documents
+that arrive from their invoicing system dirty in exactly the ways thirty-year-old
+data is dirty, and the audit log every act is written to whose `stats()` recounts
+itself; `network.py`, the basement — five images in a bundle, six nodes, one of them
+missing from the bundle, and not one zone that reaches `"public"`; and `meter.py`,
+what a token cost and what a resolution saved per team. Both tenants are in the
+estate on purpose: `contoso`'s rows are the ones carrying `restricted`, so isolation
+has to be *demonstrated* rather than assumed, and a whole-course rule follows from
+it — the course never writes the world, it asks it questions, and a refusal that
+leaves a trace in the world's own log fails the stage.
+
+What the shipped artifacts prove, every line re-run by the parent on the frozen
+tree: `verify_provided.py` → `PROVIDED: 107, PROBLEMS: 0` (all three provided
+digests unchanged); `run_all.py` → twelve `stage NN: PASS`, `FAILED: 0`;
+`mutate_all.py` → `TOTAL 884/884`, `MISSED OR BROKEN: 0`, between 54 and 87 per
+stage; `audit_course.py` → `AUDITED: 12, PROBLEMS: 0`; `assemble.py` → `assembled
+12 checks, 6989 lines, compiles`; `smoke.py` → `SMOKE: PASS`, meaning every check
+passes on the solutions *and* fails on the untouched templates; and a parent-written
+runner that overlays `solutions/` on the templates in a temp copy and calls the
+twelve checks inside the assembled `course.py` → `ASSEMBLED: 12/12`. **The parent's
+probe is a second reading**: `.fde-dev/probe_stages.py` is one section per stage
+written from the contract alone — no delegate's report consulted — and it reads the
+plan back against the landed files: **331 expectations, 0 problems**. It earned its
+keep differently from L3's: what it found was six bugs *in itself*, and the joins it
+forced (an approval runs what the gate released; `fits` answers a reason for a name
+it holds no catalogue for; `calibrate` takes the labelled cases; a gap nobody
+drilled outranks the one that still needs the engineer) were readings the stages had
+already made and documented, so the contract was amended to them rather than the
+other way round — which is what §7 is for.
+
+Twelve delegates wrote the twelve stages, one stage each and four files apiece —
+the template, its solution, the check and the mutation list — against a contract
+frozen in `.fde-dev/CONTRACT.md` before stage 1 (§0 the ladder, §1 the laws, §2 the
+provided world and its API, §3 the execution model, §4.0 every answer shape pinned,
+§4.1–§4.12 one section per stage with its surface, rules and mistake catalogue, §5
+the check conventions, §6 the harness, §7 the amendments). The parent re-ran every
+verdict rather than trusting a report — `run_all`, `mutate_all`, `audit_course` and
+the probe, per stage — and the harness is `.fde-dev/`, outside the repository as the
+house keeps them (`assemble.py`, `run_all.py`, `audit_course.py`, `mutate_all.py`,
+`smoke.py`, `run_assembled.py`, `verify_provided.py`, `probe_stages.py`,
+`count_tests.py`, and the twelve `check_NN.py` / `mutate_NN.py` pairs). Two of the
+parent's own readings are worth recording because they were wrong first: the audit
+enforced an unpadded stage number in titles and stub messages — the house
+convention, read off thirty assembled courses — after an earlier reading of it
+demanded the opposite, and the probe's own fixture assumed a `restricted` row in the
+customer's tenant, which the world does not have.
+
+Registered: `path.py` → **K6** `Forward Deployed Engineer`, `course:
+"fde-from-scratch"`, `kind: "ready"`, prereq `["B1", "C1", "D1", "J4"]` (the
+retriever this course makes refuse a row, the harness it points at the customer's
+tickets, the protocol behind its tools, the discipline its credentials follow), with
+a `why` that names all three provided modules; `stats.py` gains the row — **1,377
+ways the twelve checks can reject your file and 884 caught mutations**, 54 to 87 per
+stage, measured from the assembled `course.py` with the recipe re-derived against
+L2's, mqtt's, rag's and agents' recorded rows first — and its census moves to
+twenty-two courses with a `course.py`; `briefs.py` gains `"K6":
+".fde-dev/CONTRACT.md"`, so `cz brief K6` prints `frozen before stage 1` instead of
+falling through; the ROADMAP's census moves to twenty-nine courses and 323 graded
+checks, its ready table gains the row, and the phase-K narrative now reads six slots
+— the fifth gap's two lists plus the FDE skill list, built whole; the root README's
+*Operations & Reliability* list gains the course; `NEXT-SESSION.md` is this file; and
+the course carries its own `README.md`, whose *Where this stops* says what is
+simulated rather than real (no Okta, no SAP, no Kubernetes, no GPU, no model server,
+no socket, no clock, no randomness, no float).
+
+Ten amendment rows in `.fde-dev/CONTRACT.md` §7 record where the course beat the
+plan: the shape of an approval (`approve` runs what the gate released, and the
+journal line is what keeps the decision observable), a 0-based journal `seq`, a
+reason rather than a raise for a name where a record belongs, `grade`'s two models
+taken from the shadow rows' own fields, `shadow`/`calibrate` speaking the case's
+text and `CASE_KEYS`' own `expected`, `problems` as `(problem, requirement id)`
+pairs with `scope-out-as-requirement` matched on the statement's exact text, `gaps`
+reporting `uncovered` before `fde-only`, `no-expect` as the fifth runbook problem
+with the failure path behind it, `forward` restoring into an audit line because
+`GUARD_KEYS` has no slot for the answer, and the unpadded stage number. Nothing was
+cut for being unreachable: every guard the twelve stages declare is reached by a
+fixture in its own check, and every mutation leaves the stage's own output alone and
+is caught.
+
+### The unit before it — L3 `mqtt-broker-from-scratch`
 
 **L3 `mqtt-broker-from-scratch`** — ten stages, **600 mutations**, and the last of
 the three L slots: *a broker is a reader that never guesses and a writer that never
