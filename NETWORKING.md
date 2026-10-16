@@ -12,8 +12,8 @@ and a gap is stated as work or not stated at all.** "Covered" below means *a sta
 builds the mechanism and a check catches the mistake*, not that a course mentions
 it.
 
-Phase **L** of `codecraft/ROADMAP.md`; `path.py` carries L1 and L2 as `ready`
-and L3 as `author`.
+Phase **L** of `codecraft/ROADMAP.md`; `path.py` carries L1, L2 and L3 as
+`ready`.
 
 ---
 
@@ -83,14 +83,20 @@ All three are authorable in the house style: a provided simulator, ten graded
 stages, a check per stage, and at least thirty-four planted mutations behind
 every check.
 
+All three are built now (`path.py` carries L1, L2 and L3 as `ready`); the chains
+below are the plans the courses were written against, and each course's own
+`README.md` carries what shipped and where it differs.
+
 | Slot | Course to author | The mechanism | After |
 |---|---|---|---|
 | L1 | `tcp-ip-from-scratch` | The stack as data, against a provided `wire.py` that delivers frames in order, loses them, duplicates them or reorders them on command, and a `hosts.py` of peers, a router and a name table. Chain: 1 the Ethernet frame and its type field → 2 ARP and the cache that ages out → 3 IPv4, the routing table and the TTL that must be decremented rather than ignored → 4 ICMP echo and the checksum that has to be recomputed over the header → 5 the handshake as a state machine (SYN, SYN-ACK, ACK, and where the sequence number comes from) → 6 the data flow and the window that must not be overrun, with cumulative acknowledgements → 7 the socket API as a table (`listen`/`accept`/`read`/`write` over a modelled connection) → 8 retransmission on the injected clock (one timer, a doubling backoff, and a segment the link drops exactly once) → 9 the close (FIN, half-open, and `TIME_WAIT` as a state and not a sleep) → 10 a session: two hosts, a lossy link, a request and a response, with the **wire's own segment log as the tie-breaker** — the audit answers what was sent, what was resent and what was never acknowledged | G3, J4 |
 | L2 | `concurrent-servers-from-scratch` | Four models for one server, over a provided in-memory `link.py` (a queue with readiness) on J1's `fleet.py` and the injected clock. Chain: 1 a server as a state machine (accept, read, write, close as data) → 2 the blocking server, and the one slow client that stops everyone → 3 thread-per-connection over J1's scheduler, with the interleaving the *check* chooses → 4 the reactor: readiness as a set, a poll loop that never busy-waits → 5 the event loop and its timers (a monotonic queue on the clock) → 6 callbacks as data (a handle table, cancellation, and a callback that must not run for a closed connection) → 7 futures and `async`/`await` as a desugaring — a coroutine is a step function and a loop that drives it → 8 backpressure: a bounded outbox, the write that must be deferred, and head-of-line blocking made visible → 9 the Redis case study as a command loop with per-connection state → 10 one workload through all four models, with **identical answers and a counted number of scheduler steps** as the only honest way to compare them | J1, J3 |
-| L3 | `mqtt-broker-from-scratch` | The wire format itself, against a provided byte-buffer reader and a `clients.py` of five clients. Chain: 1 the fixed header and the variable-length integer → 2 CONNECT/CONNACK and the session flags → 3 SUBSCRIBE/SUBACK and the topic trie (`+` and `#` matched by *components*, never by prefix string) → 4 PUBLISH and delivery to every matching subscriber → 5 QoS 1 as state: the packet id, the PUBACK and the redelivery deadline → 6 QoS 2 as a four-way handshake, and why an id may not be reused before PUBCOMP → 7 retained messages and the last will → 8 a session that survives a reconnect (queued messages and the clean-session flag) → 9 the broker loop: five clients, one event loop, the wire's byte log as the tie-breaker → 10 a publish/ack trace replayed twice, **byte-identical**, with every frame the broker wrote accepted by the course's own reader — the writer and the reader are inverses, or the test is a lie | L1, J4 |
+| L3 | `mqtt-broker-from-scratch` | The wire format itself, against a provided byte-pipe transport (`streams.py`: named streams, a `CHUNK` a step, `send` that returns what it took, a log `stats()` recomputes from, and a `cut` that counts what it lost) and a provided policy table (`grants.py`) whose six reasons and decision line are the vocabulary a refusal arrives in. Chain: 1 the fixed header and the variable-length integer → 2 CONNECT/CONNACK and the session flags → 3 SUBSCRIBE/SUBACK and the topic trie (`+` and `#` matched by *components*, never by prefix string) → 4 PUBLISH and delivery to every matching subscriber → 5 QoS 1 as state: the packet id, the PUBACK and the redelivery deadline → 6 QoS 2 as a four-way handshake, and why an id may not be reused before PUBCOMP → 7 retained messages and the last will → 8 a session that survives a reconnect (queued messages and the clean-session flag) → 9 the broker loop: five clients, one event loop, the wire's byte log as the tie-breaker → 10 a publish/ack trace replayed twice, **byte-identical**, with every frame the broker wrote accepted by the course's own reader — the writer and the reader are inverses, or the test is a lie | L1, J4 |
 
 What has **no slot**: the blog posts themselves (this file keeps the links and the
 reasoning), the C implementations (the house writes Python; the C versions are
 what the legacy `communication-protocols`/`http-server`/`dns-server` slots are
 for), and the MQTT *client* — a client is the broker's protocol seen from the
-other side, so it is a stage of L3 rather than a course.
+other side, so it is the other end of L3's own wire rather than a course: the
+provided transport carries the client's bytes and the course's reader never has to
+guess which end wrote them.

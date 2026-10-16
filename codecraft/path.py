@@ -625,8 +625,8 @@ PHASES = [
                 "every model is held against, and which no model writes — over "
                 "J1's `fleet.py` copied byte for byte; J1 is the queueing half "
                 "and J3 is the durability half of the same problem."},
-        {"id": "L3", "title": "MQTT Broker", "course": None,
-         "kind": "author", "prereq": ["L1", "J4"],
+        {"id": "L3", "title": "MQTT Broker", "course": "mqtt-broker-from-scratch",
+         "kind": "ready", "prereq": ["L1", "J4"],
          "why": "The wire format itself, from the third series: the fixed header "
                 "and its variable-length integer, CONNECT and the session flags, "
                 "a topic trie where `+` and `#` are matched by components and "
@@ -636,9 +636,15 @@ PHASES = [
                 "messages and the last will, a session that survives a "
                 "reconnect, and a trace replayed twice byte-identically with "
                 "every frame the broker wrote accepted by the course's own "
-                "reader. Author mqtt-broker-from-scratch; L1 is the framing half "
-                "of a wire, and it is built, while J4 is the policy that decides "
-                "who may publish where."},
+                "reader. Built as `mqtt-broker-from-scratch`: ten stages against "
+                "a provided `streams.py` — the byte-pipe transport whose `send` "
+                "returns what it took, whose `step()` is the only thing that "
+                "moves a byte or a tick, and whose own log and `stats()` every "
+                "number of the broker's report is held against — and a provided "
+                "`grants.py`, the policy table with six reasons whose decision "
+                "line is written before the act it allows. L1 is the framing half "
+                "of a wire, and J4 is the policy that decides who may publish "
+                "where."},
         {"id": "L4", "title": "Git From Scratch", "course": None,
          "kind": "author", "prereq": ["G4"],
          "why": "The one artefact in this repository that another program "

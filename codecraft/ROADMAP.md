@@ -13,7 +13,7 @@ the rest.**
 
 ### Ready now — checker-driven, pure Python, `codecraft` runs them as-is
 
-Twenty-seven courses, 301 graded checks between them, no dependencies.
+Twenty-eight courses, 311 graded checks between them, no dependencies.
 
 | Course | Checks | What it teaches |
 |---|---|---|
@@ -29,6 +29,7 @@ Twenty-seven courses, 301 graded checks between them, no dependencies.
 | `mcp-from-scratch` | 10 | The JSON-RPC envelope and its codes, stdio/SSE/HTTP framing, the handshake and derived capabilities, tools with the protocol/execution error split, resources and prompts, subscriptions/progress/cancellation, read-only first, idempotency keys, a diff-bound confirmation, the trajectory policy and the audit line (spec 2025-06-18) |
 | `agent-harness-from-scratch` | 10 | The runtime under an agent with the model as a callable: collect an event stream into one turn, a prompt budget recomputed from the bytes, the loop where a spent budget is an outcome, dispatch where an unknown tool is a message, streaming with TTFT and inter-token timings, retries that stop before anything is forwarded, compaction that summarizes the middle, a trace of six keys and no payloads, a process reward grounded in the previous result, and a verifier plus a self-generated data loop measured on held-out tasks |
 | `vector-index-from-scratch` | 10 | Exact scan, the metric, k-means, IVF, the frontier, HNSW, deletions, int8 |
+| `mqtt-broker-from-scratch` | 10 | A broker whose every frame its own reader takes back, on a provided byte-pipe transport (`streams.py`) and a provided policy table (`grants.py`): the fixed header and the variable-length integer that says how long the rest is, CONNECT and the session flags, a topic trie where `+` and `#` are matched by components and never by prefix string, SUBSCRIBE and the QoS actually granted, PUBLISH routed to real subscribers and retained for the next one, QoS 1 as state (the packet id, the PUBACK, the deadline that re-sends with DUP), QoS 2 as a four-way handshake whose id may not be reused before PUBCOMP, a session that outlives the socket with its queue and its keep-alive, the last will a cut connection owes, grants and denials written down before the act, and a capstone that runs one scenario twice, re-reads its own trace with the course's own reader, and holds its report against the transport's log key by key |
 | `concurrent-servers-from-scratch` | 10 | Four models for one server on a provided in-memory `link.py` whose own log is the tie-breaker: a connection as a state machine over an outbox that has to be counted rather than assumed, a blocking server and the one slow client that starves everybody behind it, threads whose interleaving the *check* chooses (the scheduler is a data structure, and `time`, `threading` and `asyncio` are banned because they are the subject), a reactor whose readiness is a set and whose poll loop never busy-waits, the event loop with a monotonic timer queue, callbacks as a handle table where the cancelled one must not run, futures and `async`/`await` as a desugaring onto the same loop, backpressure as a reply deferred in the connection's own state (`pending`/`offset`, because the outbox's bound is the world's) with head-of-line blocking reported as `stalled`, the Redis case study as a command loop with per-connection state and expiry deadlines on the injected clock, and a capstone that runs one workload through all four models — 148 bytes delivered by each for 42, 54, 19 and 23 steps — and settles a disagreement with the link's own counts rather than with a model's beliefs |
 | `cpu-from-scratch` | 10 | A real datapath on a provided ISA and assembler (`isa.py`): word algebra and the four flags, a decoder that ignores the fields a format does not use, a register file whose zero register cannot be written and whose snapshots are copies, an ALU whose division truncates and whose remainder takes the dividend's sign, byte-addressed memory with alignment and bounds checked before anything is stored, a control unit where a fault is data and a trace records every effect, and then the same programs on a five-stage pipeline that must retire the identical trace — stalls first, then forwarding with the one-cycle load-use stall and a branch flush — measured by CPI. One program, two machines, one result |
 | `os-from-scratch` | 10 | An operating system as what you write after the hardware breaks its last promise, on a provided machine (`machine.py`, `devices.py`, `userland.py`): the boot map and the frames a kernel may actually hand out, a bitmap allocator that protects the frame its own bits live in and answers all or nothing, page tables whose entries cannot be confused with frame numbers and whose permission bits are checked on every walk, the fault word a trap carries so a handler decides from data rather than from an exception, a syscall boundary that checks a pointer before it uses it and writes a line with a promise before it acts, the process as a dict with a space, a ledger and a zombie at the end, a scheduler whose pick is priority and age behind a quantum that rotates, two CPUs on an interleaving where the critical section is a lock and its order is checked, a real on-disk filesystem with a superblock written last and a mount that reads only what a barrier made durable, and a capstone userland whose kernel report is recomputed from its own log and cross-checked against the machine's records |
@@ -88,15 +89,20 @@ all built now, from the Agent Infra list kept in `AGENT-INFRA.md`.
 No retrieval that checks itself, no prompt/routing ops, no memory engine, no
 fine-tuning and no privacy gateway — phase K, below, is those five, from the
 interview and build lists kept in `AI-ENGINEER.md`.
-No broker — phase L's one remaining row, from the three C/C++
-networking series kept in `NETWORKING.md`; the stack is `tcp-ip-from-scratch` and
-the reactor is `concurrent-servers-from-scratch` now, twenty stages between them,
-from the frame up to a session whose tie-breaker is the wire's own segment log,
-and from one slow client to one workload served four ways with identical answers.
+No broker — that gap is closed too: `mqtt-broker-from-scratch` (L3) is the wire
+format itself, built byte by byte against the three C/C++ networking series kept
+in `NETWORKING.md`. The stack is `tcp-ip-from-scratch`, the reactor is
+`concurrent-servers-from-scratch` and the broker is `mqtt-broker-from-scratch` —
+thirty stages between them, from the frame up to a session whose tie-breaker is the
+wire's own segment log, from one slow client to one workload served four ways with
+identical answers, and from a fixed header and a topic trie to a trace replayed
+twice byte-identically with every frame accepted by the course's own reader.
 The repo has an application protocol
 (legacy `http-server`, `dns-server`) and a modelled
 collective (`interconnects-from-scratch`), and it parses a wire format byte by
-byte in exactly one place: `tcp-ip-from-scratch`.
+byte in exactly two places: `tcp-ip-from-scratch`'s frames and
+`mqtt-broker-from-scratch`'s packets, each of them a reader the course wrote and
+each of them held to a writer the same course wrote.
 `rag-from-scratch/` (phase B1), `vector-index-from-scratch/` (phase B2),
 `evals-from-scratch/` (phase C1), `agents-from-scratch/` (phase C2),
 `mcp-from-scratch/` (phase D1) and `agent-harness-from-scratch` (phase E1) now
@@ -295,8 +301,20 @@ is backpressure, and the Redis case study as a command loop with per-connection
 state — to a capstone that runs one workload through all four models, delivers
 the same 148 bytes for 42, 54, 19 and 23 steps, and calls the link's own log as
 the tie-breaker (`.l2-dev/CONTRACT.md`).
-The next unit is **L3, `mqtt-broker-from-scratch`** — the wire format itself,
-built byte by byte — and then L4.
+**L3, `mqtt-broker-from-scratch`**, is built too — the wire format itself, byte by
+byte: a broker on a provided byte-pipe transport (`streams.py`, whose `step()` is
+the only thing that moves a byte or a tick and whose `stats()` recomputes every
+number from its own log) and a provided policy table (`grants.py`, six reasons and
+a decision line written before the act) — ten checks and 600 mutations caught,
+from the fixed header and its variable-length integer, through the two-byte string
+and CONNECT, the topic trie that matches by components, the SUBSCRIBE that answers
+the QoS it will actually grant, PUBLISH routed and retained, QoS 1 as a state with
+a deadline on the injected clock, QoS 2 as a four-way handshake whose id survives
+until PUBCOMP, a session that outlives the socket and the will a cut connection
+owes, and refusals that arrive as a grant's own line — to a capstone that runs one
+scenario twice, reads its own trace back with the course's own reader, and holds
+its report against the transport's log key by key (`.l3-dev/CONTRACT.md`).
+The next unit is **L4, `git-from-scratch`**.
 
 F1 was a salvage, and it landed: `~/Desarrollo/mus-benchmark` had the turn-gated
 engine, the per-decision JSONL record, the scorecards and the calibration probes,
@@ -572,18 +590,15 @@ scratch`) and a house method for making a world out of data (`queue-and-workers`
 `durable-execution`, `sandbox-capabilities`); it has never built the layer under
 all of them.
 
-Three gaps survived the mapping, and they were the three L slots — two of them are
-built: `tcp-ip-from-scratch` (L1, ten checks and 554 mutations caught) and
-`concurrent-servers-from-scratch` (L2, ten checks and 757 mutations caught), both
-in the ready table above. The remaining one is still to author, and it needs no
-socket and no thread either — the link, the clock and the failure are data, which
-is what makes the interesting question answerable (how many scheduler steps a
-model took, which readiness event a reactor acted on) instead of a matter of
-timing:
-
-| Slot | Course | The mechanism | After |
-|---|---|---|---|
-| L3 | `mqtt-broker-from-scratch` — to author | The wire format itself: the fixed header and its variable-length integer, CONNECT and the session flags, a topic trie where `+` and `#` are matched by components and never by prefix string, QoS 1 as state, QoS 2 as a four-way handshake, retained messages and the last will, a session that survives a reconnect, and a trace replayed twice byte-identically with every frame accepted by the course's own reader | L1, J4 |
+Three gaps survived the mapping, and they were the three L slots — all of them are
+built: `tcp-ip-from-scratch` (L1, ten checks and 554 mutations caught),
+`concurrent-servers-from-scratch` (L2, ten checks and 757 mutations caught) and
+`mqtt-broker-from-scratch` (L3, ten checks and 600 mutations caught), all three in
+the ready table above. The third is the one that needed no socket and no thread
+either — the link, the clock and the failure are data, which is what makes the
+interesting question answerable (how many bytes the transport carried for each
+frame the broker wrote, which decision line a refusal was written on) instead of a
+matter of timing.
 
 `L4 git-from-scratch` joined the phase later, from the review of what this repo
 has never built; its row is in *What this repo has never built*, above.

@@ -22,7 +22,7 @@ how big that tester is. Two numbers, and only one of them can be recomputed:
 The pair is the honest answer to "how much does this stage test me": `tests` is
 what the check says about itself, `mutants` is what it was proven to catch.
 
-Measured 2026-10-16 against the twenty courses that carry a `course.py`. A check
+Measured 2026-10-16 against the twenty-one courses that carry a `course.py`. A check
 that changes invalidates its row: re-measure with the course's harness
 (`mutate_all.py <stage>` prints the caught and missed counts) and fix the tuple.
 """
@@ -89,6 +89,9 @@ STAGES = {
     "concurrent-servers-from-scratch": [
         (133, 64), (72, 60), (138, 89), (88, 61), (110, 70),
         (91, 84), (114, 90), (114, 71), (174, 118), (71, 50)],
+    "mqtt-broker-from-scratch": [
+        (72, 43), (106, 69), (81, 44), (80, 63), (123, 66),
+        (151, 67), (95, 58), (131, 86), (60, 64), (85, 40)],
 }
 
 

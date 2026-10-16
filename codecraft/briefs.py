@@ -43,6 +43,7 @@ CONTRACTS = {
     "J5": ".j5-dev/CONTRACT.md",
     "L1": ".l1-dev/CONTRACT.md",
     "L2": ".l2-dev/CONTRACT.md",
+    "L3": ".l3-dev/CONTRACT.md",
 }
 
 # ---------------------------------------------------------------------------
