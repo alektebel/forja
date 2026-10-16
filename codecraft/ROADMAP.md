@@ -112,6 +112,18 @@ in phase F is its last stage. Nothing here has ever served two regions against e
 other either: multi-region failover is registered as H8, and it is A6's data half
 joined to H6's agreement half.
 
+**Twelve projects — not slots — are queued in `ENTERPRISE.md`**: the enterprise-AI
+list from `claude/enterprise-ai-project-guides` (legacy sync, zero-trust
+multi-tenant RAG, a PII redaction proxy, an air-gapped deployer, ROI telemetry, an
+idempotent webhook reconciler, an SSO/SCIM bridge, a fallback and degradation
+gateway, a compliance auditor, an MCP server for legacy ERPs, a shadow traffic
+evaluator and a 3 AM runbook repo). Each row there names the modules this repo
+already has for it — 6 already has the reliability core in `system-design/` and
+`aws-from-scratch/`, 8 the breaker, 12 the rollout and the faults — and the gap
+that remains. They are projects rather than courses: no provided world, no
+template, no check, so `path.py` does not carry them, and building one starts by
+turning its guide into a contract.
+
 ---
 
 ## What this repo has never built — six registered rows (G7, G8, H5, H6, H7, L4)
@@ -205,7 +217,7 @@ courses, cherry-pick these — do not re-invent them:
 
 | Branch | What to port |
 |---|---|
-| `claude/enterprise-ai-project-guides` | `enterprise-ai-projects/` — **12 implementation guides**, including `02-multitenant-rag.md`, `10-mcp-legacy-erp.md`, `11-shadow-evaluator.md`. Guides, not code: exactly the source material for phases B, C, D. |
+| `claude/enterprise-ai-project-guides` | `enterprise-ai-projects/` — **12 implementation guides**, including `02-multitenant-rag.md`, `10-mcp-legacy-erp.md`, `11-shadow-evaluator.md`. Guides, not code: exactly the source material for phases B, C, D. Each one is listed in `ENTERPRISE.md`, which says what this repo already has for it and what the gap is. |
 | `claude/curriculum-and-repo-index` | `curriculum/` — six course blocks plus `REPO-MAP.md`, which maps all 34 directories and says which no course covers. |
 | `claude/weekly-repo-layout` | `ROADMAP.md` (an 18-week plan with three tracks), `progress.py`, `REMAINING.md`, and the week-01.. folders. |
 | `claude/rl-posttraining-llm-exercises-wzfe8w` | `rl-posttraining-llm/` — GRPO, rewards, an agent loop (phase 5), and `test_harness.py`. Source material for agents and the harness. |

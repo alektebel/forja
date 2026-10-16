@@ -470,7 +470,10 @@ exact, commits that carry an author and a parent, refs and a detachable HEAD, an
 index that stages, a diff that names a hunk, a merge that finds the base and marks
 the conflict instead of guessing, and a packfile whose delta-compressed objects are
 reachable through its index — where `git` is on PATH and `git fsck` and `git log`
-are the judge. It needs G4, and L3 was the last of the three L slots.
+are the judge. It needs G4, and L3 was the last of the three L slots. Twelve
+*projects* — not slots — are queued in `ENTERPRISE.md`: the enterprise-AI list kept
+on `claude/enterprise-ai-project-guides`, each row naming what this repository
+already has for it and the gap that remains.
 The rows registered in the units before this one queue behind it, one per slot —
 G7, G8, H5, H6, H7, L4, then I13, I14, H8 — each carrying its own thesis in
 `path.py`, each with its place in `cz dag`. After those: G5/G6 (phase G's
