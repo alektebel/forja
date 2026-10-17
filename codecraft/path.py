@@ -721,6 +721,33 @@ PHASES = [
                 "line is written before the act it allows. L1 is the framing half "
                 "of a wire, and J4 is the policy that decides who may publish "
                 "where."},
+        {"id": "L5", "title": "Redis From Scratch", "course": None,
+         "kind": "author", "prereq": ["L2", "J3"],
+         "why": "The in-memory store whose protocol is the lesson: RESP byte by "
+                "byte, the command table a dict of (arity, handler) that refuses "
+                "an arity it does not name, the store as a dict with per-key "
+                "expiry where a lazy pass on read and an active cycle on the "
+                "clock both evict, and an RDB the course parses byte by byte "
+                "before it writes one. Then the hard half: AOF as a journal "
+                "whose every line is a prediction until fsync makes it a fact "
+                "(J3's discipline, at the file's mercy), and leader-follower "
+                "replication where the follower's acknowledgement is state the "
+                "leader keeps and the offset is the number both sides agree on. "
+                "Accepted on a session the harness replays byte for byte, with "
+                "the world's own RESP reader as the referee. Source: the "
+                "124-stage CodeCrafters corpus in `codecrafters-reference/redis/`."},
+        {"id": "L6", "title": "Kafka From Scratch", "course": None,
+         "kind": "author", "prereq": ["L2", "J1"],
+         "why": "The log as the product: the fetch/produce request envelopes of "
+                "the real protocol, a partition as an append-only log with an "
+                "offset cursor per consumer group, and the delivery contract "
+                "decided, not assumed — at-least-once through redelivery "
+                "deadline and dedup by id, at-most-once by committing the "
+                "cursor before the work, exactly-once by idempotent producer "
+                "sequence numbers. L2 is the framing half of a wire and J1 is "
+                "the queue whose delivery semantics this course makes the "
+                "broker's own decision. Source: the 25-stage CodeCrafters "
+                "corpus in `codecrafters-reference/kafka/`."},
         {"id": "L4", "title": "Git From Scratch", "course": None,
          "kind": "author", "prereq": ["G4"],
          "why": "The one artefact in this repository that another program "

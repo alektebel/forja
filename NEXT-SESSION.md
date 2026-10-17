@@ -852,8 +852,12 @@ already has for it and the gap that remains.
 The rows registered in the units before this one queue behind it, one per slot —
 G8, H5, L4, H7, H6, then I13, I14, H8 — each carrying its own thesis in
 `path.py`, each with its place in `cz dag`. After those: G5/G6 (phase G's
-remaining two, which need checkers, not writing) and phase K's five. The backlog
-is **20 `author`, 6 `legacy`, 2 `salvage`, 34 `ready` — 62 rows** — `./cz path`,
+remaining two, which need checkers, not writing), phase K's five, and the two
+CodeCrafters-sourced rows registered from the recovered corpora — **L5
+`redis-from-scratch`** (prereq L2 + J3, both built) and **L6
+`kafka-from-scratch`** (prereq L2 + J1), whose theses came from the 124- and
+25-stage stage descriptions in `codecrafters-reference/`. The backlog
+is **22 `author`, 6 `legacy`, 2 `salvage`, 34 `ready` — 74 rows** — `./cz path`,
 `./cz dag`, `./cz tracks` and the ROADMAP's own tables are authoritative over this
 file.
 
