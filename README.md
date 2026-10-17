@@ -27,8 +27,53 @@ python3 codecraft/cli.py new my-course --title "Build X" --stages 3
 `cz` is a one-line forwarder to `python3 codecraft/cli.py`; both work. See
 [codecraft/README.md](codecraft/README.md).
 
-## Directory Structure
+## Projects still to build
 
+The registry (`codecraft/path.py`) tracks 71 rows; 36 are built and graded
+(`cz run <course>`), 25 legacy projects wait for a checker, and **32 are queued
+to build or port** — the list below is that queue, rendered from the registry
+so it cannot drift from `cz dag`. Every row names its course slug, what it is,
+and what must exist first; `python3 codecraft/cli.py stage <slug>` prints the
+full brief for any of them.
+
+| Slot | Course | One line | After |
+|---|---|---|---|
+| G7 | `shell-from-scratch` | A line of text becomes a process tree over the OS course's kernel: expansion order, fork/exec/wait, pipes as a descriptor table, jobs and signals, a session replayed byte for byte | G4 |
+| G8 | `runtime-from-scratch` | Stack machine with frames, then mark-sweep, RC, tri-colour incremental, nursery and copying collection — never collecting a reachable object | G3, G4 |
+| G9 | `coreutils-from-scratch` | grep, tail, sort, wc and a gap-buffer editor, judged byte-for-byte against the real ones | — |
+| H5 | `query-engine-from-scratch` | SQL subset parsed, planned, executed over pages and a B+tree, transactions as a log | G4 |
+| H6 | `consensus-from-scratch` | Raft on five simulated nodes; linearizability is the judge | J3, I9 |
+| H7 | `compression-from-scratch` | Huffman, LZ77, LZ4, DEFLATE, FSE/ANS; the provided decoder and the ratio are the judge | — |
+| H8 | `failover-from-scratch` | Two regions, promotion, RTO/RPO measured by a drill | A6, H6 |
+| I2 | `inference-physics-from-scratch` | A cost model predicting TTFT/ITL from config alone, checked against traces | A2, I1 |
+| I3 | `serving-scheduler-from-scratch` | Continuous batching, chunked prefill, the starvation curve | I2, A3 |
+| I6 | `kernels-from-scratch` | Tiling, online softmax, a Triton-shaped IR, fusion proven bit-identical | G1, I2 |
+| I7 | `distributed-inference-from-scratch` | Sharding one model across N simulated ranks; the comms volume measured | I3, I9 |
+| I8 | `speculative-decoding-from-scratch` | Draft-target acceptance-rate math, the 2x claim made checkable | I2 |
+| I10 | `gpu-scheduling-from-scratch` | MIG slices, spot preemption, the cost model that makes an idle H100 a bug | A7, I3 |
+| I11 | `ai-gateway-from-scratch` | Complexity routing, SLOs, the percentile pipeline, cost accounting | A7, I5 |
+| I12 | `inference-benchmark-from-scratch` | Capture config, sweep knobs, pin cost per token to a price | F1, I3 |
+| I13 | `serving-cluster-from-scratch` | Bring-up order, liveness/readiness, drain, rolling upgrade, the cluster's own report | I3, I7, I10 |
+| I14 | `weight-delivery-from-scratch` | Cold start as a storage problem: digests, prefetch, CDN keyed by digest | I3, I7 |
+| K2 | `prompt-ops-from-scratch` | Prompts and model choices as versioned artifacts: shadow mode, rollout gate, cost kill-switch | E1, F2, J1 |
+| K3 | `memory-engine-from-scratch` | The three memory tiers as data structures, recall measured | E1, B2 |
+| K4 | `fine-tuning-from-scratch` | LoRA and DPO over the exact autograd engine; the decision defended against a number | A8, C1 |
+| K5 | `agent-privacy-from-scratch` | Tokenization at the gateway, per-agent least privilege, output sanitization | C2, D1, J2 |
+| L4 | `git-from-scratch` | A `.git` directory real `git` reads: fsck and log are the judge | G4 |
+| M0 | `credit-origination-from-scratch` | The loan before it exists: affordability, scorecard, rating, price, covenant, approval | — |
+| M2 | `irb-capital-from-scratch` | IRB formula in integer arithmetic, downturn vs best-estimate LGD, the two-books reconciliation | M1 |
+| M3 | `collections-workout-from-scratch` | Dunning state machine, forbearance, the waterfall, workout, write-off vs cash | M1 |
+| M4 | `bank-pl-from-scratch` | Interest, transfer price, provisions, RAROC, economic profit per loan | M1, M3 |
+| M5 | `distressed-debt-from-scratch` | The claim bought below par, valued three ways, IRR in basis points | M1, M3 |
+| N1 | `blockchain-from-scratch` | Hash chain, Merkle proofs, UTXO, PoW/PoS, fork choice; peers must converge | — |
+| N2 | `dapp-from-scratch` | Bytecode VM with gas, a toy contract language and ABI, the dApp front end that never trusts the chain | N1 |
+| N3 | `physics-engine-from-scratch` | Contacts, LCP solver, MJCF subset — then differentiable simulation via A8, checked against finite differences | A8 |
+
+Two rows are marked **port first** rather than author: H2 (inference/serving
+material exists on a branch) and I5 (quantization, same). Before authoring any
+of the above, check the branch table in [codecraft/ROADMAP.md](codecraft/ROADMAP.md#saving-what-other-branches-already-did).
+
+## Directory Structure
 ### Low-Level Systems (C/C++)
 - **[c-compiler/](c-compiler/)** - C compiler implementation in C
   <sub>🔄 **needs checker** — templates + solutions (~3.3k lines) · slot G5</sub>
