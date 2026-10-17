@@ -284,6 +284,35 @@ PHASES = [
                 "x86-64 stages; the arm64 port is the second half. Author "
                 "custom-os-from-scratch in C; G4's simulator is the model, "
                 "G5 the toolchain, linux-from-scratch/ the prose."},
+        {"id": "G11", "title": "Advanced Algorithms & Data Structures",
+         "course": None, "kind": "author", "prereq": [],
+         "why": "La Rocca's book mechanised, one stage per chapter, every "
+                "structure judged against a work counter and a reference the "
+                "way B2 judges HNSW against brute force: priority queues and "
+                "d-way heaps measured on Dijkstra (ch. 2), treaps where the "
+                "rotation is right because the expected height the profiler "
+                "prints agrees with the theory (ch. 3), Bloom filters whose "
+                "false-positive rate is measured, not assumed, against the "
+                "exact set (ch. 4), disjoint sets by path compression and "
+                "union by rank counted in finds (ch. 5), tries and T9 and "
+                "autocomplete with the compressed variant (ch. 6), LRU and "
+                "LFU caches with the hit rate the workload produces (ch. 7), "
+                "k-d trees whose nearest neighbour is checked against the "
+                "linear scan it must beat (ch. 8\u20139), SS-trees and "
+                "approximate search with the recall the book's own image "
+                "retrieval asks for (ch. 10\u201311), DBSCAN and OPTICS "
+                "clustering on the points the reference clusters identically "
+                "(ch. 12\u201313), graphs from BFS and connected components "
+                "to Dijkstra and minimum spanning trees (ch. 14), graph "
+                "embeddings, planarity and the force-directed drawing whose "
+                "crossings the checker counts (ch. 15), then gradient "
+                "descent (ch. 16) and simulated annealing (ch. 17) as "
+                "optimisation on those graphs, and the genetic algorithm "
+                "that closes the book on TSP, its tours compared against "
+                "the branch-and-bound answer on the small instances (ch. "
+                "18). Author advanced-dsa-from-scratch in pure Python with "
+                "no float where a counter suffices \u2014 nothing must come "
+                "first; the book is the reading, the checker the grade."},
     ]),
     ("H", "The rest", [
         {"id": "H1", "title": "Distributed Training",
