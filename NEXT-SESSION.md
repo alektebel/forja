@@ -1,10 +1,17 @@
 # Next session — where everything is
 
-Written at the end of the session that shipped **M1 (`credit-lifecycle-from-scratch`)**,
+Written at the end of the session that shipped **G7 (`shell-from-scratch`)**, a shell
+over a provided machine as ten graded stages — the line and its operators, expansion in
+the order a shell must, the descriptor table a pipeline builds before anything runs,
+the process tree of fork-exec-wait, the job table, signals and traps, the builtins that
+must not fork, lists under the rules of `set -e`, the session replayed byte for byte,
+and the audit that answers why a status was the number it was — **506 planted
+mutations**, 910 testers, the world's four digests pinned. Before it, in its own
+session: **M1 (`credit-lifecycle-from-scratch`)**,
 the arithmetic of a loan's whole life as ten graded stages over a bank provided as data
 whose own records are the answer key (`book.py` — `Book.build(7)`: twelve loans,
 thirty-six month-end reporting dates, three model artifacts; `dates.py`; `rules.py`) —
-and, earlier in the same session, **K1 (`agentic-retrieval-from-scratch`)**, phase K's
+and, earlier still, **K1 (`agentic-retrieval-from-scratch`)**, phase K's
 first slot. K1 is retrieval that checks itself over a provided contract corpus whose
 ground truth is data (`corpus.py`: 8 documents, 16 questions, 12 labelled failures, the
 estate's scale; `meter.py`: what a call costs): clauses and their cross-references, an
@@ -27,7 +34,7 @@ fixed-point discipline. Everything in *Done* is committed and pushed; the sectio
 it is the commit that carries this file.
 
 **Asked for next, by the user, and not started**: nothing outstanding. What remains is
-the queue this file has been carrying — **G7 `shell-from-scratch`** first, then G8, H5,
+the queue this file has been carrying — **G8 `runtime-from-scratch`** first, then H5,
 L4, H7, H6, H8, I2 → I3 → {I6, I7, I8, I10, I12, I14} → I13, and phase K's remaining
 four (K2, K3, K4, K5), one unit per commit, in the order its own section records.
 
@@ -62,98 +69,119 @@ four (K2, K3, K4, K5), one unit per commit, in the order its own section records
 | `3263177` | the K6 doc follow-up: `ENTERPRISE.md`'s coverage of the twelve enterprise projects, `codecraft/ROADMAP.md`'s K6 row and phase-K paragraph, and the course README's pointer |
 | `4e64609` | **K1 `agentic-retrieval-from-scratch`** — 10 stages over a provided contract corpus that *is* the ground truth (`corpus.py`, `meter.py`), 589 mutations, 893 testers, smoke green, registered: retrieval that checks itself, with phase K's census and the dependency tree's measured lines refreshed |
 
-## The unit this file carries — M1 `credit-lifecycle-from-scratch`
+## The unit this file carries — G7 `shell-from-scratch`
 
-**M1 `credit-lifecycle-from-scratch`** — ten stages, **643 mutations**, 727 testers, the
-whole of the user's one-line ask: *"lgds, nueva definición de default pd, cálculo de
-provisiones, y todos los cálculos de reporting y estimación que hace un banco en su
-lifecycle"*. It is not a machine-learning course and it does not pretend to be one: it is
-the arithmetic and the data of a loan's whole life, and the discipline it is held to is
-accounting's own — every number an integer count of cents or basis points, every division
-carrying the contract's pinned rounding, no float literal anywhere in the course. The
-contract is frozen in `.m1-dev/CONTRACT.md` (§0 the unit and the ten-stage mapping, §1 the
-laws a stage is audited against, §2 the world name by name, §3 the execution model, §4
-every answer's keys and every rule with its rounding, §5 the check conventions, §6 the
-harness, §7 the amendments) and so is the world: the course reads it and never writes it.
+**G7 `shell-from-scratch`** — ten stages, **506 mutations**, 910 testers, over a
+provided machine that never changes and that the course never writes: a shell is what
+a kernel looks like from the outside, and every promise G4's kernel makes is on show —
+what a child inherits, what a pipe costs, who waits for whom, and what a signal does
+to a job. The contract is frozen in `.g7-dev/CONTRACT.md` (§0 the unit and the
+ten-stage mapping, §1 the laws a stage is audited against, §2 the world name by name,
+§3 the execution model, §4 every answer's keys and every rule, §5 the check
+conventions, §6 the harness, §7 the amendments) and so is the world: the course reads
+it and never writes it.
 
 ### The world it is given, and never writes
 
-`credit-lifecycle-from-scratch/book.py` (`sha256 d1124d00…`), `dates.py`
-(`cb3afa72…`) and `rules.py` (`df87096d…`), standard library only, pinned by
-`.m1-dev/verify_provided.py` → `PROVIDED: 9417, PROBLEMS: 0`. `Book.build(7)` is
-deterministic: **twelve loans**, **thirty-six month-end reporting dates**
-(2031-01-31..2033-12-31), **three model artifacts** (`pd-rating` v1 at 2030-12-31 and v2
-at 2032-01-31, and an `lgd-workout` v1 whose `as_of` lies past the horizon so it is never
-in force) and the observed payment ledger, the default signals with their triggers, the
-cure and the probation dates, the write-offs and the recoveries actually collected. The
-bank's own accessors are the answer key every stage is graded against: `status`,
-`grade`, `schedule`, `defaults`, `rollforward`, `migrations`, `on_book`, `model_in_force`,
-`observed_default_rate` and `stats`, which counts every door so a check can prove a stage
-asked the book nothing. `rules.py` carries the policy as data — the materiality threshold,
-the 90-day backstop, the cure period, the SICR multiplier and absolute, the PD/LGD/CCF
-floor and cap, the scenario weights in basis points — so no stage invents a constant.
+`shell-from-scratch/machine.py` (`sha256 8acb4bbd…`), `programs.py` (`c17e065c…`),
+`rules.py` (`b2b33cf0…`) and `scripts.py` (`5462a4af…`), standard library only, pinned
+by `.g7-dev/verify_provided.py` → `PROVIDED: 149, PROBLEMS: 0`. `machine.machine(7)` is
+a deterministic scheduler with its own filesystem, pipes, process tree and signal
+delivery, and its own ledger of what happened: `machine.store(...)` hands out the
+mark every later observation is a delta from — the transcript, the spawn ledger, the
+deadlocks and the terminal are read back as counters against it, so a session answers
+for what it did and not for what the machine already held when it was handed over.
+`programs.py` is the ten programs a shell can become (`cat`, `echo`, `env`, `false`,
+`grep`, `head`, `pwd`, `sort`, `tick`, `wc`), each with its own step budget;
+`rules.py` carries the policy as data (`POLICY_VERSION = "shell-policy-1"` — the exit
+codes, the signal numbers, the operators longest-first, the expansion order, the
+builtins); `scripts.py` is **eight fixture sessions** with their expected records —
+transcripts, statuses, spawn counts, deadlocks — the answer key a stage reproduces
+from the machine's doors, not reads.
 
-The landmines the world plants are real and the checks reach them: a loan whose arrears
-sit below the materiality threshold past ninety days (its `dpd` reads zero), a SICR that
-crosses and returns, two `instalment` rows against one due, a loan paid ahead of schedule
-and then overtaken by its arrears, three write-offs with three different recovery sources,
-a cure that lands before its probation expires and is therefore no-op, a horizon of zero
-at the last reporting date, and CCFs above the floor for exactly two of the six segments.
+The landmines the world plants are real and the checks reach them: a pipeline the
+shell still holds the write end of, whose blocked `cat` deadlocks until someone reaps
+it (`signal(reader, "TERM")`, then `advance`, then `close` on the write end);
+`kill -STOP 1` against a fresh machine's own pid; a status that is `128 + n` from a
+signal and never a plain number; `$p` expanded from a stored tool that cannot execute
+(126) versus one that does not exist (127); `cat < /missing | echo hi`, where the
+refusal must be recorded as `redirection-failed` and the right-hand side still runs;
+and `exit 143`, where the plain status of the last pipeline wins over the signal the
+number resembles.
 
 ### The ten stages
 
 | # | File | What it builds | Mutations |
 |---|---|---|---|
-| 1 | `stage_01.py` | The contractual schedule: the level payment, the last instalment that lands the balance on zero, the day-count basis, present value by bisection and the effective interest rate | 71 |
-| 2 | `stage_02.py` | The bucket, the materiality test (absolute and relative) and the reference due, on the bank's own ledger rather than the plan | 67 |
-| 3 | `stage_03.py` | The migration matrix, its rows as data, the per-year cumulative PD interpolated between the artifact's points, and the lifetime PD | 63 |
-| 4 | `stage_04.py` | The LGD: the outstanding principal amortised by the payments actually made, the collateral's part, the recovery flows discounted to the default date | 56 |
-| 5 | `stage_05.py` | The drawn balance, the undrawn limit and the credit conversion factor estimated on the book's own defaults, aggregated before divided | 58 |
-| 6 | `stage_06.py` | The ECL: the horizon (twelve months or the remaining life), the artifact's grade, the three scenarios and the weighted total | 55 |
-| 7 | `stage_07.py` | IFRS 9's three stages: the SICR test, the backstop, the survivorship, the cure and the probation, with the model's artifact in force | 57 |
-| 8 | `stage_08.py` | The roll-forward: every line from the bank's own policy over the whole book, the P&L and OCI split, the write-offs, the recoveries and the unwind | 68 |
-| 9 | `stage_09.py` | The reporting pack: exposures by segment, grade and bucket, the coverage ratios, the stage and parameter migrations, and the reconciliation that holds | 78 |
-| 10 | `stage_10.py` | The backtest, `validate` of an artifact, and the journal of a delta decomposed into its four steps and its residual | 70 |
+| 1 | `stage_01.py` | The line, the word and the operator: quoting as part of a word's bytes, the longest operator recognised before the shortest, the parse errors named | 75 |
+| 2 | `stage_02.py` | Expansion, in the order a shell must: parameter, tilde, split, glob, quote-removal, here-documents, and why the count of words depends on the order | 45 |
+| 3 | `stage_03.py` | The pipeline, the descriptor table built before anything runs, and what a pipe costs the machine in bytes | 75 |
+| 4 | `stage_04.py` | The process tree: fork, exec, wait, every child reaped, and the status that is always the last command's | 55 |
+| 5 | `stage_05.py` | The job table: background, stopped, and who waits for whom, with `wait` that reaps in job order | 68 |
+| 6 | `stage_06.py` | Signals, traps, and what a signal does to a job: `128 + n` is a signal and never a plain status, traps replace by name and fire in order | 22 |
+| 7 | `stage_07.py` | The builtins that must not fork, and the ones (`trap`, `kill`, `wait`) stage 7 refuses to route | 32 |
+| 8 | `stage_08.py` | Lists, conditions and the rules of `set -e`, with the refused builtins routed to the stage that owns them | 45 |
+| 9 | `stage_09.py` | The session, replayed byte for byte against the world's own record | 52 |
+| 10 | `stage_10.py` | Exit codes, and the audit of a session's statuses: one reason per step, from the evidence, never from the answer key | 37 |
 
 ### How it is verified, and the rule that keeps it verified
 
-`.m1-dev/` is the harness, outside the repository on purpose: `verify_provided.py` (the
+`.g7-dev/` is the harness, outside the repository on purpose: `verify_provided.py` (the
 world), `assemble.py` (writes `course.py` from the ten checks, `course_head.py` and
-`course_tail.py`), `check_NN.py` (each stage, runnable alone, exits 2 naming the stub in
-the template), `mutate_NN.py` (`mutate_all.py` for the sweep), `smoke.py`,
-`run_assembled.py`, `run_all.py`, `audit_course.py` (the laws) and `probe_stages.py` — the
-parent's own second reading of §4, which imports the stages but never their checks. The
-last measured full pass: `verify_provided.py` → `PROVIDED: 9417, PROBLEMS: 0`;
-`check_NN.py` × 10 → ten `PASS`, and ten exits 2 against the template; `mutate_all.py` →
-every mutation caught, `MISSED OR BROKEN: 0`; `audit_course.py` → `AUDITED: 10,
-PROBLEMS: 0`; `probe_stages.py` → `PROBED: 13849, PROBLEMS: 0`; `smoke.py` → `PASS`
-(the manifest, all ten checks green on the solutions and red on the template);
-`run_assembled.py` → `ASSEMBLED: 10/10`.
+`course_tail.py`), `check_NN.py` (each stage, runnable alone, exits 2 naming the stub
+in the template), `mutate_NN.py` (`mutate_all.py` for the sweep), `smoke.py`,
+`run_assembled.py`, `run_all.py`, `audit_course.py` (the laws) and `probe_stages.py` —
+an independent second reading that drives each stage's functions directly. The last
+measured full pass: `verify_provided.py` → `PROVIDED: 149, PROBLEMS: 0`; `check_NN.py`
+× 10 → ten `PASS`, and ten exits 2 against the template; `mutate_all.py` → every
+mutation caught, `MISSED OR BROKEN: 0`; `audit_course.py` → `AUDITED: 10, PROBLEMS:
+0`; `probe_stages.py` → `PROBED: 362, PROBLEMS: 0`; `smoke.py` → `PASS` (the manifest,
+all ten checks green on the solutions and red on the templates); `run_assembled.py` →
+`ASSEMBLED: 10/10`; `count_tests.py shell-from-scratch` → 910 testers, per stage
+`[102, 73, 116, 83, 87, 117, 152, 72, 59, 49]`.
 
 **The rule is the same one K1 carries**: a `mutate_NN.py` entry is anchored to exact
 solution text, so any later rewrite of `solutions/stage_NN.py` must be followed by
-`mutate_all.py NN` and `audit_course.py NN` — and **the world is never edited to make a
-stage pass**. If a stage disagrees with `book.py`, the stage is wrong; if the contract
-disagrees with both, the contract gets an amendment row (§7 has **twenty-two**, each one a
-reading a stage found in the middle of the work and that the plan had got wrong, and a
-rule no run can reach is deleted from the contract rather than tested).
+`mutate_all.py NN` and `audit_course.py NN` — and **the world is never edited to make
+a stage pass**. If a stage disagrees with `machine.py`, the stage is wrong; if the
+contract disagrees with both, the contract gets an amendment row (§7 has **ten**, each
+one a reading a stage found in the middle of the work and that the plan had got wrong,
+and a rule no run can reach is deleted from the contract rather than tested).
 
 ### What the next session should know
 
-- `codecraft/path.py`'s M1 row is `"kind": "ready"` with `"course":
-  "credit-lifecycle-from-scratch"`; `codecraft/stats.py` carries the measured row
-  `(104, 71), (101, 67), (87, 63), (49, 56), (44, 58), (63, 55), (81, 57), (38, 68),
-  (87, 78), (73, 70)`; `codecraft/briefs.py` maps `"M1"` to `.m1-dev/CONTRACT.md`. The
-  dependency tree now reads `62 projects · 91 hard edges · 26 tracks · 9 waves` with
-  `M1` among the roots.
-- The three world digests above are pinned in the course README; if `book.py`, `dates.py`
-  or `rules.py` ever changes, the README and `verify_provided.py` change with it, and
-  every stage is re-checked — the stages' checks read the world's accessors, not its
-  internals, so the digests are a pointer rather than a lock.
+- `codecraft/path.py`'s G7 row is `"kind": "ready"` with `"course":
+  "shell-from-scratch"`; `codecraft/stats.py` carries the measured row
+  `(102, 75), (73, 45), (116, 75), (83, 55), (87, 68), (72, 22), (152, 32), (72, 45),
+  (59, 52), (49, 37)`; `codecraft/briefs.py` maps `"G7"` to `.g7-dev/CONTRACT.md`. The
+  dependency tree's measured lines are unchanged — `62 projects · 91 hard edges ·
+  26 tracks · 9 waves` — because G7 was already a node before it was a course; the
+  only render change is `G7` itself, now `ready`, unlocking nothing yet.
+- **Stage 10's checks run on a used machine, not a fresh one.** Every fixture is
+  audited after the machine has been warmed (spawn, echo, a reaped deadlock, wait),
+  with a twin machine warmed identically to build the expected record — that is what
+  makes the counter-delta mutations observable. The `deadlock` fixture alone still
+  runs on a fresh machine, because its lines literally say `kill -STOP 1`.
+- The four world digests above are pinned in the course README; if any of them ever
+  changes, the README and `verify_provided.py` change with it, and every stage is
+  re-checked.
 - The runtime files `codecraft/{history.jsonl,profile.json,mentor_cache.json}` and any
   `__pycache__` are regenerated by any `./cz` invocation: delete them before a commit.
 - `assemble.py` must be re-run after **any** edit to a `check_NN.py` — a stale
   `course.py` once graded nine of ten stages before anyone noticed.
+
+### The unit before it — M1 `credit-lifecycle-from-scratch`
+
+**M1 `credit-lifecycle-from-scratch`** — ten stages, **643 mutations**, 727 testers, the
+whole of the user's one-line ask: *"lgds, nueva definición de default pd, cálculo de
+provisiones, y todos los cálculos de reporting y estimación que hace un banco en su
+lifecycle"*. The arithmetic and the data of a loan's whole life, held to accounting's
+own discipline: every number an integer count of cents or basis points, every division
+carrying the contract's pinned rounding, no float literal anywhere. Its world is
+`book.py` (`Book.build(7)`: twelve loans, thirty-six month-end reporting dates, three
+model artifacts, the observed payment ledger), `dates.py` and `rules.py`, pinned by
+`.m1-dev/verify_provided.py` → `PROVIDED: 9417, PROBLEMS: 0`; the contract is frozen
+in `.m1-dev/CONTRACT.md` with twenty-two amendments.
 
 ### The unit before it — K1 `agentic-retrieval-from-scratch` (`4e64609`)
 
@@ -230,30 +258,29 @@ each one a reading a stage found in the middle of the work).
   measured "how this course is verified" block; the contract is frozen in
   `.k1-dev/CONTRACT.md` (716+ lines) and is the thing to read first.
 
-### The unit after this one — G7 `shell-from-scratch`
+### The unit after this one — G8 `runtime-from-scratch`
 
-Nothing the user asked for is outstanding: M1 was the last item, and it is built. What
-comes next is the head of the queue below — **G7 `shell-from-scratch`**, then G8, H5, L4,
-H7, H6 → H8, I2 → I3 → {I6, I7, I8, I10, I12, I14} → I13, and phase K's remaining four
-(K2, K3, K4, K5). One unit per commit, in that order: each flips its own `path.py` row to
-`kind: "ready"`, adds its `stats.py` row and the census arithmetic, writes its course
-`README.md`, refreshes the two measured tree lines in `codecraft/README.md`, and lands
-its section here.
+Nothing the user asked for is outstanding: G7 was the head of the queue, and it is
+built. What comes next is the head of the queue below — **G8 `runtime-from-scratch`**,
+then H5, L4, H7, H6 → H8, I2 → I3 → {I6, I7, I8, I10, I12, I14} → I13, and phase K's
+remaining four (K2, K3, K4, K5). One unit per commit, in that order: each flips its own
+`path.py` row to `kind: "ready"`, adds its `stats.py` row and the census arithmetic,
+writes its course `README.md`, refreshes the measured tree lines in
+`codecraft/README.md` if the graph moved, and lands its section here.
 
 The row-by-row reasoning is the table below, and it is worth reading before choosing:
-**H6 blocks H8** and **I2 blocks four rows**, so doing them early costs nothing and doing
-them late costs a wave.
+**H6 blocks H8** and **I2 blocks four rows**, so doing them early costs nothing and
+doing them late costs a wave.
 
 ### The rest of the queue, in the order the DAG allows
 
-Twenty rows carry `kind: "author"` and no course. **Ten of them have every
-prerequisite already built** — they are the ones a session can pick up cold, and they
-are listed here in the order the graph suggests (cheapest first, and the two rows
-that unlock other rows before the rows they unlock):
+Nineteen rows carry `kind: "author"` and no course (G7 was the twentieth, and it is
+built). **Ten of them have every prerequisite already built** — they are the ones a
+session can pick up cold, and they are listed here in the order the graph suggests
+(cheapest first, and the two rows that unlock other rows before the rows they unlock):
 
 | Row | Course | Why it is here, and what it opens |
 |---|---|---|
-| G7 | `shell-from-scratch` | G4 is built; three rows think of it as a prerequisite |
 | G8 | `runtime-from-scratch` | G3 and G4 are built; it is the machine stack's last row |
 | H5 | `query-engine-from-scratch` | G4 is built |
 | L4 | `git-from-scratch` | G4 is built; the one row with a *provided* `git` as a tie-breaker |
@@ -702,7 +729,9 @@ looking for it, and the plan rows that came out of the same review.
   rather than a zero, and the page says "not measured" rather than lying.
   `cz stage os-from-scratch 5` → `93 asserts · 69 planted mutations the check must
   catch`; the eighteen built courses totalled **9,323 assertions** and **4,079
-  caught mutations** at the time (nineteen and 10,452/4,633 after L1).
+  caught mutations** at the time (nineteen and 10,452/4,633 after L1; twenty-four
+  and 15,538/8,106 before G7; twenty-five and 16,403/8,612 after it — the sweep
+  re-measured, the earlier readings left as they were taken).
 - **The hardcoded repo root is gone.** 128 lines across 14 assembled `course.py`
   files carried `DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"`,
   and five more carried the same path as a `COURSE_REPO` default; all of them now
@@ -810,22 +839,21 @@ stage 9 so the format's own vocabulary is readable from outside.
 
 ## In flight — nothing
 
-The next unit is **L4, `git-from-scratch`** — the other artifact in this repository
-that another program validates: a `.git` directory real `git` reads, with blobs
-addressed by their own digest, trees whose entries are sorted and whose modes are
-exact, commits that carry an author and a parent, refs and a detachable HEAD, an
-index that stages, a diff that names a hunk, a merge that finds the base and marks
-the conflict instead of guessing, and a packfile whose delta-compressed objects are
-reachable through its index — where `git` is on PATH and `git fsck` and `git log`
-are the judge. It needs G4, and L3 was the last of the three L slots. Twelve
+The next unit is **G8, `runtime-from-scratch`** — a language runtime over a provided
+bytecode, assembler and heap: a stack machine with calls, frames and exact step
+accounting, then mark-sweep, reference counting that cannot free a cycle, a tri-colour
+incremental collector with write barriers and a remembered set, a nursery, and a
+copying collector that moves objects without breaking a reference — accepted on a
+program's own output plus its collection counts, never on a reachable object being
+freed. It needs G3 and G4, and both are built. Twelve
 *projects* — not slots — are queued in `ENTERPRISE.md`: the enterprise-AI list kept
 on `claude/enterprise-ai-project-guides`, each row naming what this repository
 already has for it and the gap that remains.
 The rows registered in the units before this one queue behind it, one per slot —
-G7, G8, H5, H6, H7, L4, then I13, I14, H8 — each carrying its own thesis in
+G8, H5, L4, H7, H6, then I13, I14, H8 — each carrying its own thesis in
 `path.py`, each with its place in `cz dag`. After those: G5/G6 (phase G's
 remaining two, which need checkers, not writing) and phase K's five. The backlog
-is **23 `author`, 6 `legacy`, 2 `salvage`, 29 `ready` — 60 rows** — `./cz path`,
+is **20 `author`, 6 `legacy`, 2 `salvage`, 34 `ready` — 62 rows** — `./cz path`,
 `./cz dag`, `./cz tracks` and the ROADMAP's own tables are authoritative over this
 file.
 

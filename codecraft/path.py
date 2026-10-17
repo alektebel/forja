@@ -209,8 +209,8 @@ PHASES = [
          "why": "bash-from-scratch, http-server, dns-server, firewall-from-scratch, "
                 "toralizer, communication-protocols, cryptographic-library, "
                 "quantum-computing-lang. One at a time; each needs a checker."},
-        {"id": "G7", "title": "Shell From Scratch", "course": None,
-         "kind": "author", "prereq": ["G4"],
+        {"id": "G7", "title": "Shell From Scratch", "course": "shell-from-scratch",
+         "kind": "ready", "prereq": ["G4"],
          "why": "A shell is what a kernel looks like from the outside: a line of "
                 "text becomes a process tree, and every promise G4's kernel makes "
                 "is on show — what a child inherits, what a pipe costs, who waits "

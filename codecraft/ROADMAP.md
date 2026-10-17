@@ -134,19 +134,19 @@ one by one and says which three have a course nowhere.
 
 ---
 
-## What this repo has never built — seven registered rows (G7, G8, G10, H5, H6, H7, L4)
+## What this repo has never built — six registered rows (G8, G10, H5, H6, H7, L4)
 
-Seven rows came out of reviewing the corpus by subject rather than by project: each
-is the artefact its own field is normally taught from, each is gradeable on the
-house rule (a provided world, a ladder of decisions, planted mutations the checks
-must catch), and none of them exists here in any form — the repo has never built
-a shell, a bytecode runtime, a query engine, a consensus protocol, a compressor
-or a git object store. They are registered in `codecraft/path.py`, which is what
-`codecraft path` renders.
+G7 was one of these six registered rows (with G8, G10, H5, H6, H7, L4 — six remain);
+it is built now — see [G7, `shell-from-scratch`](#g7-shell-from-scratch) below. The
+rows came out of reviewing the corpus by subject rather than by project: each is the
+artefact its own field is normally taught from, each is gradeable on the house rule (a
+provided world, a ladder of decisions, planted mutations the checks must catch), and
+none of them exists here in any form — the repo has never built a bytecode runtime, a
+query engine, a consensus protocol, a compressor or a git object store. They are
+registered in `codecraft/path.py`, which is what `codecraft path` renders.
 
 | Slot | Course to author | The mechanism | After |
 |---|---|---|---|
-| G7 | `shell-from-scratch` | A line of text becomes a process tree over G4's kernel: word splitting and expansion order, `fork`/`exec`/`wait` with real exit codes, pipes and redirections as a descriptor table built before anything runs, a job table that knows a background job from a stopped one, signals and reaping, and a session the harness replays byte for byte | G4 |
 | G8 | `runtime-from-scratch` | A bytecode, an assembler and a heap are given; the runtime is yours: a stack machine with calls, frames and exact step accounting, then mark-sweep, reference counting that cannot free a cycle, a tri-colour incremental collector with write barriers and a remembered set, a nursery, and a copying collector — accepted on a program's output and its collection counts, never on a reachable object being freed | G3, G4 |
 | H5 | `query-engine-from-scratch` | A SQL subset parsed, resolved against a catalog that may be wrong, planned (pushdown, join order, an index chosen or refused) and executed with iterators over a page buffer and a B+tree you split yourself — judged by the same rows as the reference for a hundred queries, a plan that earns its index, and a crash schedule where the log decides which tuples exist | G4 |
 | H6 | `consensus-from-scratch` | Raft on five nodes, with a deterministic partitioned network, a clock and storage that can lose its last write: terms and votes, a log that matches term by term, commit by majority, a stale leader refused, membership changes, snapshots, and recovery from a lying disk — accepted by a linearizability check over the history the world itself recorded | J3, I9 |
@@ -158,6 +158,35 @@ Two more were considered and left out rather than registered: a regex engine and
 a hand-rolled crypto handshake. The first is small enough to be a stage of G5
 rather than a course, and the second duplicates the `cryptographic-library`
 project the G6 legacy slot already carries.
+
+---
+
+## G7, `shell-from-scratch` — a shell over a provided machine, in ten stages
+
+**G7, `shell-from-scratch`**, is built: a shell is what a kernel looks like from
+the outside, and every promise G4's kernel makes is on show. The world never
+changes and the course never writes it: `machine.py` is a deterministic scheduler
+with its own filesystem, pipes, process tree and signal delivery
+(`machine.machine(7)`); `programs.py` is the ten programs a shell can become, each
+with its own step budget; `rules.py` is the policy in data (`POLICY_VERSION =
+"shell-policy-1"`); `scripts.py` is eight fixture sessions whose expected records
+are the answer key a stage has to reproduce, not read. The ten stages are the
+whole pipeline — the lexer that keeps quoting as written and matches operators
+longest first; expansion in the order a shell must (parameter, tilde, split, glob,
+quote-removal); the descriptor table a pipeline builds before anything runs and
+the byte cost the machine prices it at; the process tree of fork-exec-wait with
+every child reaped and the status always the last command's; the job table that
+keeps background and stopped jobs without waiting; signals and traps, where
+`128 + n` is a signal and never a plain status; the builtins that must run in the
+shell's own process; lists and short-circuits under the rules of `set -e`; the
+session replayed byte for byte against the world's own record; and the audit that
+answers *why* a status was the number it was, one reason per step, from the
+evidence and never from the answer key — one check per stage, 910 testers and 506
+planted mutations caught. Every counter a session reports is the machine's own
+delta from a mark, so a session answers for what it did and not for what the
+machine already held when it was handed over. The contract is frozen in
+`.g7-dev/CONTRACT.md` with ten amendments recorded, each one a reading that a
+stage found in the middle of the work and the plan had got wrong.
 
 ---
 

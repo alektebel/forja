@@ -82,11 +82,11 @@ big the tester is, and where you are on the ladder:
 can be recomputed from `course.py` at any time. `mutants` counts the planted
 mistakes that check was *proven* to catch, and it is recorded in
 `codecraft/stats.py` on purpose: the harness that plants them is built and deleted
-while a course is authored, outside this repository, so for nine of the twenty-four
-courses the number is gone and the page says so rather than printing a zero.
-`stage <row>` also answers for a course that is registered but not written yet: it
-prints the row, its prerequisites and its thesis, which is what `cz stage G7`
-shows today.
+while a course is authored, outside this repository, so for twelve of the
+twenty-five courses the number is gone and the page says so rather than printing
+a zero. `stage <row>` also answers for a course that is registered but not
+written yet: it prints the row, its prerequisites and its thesis, which is what
+`cz stage G8` shows today.
 
 A `dag` is the same registry read the other way: what must come first, and what
 merely should.

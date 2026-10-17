@@ -110,6 +110,12 @@ STAGES = {
     "credit-lifecycle-from-scratch": [
         (104, 71), (101, 67), (87, 63), (49, 56), (44, 58),
         (63, 55), (81, 57), (38, 68), (87, 78), (73, 70)],
+    # Measured 2026-10-17 from the assembled `course.py` with the same recipe, and
+    # the mutants are the `.g7-dev` harness's sweep, `mutate_all.py <stage>`,
+    # re-measured from the harness itself after the last check edit.
+    "shell-from-scratch": [
+        (102, 75), (73, 45), (116, 75), (83, 55), (87, 68),
+        (72, 22), (152, 32), (72, 45), (59, 52), (49, 37)],
 }
 
 
