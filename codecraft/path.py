@@ -692,6 +692,34 @@ PHASES = [
                 "to accept your objects. Author git-from-scratch; G4 is the "
                 "format-and-barrier course."},
     ]),
+    ("M", "Banking and credit risk", [
+        {"id": "M1", "title": "Credit Lifecycle",
+         "course": "credit-lifecycle-from-scratch", "kind": "ready",
+         "prereq": [],
+         "why": "The arithmetic a bank runs over a loan's whole life: the "
+                "contractual schedule and the effective interest rate that "
+                "discounts it, the delinquency buckets and the new definition of "
+                "default (the 90-days-past-due backstop, the unlikeliness-to-pay "
+                "indicators, the materiality threshold and the cure period), PD "
+                "from an observed rating migration matrix and the lifetime PD "
+                "built from it, LGD from the recovery cash flows discounted to the "
+                "default date, EAD and the credit conversion factor on what is "
+                "undrawn, the ECL as PD times LGD times EAD discounted at the "
+                "effective rate and weighted over the given scenarios, IFRS 9's "
+                "three stages with the significant-increase-in-credit-risk test, "
+                "the provision roll-forward with its P&L and OCI split, the "
+                "reporting pack the bank files (exposures by stage, rating and "
+                "past-due bucket, coverage ratios, forbearance, vintage and "
+                "migration matrices) and the backtesting of PD and LGD against "
+                "what actually happened. Built over a provided `book.py`, "
+                "`dates.py` and `rules.py` — a twelve-loan book, thirty-six "
+                "reporting dates, three model artifacts and the policy as data, "
+                "with integer basis points everywhere, which is accounting's own "
+                "fixed point and needs no float and no library. 10 checks and 643 "
+                "mutations caught, against a world pinned by 9417 of its own "
+                "facts: the bank's records are the answer key every stage is "
+                "graded against."},
+    ]),
 ]
 
 # one glyph per row kind — the same four `render_dag` draws

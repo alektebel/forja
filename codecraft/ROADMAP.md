@@ -655,6 +655,48 @@ other side and so is a stage of L3 rather than a course of its own.
 
 ---
 
+## Banking and credit risk (phase M) — a loan's whole life, as numbers
+
+A fifth list arrived from the user, in Spanish and in one line: *"lgds, nueva
+definición de default pd, cálculo de provisiones, y todos los cálculos de reporting
+y estimación que hace un banco en su lifecycle"*. It is registered as **M1,
+`credit-lifecycle-from-scratch`** — not because a bank's arithmetic is AI, but
+because it is the same kind of course this repository is good at: a provided world
+that *is* the ground truth (the portfolio, its observed payment histories, the
+recoveries actually collected, the policy and the scenarios), ten graded stages that
+recompute it, and every number an integer in basis points. That last constraint is
+not a stylistic one: accounting is a fixed-point discipline, an ECL is a product of
+rates and exposures, and the arithmetic a reviewer has to be able to recompute by
+hand is exactly the arithmetic a float would hide.
+
+| Slot | Course to author | What it is | After |
+|---|---|---|---|
+| M1 | `credit-lifecycle-from-scratch` | A loan's whole life as numbers: the schedule and the effective interest rate that discounts it; delinquency buckets and the new definition of default (90 days past due, the unlikeliness-to-pay indicators, the materiality threshold, the cure period); PD from an observed rating migration matrix and the lifetime PD built from it; LGD from the recovery cash flows discounted to the default date; EAD and the credit conversion factor on what is undrawn; the ECL as PD × LGD × EAD discounted at the effective rate and weighted over the given scenarios; IFRS 9's three stages and the significant-increase-in-credit-risk test; the provision roll-forward with its P&L and OCI split; the reporting pack the bank files — exposures by stage, rating and past-due bucket, coverage ratios, forbearance, vintage and migration matrices — and the backtesting of PD and LGD against what happened | — |
+
+**M1, `credit-lifecycle-from-scratch`**, is built: a loan's whole life as numbers,
+as ten stages over a provided bank whose own records are the answer key
+(`book.py` — `Book.build(7)`, twelve loans, thirty-six month-end reporting dates
+and three model artifacts; `dates.py` for the calendar; `rules.py` for the policy,
+the scenarios and the ratios, all in basis points). The world never changes and the
+course never writes it: what a borrower still owes comes from the payment ledger,
+what the bank calls a default comes from its own statuses, what a grade is worth
+comes from the artifact in force, and what the provision moved by comes from the
+roll-forward. The ten stages are the user's one line mechanised — the schedule and
+the effective interest rate that discounts it, the bucket and the new definition of
+default, the migration matrix and the lifetime PD, the recovery flows behind the
+LGD, the drawn and undrawn balance behind the EAD, the ECL with its horizon and its
+scenarios, IFRS 9's three stages and the significant-increase-in-credit-risk test,
+the roll-forward line by line, the reporting pack with its coverage ratios and its
+reconciliation, and the backtest, validation and attribution of a model the course
+did **not** fit — one check per stage, 727 testers and 643 planted mutations
+caught, no float anywhere: every division carries the contract's pinned rounding,
+because accounting is a fixed-point discipline and the arithmetic a reviewer has to
+recompute by hand is exactly the arithmetic a float would hide. The contract is
+frozen in `.m1-dev/CONTRACT.md` with twenty-two amendments recorded, each one a
+reading that a stage found in the middle of the work and the plan had got wrong.
+
+---
+
 ## Interconnects and distributed training (I9, H1) — the plan in two courses
 
 NCCL is where a training step's wall clock is decided and where it is hardest to

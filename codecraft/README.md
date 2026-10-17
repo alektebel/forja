@@ -82,7 +82,7 @@ big the tester is, and where you are on the ladder:
 can be recomputed from `course.py` at any time. `mutants` counts the planted
 mistakes that check was *proven* to catch, and it is recorded in
 `codecraft/stats.py` on purpose: the harness that plants them is built and deleted
-while a course is authored, outside this repository, so for ten of the twenty-three
+while a course is authored, outside this repository, so for nine of the twenty-four
 courses the number is gone and the page says so rather than printing a zero.
 `stage <row>` also answers for a course that is registered but not written yet: it
 prints the row, its prerequisites and its thesis, which is what `cz stage G7`
@@ -92,7 +92,7 @@ A `dag` is the same registry read the other way: what must come first, and what
 merely should.
 
 ```
-  codecraft · the dependency DAG · 60 projects · 87 hard edges · 9 waves
+  codecraft · the dependency DAG · 62 projects · 91 hard edges · 9 waves
 
   wave 0 · nothing must come first
   ○ A1  AWS From Scratch                    ready   unlocks A6 A7
@@ -128,11 +128,12 @@ moves it into every track that row feeds, and the split cannot drift from the
 registry.
 
 ```
-  codecraft · the tracks · 60 projects · 87 hard edges · 25 tracks · 9 waves
+  codecraft · the tracks · 62 projects · 91 hard edges · 26 tracks · 9 waves
 
-  roots   A1, A2, A5, G1, G6, H4, H7 — nothing must come first for these
+  roots   A1, A2, A5, G1, G6, H4, H7, M1 — nothing must come first for these
   furthest I13 Serving Cluster From Scratch · 17 rows behind it
-  leverage A2 in 19 tracks · G1 in 15 tracks · A4 in 14 tracks · C1 in 14 tracks
+  leverage A2 in 20 tracks · A4 in 15 tracks · C1 in 15 tracks · G1 in 15 tracks · B1
+          in 13 tracks
 
   → L2  Concurrent Servers                  9 rows · wave 0→6
       A1 A2 A4 A7 B1 C1 C2 J1 J3
@@ -140,7 +141,7 @@ registry.
 
 Tracks overlap on purpose, which is what makes them useful: a row in two or more
 of them (in yellow) is where two tracks merge, and moving it moves all of them at
-once. A2 sits in nineteen of the twenty-five, so six of them end without it; the
+once. A2 sits in twenty of the twenty-six, so six of them end without it; the
 seven roots are the rows nothing must come first for. `cz tracks <row>` zooms on
 one row: every track it is part of, the lane leading to it, and — when nothing
 depends on it yet — the track it ends.
