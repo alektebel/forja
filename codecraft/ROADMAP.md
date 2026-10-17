@@ -134,9 +134,9 @@ one by one and says which three have a course nowhere.
 
 ---
 
-## What this repo has never built — six registered rows (G7, G8, H5, H6, H7, L4)
+## What this repo has never built — seven registered rows (G7, G8, G10, H5, H6, H7, L4)
 
-Six rows came out of reviewing the corpus by subject rather than by project: each
+Seven rows came out of reviewing the corpus by subject rather than by project: each
 is the artefact its own field is normally taught from, each is gradeable on the
 house rule (a provided world, a ladder of decisions, planted mutations the checks
 must catch), and none of them exists here in any form — the repo has never built
@@ -151,6 +151,7 @@ or a git object store. They are registered in `codecraft/path.py`, which is what
 | H5 | `query-engine-from-scratch` | A SQL subset parsed, resolved against a catalog that may be wrong, planned (pushdown, join order, an index chosen or refused) and executed with iterators over a page buffer and a B+tree you split yourself — judged by the same rows as the reference for a hundred queries, a plan that earns its index, and a crash schedule where the log decides which tuples exist | G4 |
 | H6 | `consensus-from-scratch` | Raft on five nodes, with a deterministic partitioned network, a clock and storage that can lose its last write: terms and votes, a log that matches term by term, commit by majority, a stale leader refused, membership changes, snapshots, and recovery from a lying disk — accepted by a linearizability check over the history the world itself recorded | J3, I9 |
 | H7 | `compression-from-scratch` | Huffman with canonical codes, LZ77's window, LZ4's nibble lengths, DEFLATE bit by bit with dynamic trees and the stored/static/dynamic choice, then FSE/ANS and a frame with a real header and checksum — accepted when the provided decoder accepts your bytes, the ratio clears the bar, and the checksum you wrote notices the one bit the tester flips | — |
+| G10 | `custom-os-from-scratch` | The big one: a bootable x86-64 kernel in C and a userland on top, end to end — bootloader handoff, GDT/IDT by hand, PIT and APIC, paging you can inspect in QEMU, interrupts where a keypress becomes a character on your own screen, G4's scheduler context-switching for real, the syscall ring crossing with the pointer validated twice, drivers against the device itself (PS/2's second-byte wait, ATA's polled status register, PCI enumeration, an e1000/virtio ring with a shared interrupt), a real filesystem on a disk image, an ELF loader running a program G5 compiled, fork/exec/wait as code, and G7's shell speaking to your kernel — QEMU the judge where the checker reaches, the real machine the honest one; the graded path is x86-64, the arm64 port the second half | G4, G5 |
 | L4 | `git-from-scratch` | A `.git` directory real `git` reads: blobs addressed by their own digest, sorted trees with exact modes, commits, refs and a detachable HEAD, an index, a diff that names a hunk, a merge that finds the base and marks conflicts instead of guessing, and a packfile whose delta-compressed objects are reachable through its index — where `git` is on PATH, `git fsck` and `git log` are the judge | G4 |
 
 Two more were considered and left out rather than registered: a regex engine and
