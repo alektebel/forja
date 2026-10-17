@@ -239,6 +239,22 @@ PHASES = [
                 "invariant a collector may never break: nothing reachable is ever "
                 "collected, and no uncollected frame is ever read. Author "
                 "runtime-from-scratch."},
+        {"id": "G9", "title": "Coreutils From Scratch",
+         "course": None, "kind": "author", "prereq": [],
+         "why": "The tools the terminal is made of, each one a byte-oriented "
+                "contract: grep is a matcher whose anchors, classes and -v "
+                "inversion are decisions, not flags; tail is circulation "
+                "over a fixed buffer for -n and a backward scan for -c, and "
+                "its -f is a polling loop the harness drives tick by tick; "
+                "sort's merge and key spec; wc's count that must be wrong "
+                "the same way GNU is wrong when the last line lacks its "
+                "newline; and an editor that is a gap buffer, a screen model "
+                "of rows and columns over those bytes, and the redraw that "
+                "shows exactly the cursor's truth. Each command is judged "
+                "byte-for-byte against the real one on provided corpora, the "
+                "editor against scripted keystrokes and the frame it must "
+                "have drawn. Author coreutils-from-scratch; nothing must "
+                "come first \u2014 bytes and integers the whole way."},
     ]),
     ("H", "The rest", [
         {"id": "H1", "title": "Distributed Training",
@@ -719,6 +735,166 @@ PHASES = [
                 "mutations caught, against a world pinned by 9417 of its own "
                 "facts: the bank's records are the answer key every stage is "
                 "graded against."},
+        {"id": "M0", "title": "Credit Origination",
+         "course": None, "kind": "author", "prereq": [],
+         "why": "Before a loan exists it is an application, and the bank's "
+                "first arithmetic is a decision: the applicant as facts "
+                "(income, obligations, collateral, history) on a provided "
+                "estate that is the ground truth, the affordability ratio "
+                "and the debt-service math that says whether the payment "
+                "fits, the application scorecard — weight, points, cutoff — "
+                "as a table a reviewer can audit rather than a model they "
+                "must trust, the rating the bank assigns and the price it "
+                "sets from it (the rate that covers expected loss plus "
+                "funding plus capital charge, in basis points), the limit "
+                "structure and what is committed versus uncommitted, the "
+                "collateral and its haircuts and lien, the covenant as a "
+                "promise written before the drawdown, the approval as a "
+                "record with who decided and why, and the offer letter the "
+                "contract then becomes. Ends where M1 begins: a booked "
+                "facility with its schedule. Author "
+                "credit-origination-from-scratch; nothing must come first "
+                "\u2014 the decision is integer arithmetic and a policy, not "
+                "a model."},
+        {"id": "M3", "title": "Collections, Workout and Recovery",
+         "course": None, "kind": "author", "prereq": ["M1"],
+         "why": "The loan after it goes wrong, as actions and their "
+                "consequences over M1's own book and ledger: the delinquency "
+                "strategy as a state machine (dunning at day X, call at day "
+                "Y, referral at day Z, each step a record the customer's own "
+                "history answers), forbearance as the bank's decision \u2014 "
+                "the restructure, the term extension, the capitalisation of "
+                "arrears \u2014 and the probation and cure it triggers, the "
+                "cure rate and the re-default the strategy is measured on, "
+                "the collections waterfall over the cash that arrives (what "
+                "pays fees, what pays interest, what pays principal, and "
+                "what the ledger says actually happened), the workout on "
+                "default: the sale of the collateral and its costs, the "
+                "settlement, the deficiency that survives, the write-off as "
+                "an accounting act distinct from the cash recovery that "
+                "follows it, the recovery cash flows M1's stage 4 discounted "
+                "\u2014 now produced by the strategy you wrote and measured "
+                "against the bank's actuals, and the per-loan story: one "
+                "loan followed from first missed payment to final recovery, "
+                "every bank action and cash movement on its own line. Author "
+                "collections-workout-from-scratch; M1 is the book and the "
+                "default definition it works on."},
+        {"id": "M4", "title": "Bank P&L and the Loan's Full Cost",
+         "course": None, "kind": "author", "prereq": ["M1", "M3"],
+         "why": "Where the contract lands on the bank's own statements, over "
+                "M1's book with the strategy M3 wrote: the interest income "
+                "the schedule earns and the day-count that computes it, the "
+                "funding cost of every euro lent (the transfer price, in "
+                "basis points, and why a 300bp margin is not 300bp of "
+                "profit), the expected loss booked as the provision (M1's "
+                "stage 6) and the release or charge as stages move, the "
+                "impairment P&L line the roll-forward explains, the "
+                "unexpected loss the capital absorbs and the return on it "
+                "\u2014 RAROC as a ratio of exact integers, the operating "
+                "cost of the origination (M0) and collections (M3) "
+                "machinery, fee income and its recognition, the economic "
+                "profit per loan, grade and vintage, and the statement the "
+                "course files: for the same book, the net interest, the "
+                "provision charge, the cost and the capital \u2014 the "
+                "numbers a chief credit officer reads and the per-grade "
+                "report that shows where the bank made money and where the "
+                "contract's risk ate it. Author bank-pl-from-scratch; M1 "
+                "is the book, M3 the cash that actually arrives."},
+        {"id": "M2", "title": "IRB and Regulatory Capital",
+         "course": None, "kind": "author", "prereq": ["M1"],
+         "why": "The bank's own estimates, and the ones the regulator does "
+                "not let it trust alone: the PIT/TTC split and where each is "
+                "legal, the IRB risk-weight formula as integer arithmetic "
+                "\u2014 the correlation R per asset class, the maturity "
+                "adjustment, the capital requirement K as the exact series "
+                "it is, the normal quantile tabulated as data because the "
+                "house rule is no float and a table is also what a reviewer "
+                "can recompute \u2014 downturn LGD (the downturn multiplier "
+                "and the collateral it is allowed to haircut), best-estimate "
+                "LGD for the accounting stage against the downturn floor for "
+                "the capital stage, BE-EAD with its CCFs, the output floor "
+                "phased in over the schedule, and the reconcile-the-two-books "
+                "check: IFRS 9's provision and IRB's capital computed from "
+                "the same world, per grade and in total, each shown where "
+                "the other cannot agree with it. Author "
+                "irb-capital-from-scratch over M1's book, dates and rules, "
+                "with the policy extended rather than replaced and every "
+                "number still basis points."},
+        {"id": "M5", "title": "Distressed Debt Investing",
+         "course": None, "kind": "author", "prereq": ["M1", "M3"],
+         "why": "The same default seen from the buy side, where it is an "
+                "opportunity with a price: the capital structure as a "
+                "waterfall of claims over M1's borrower \u2014 who is owed "
+                "what, secured ahead of whom \u2014 the distressed bond and "
+                "loan bought below par, and the question every price asks: "
+                "recovery, reorganisation, or the debtor's death; the "
+                "distressed exchange and the maturity extension as the "
+                "negotiated outcomes, the restructuring waterfall applied "
+                "to the absolute-priority rule and the violations that "
+                "settle it in practice, the claim the fund bought valued "
+                "three ways \u2014 the expected recovery from M3's actual "
+                "cash flows, the Merton distance-to-default on the "
+                "borrower's own assets, and the comparables \u2014 and "
+                "where the three disagree is the trade; the entry price "
+                "implied return and the IRR in basis points that survives "
+                "the timing of the recovery, the hold decision against the "
+                "carry, and the report the fund writes: why this claim, at "
+                "this price, with what recovery and by when \u2014 checked "
+                "against what actually happened to the borrower. Author "
+                "distressed-debt-from-scratch over M1's book and M3's "
+                "collections log; the bank's provisioning and the fund's "
+                "thesis are two readings of one default."},
+    ]),
+    ("N", "Web3 and simulation", [
+        {"id": "N1", "title": "Blockchain From Scratch",
+         "course": None, "kind": "author", "prereq": [],
+         "why": "A ledger is a hash chain plus a rule for who appends: the "
+                "block header and the digest that seals it, Merkle trees and "
+                "the inclusion proof that is the point of them, addresses and "
+                "signatures over a provided keypair scheme, the UTXO set and "
+                "the spend that must name what it consumes, the mempool and "
+                "the double-spend the ordering kills, proof-of-work's target "
+                "and difficulty adjustment as the two constants that make a "
+                "chain honest about time, then proof-of-stake's slots and "
+                "attestations on the same world, fork choice as a rule "
+                "recomputable from any node's own view, and a network of "
+                "simulated peers whose clocks and drops the harness drives "
+                "\u2014 accepted when every node converges on the same chain "
+                "and a planted fork with less honest weight loses. Author "
+                "blockchain-from-scratch; H6 is the agreement half taken "
+                "seriously, N1 the ledger half."},
+        {"id": "N2", "title": "Smart Contracts & dApp",
+         "course": None, "kind": "author", "prereq": ["N1"],
+         "why": "A contract is a program the ledger agrees to run exactly "
+                "once, priced by the work it does: the account model over "
+                "N1's UTXO world, the bytecode VM \u2014 stack, memory, "
+                "storage whose every cold slot is charged \u2014 and the gas "
+                "schedule that makes the meter real; a compiler from a toy "
+                "contract language to that bytecode with the ABI that lets a "
+                "caller encode a call; the escrow, the token and the voting "
+                "contracts written in it, each with the reentrancy or "
+                "overflow bug the tester plants and the checker asks your "
+                "guard about; then the dApp on top: a local node your client "
+                "talks to, transactions signed, sent and receipted, events "
+                "indexed by your own scanner, and the front-end state "
+                "machine that reads the chain and never trusts it. Author "
+                "dapp-from-scratch; N1 is the machine it runs on."},
+        {"id": "N3", "title": "MuJoCo-Style Physics Engine",
+         "course": None, "kind": "author", "prereq": ["A8"],
+         "why": "A physics engine is a constraint solver wearing a scene "
+                "graph: rigid bodies with mass and inertia tensors, contact "
+                "detection as narrowphase over provided shapes, the contact "
+                "Jacobian and the LCP that a projected solver iterates to "
+                "rest, the warm start that makes it stable, the integrator's "
+                "order and its energy drift, actuators and PD control, then "
+                "a MuJoCo-shaped MJCF subset parsed into that world \u2014 "
+                "and the proof of the whole thing: the gradients. MuJoCo "
+                "exists because differentiable simulation trains "
+                "controllers; A8's exact reverse mode over the solver's "
+                "unrolled steps is the capstone, checked against the "
+                "finite-difference oracle at every parameter. Author "
+                "physics-engine-from-scratch; A8 is the engine that makes "
+                "the last stage possible."},
     ]),
 ]
 

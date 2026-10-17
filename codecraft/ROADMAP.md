@@ -669,6 +669,21 @@ not a stylistic one: accounting is a fixed-point discipline, an ECL is a product
 rates and exposures, and the arithmetic a reviewer has to be able to recompute by
 hand is exactly the arithmetic a float would hide.
 
+**Three more rows registered (to author) so phase M covers the loan from the
+first application to its final effect on the bank — the lifecycle end to end:**
+
+| Slot | Course to author | The mechanism | After |
+|---|---|---|---|
+| M0 | `credit-origination-from-scratch` | The loan before it exists: the applicant as facts, the affordability and debt-service arithmetic, the application scorecard as an auditable table (weight, points, cutoff) rather than a model, the rating assigned and the price set from it — rate covering expected loss, funding and capital charge — the limit structure, collateral with its haircuts and lien, the covenant as a promise written before the drawdown, and the approval record; ends where M1 begins, at a booked facility with its schedule | — |
+| M3 | `collections-workout-from-scratch` | The loan after it goes wrong: the delinquency strategy as a state machine (dunning, call, referral, each a record the customer's history answers), forbearance as the bank's decision with its probation and cure, cure rate and re-default as the strategy's measurement, the collections waterfall over the cash that arrives, the workout — collateral sale with its costs, settlement, the deficiency that survives — the write-off as an accounting act distinct from the cash that follows, and one loan followed from first missed payment to final recovery, every action and movement on its own line | M1 |
+| M5 | `distressed-debt-from-scratch` | The same default from the buy side, where it is an opportunity with a price: the capital structure as a waterfall of claims over M1's borrower, the distressed claim bought below par and the question every price asks — recovery, reorganisation, or death; the distressed exchange and maturity extension as negotiated outcomes, the restructuring waterfall against the absolute-priority rule and the violations that settle it in practice, the claim valued three ways — expected recovery from M3's actual cash flows, Merton distance-to-default on the borrower's assets, comparables — where the three disagree is the trade; entry price, implied return and the IRR in basis points that survives the recovery's timing, the hold decision against the carry, and the thesis report checked against what actually happened | M1, M3 |
+
+With M1 (built) and M2 (below), phase M is then six rows:
+origination → the lifecycle arithmetic → collections/workout → capital →
+the P&L — and M5, the same default priced by the fund that buys it, which is
+the whole of a bank's credit question in the order a bank does it, plus the
+other side of the trade.
+
 | Slot | Course to author | What it is | After |
 |---|---|---|---|
 | M1 | `credit-lifecycle-from-scratch` | A loan's whole life as numbers: the schedule and the effective interest rate that discounts it; delinquency buckets and the new definition of default (90 days past due, the unlikeliness-to-pay indicators, the materiality threshold, the cure period); PD from an observed rating migration matrix and the lifetime PD built from it; LGD from the recovery cash flows discounted to the default date; EAD and the credit conversion factor on what is undrawn; the ECL as PD × LGD × EAD discounted at the effective rate and weighted over the given scenarios; IFRS 9's three stages and the significant-increase-in-credit-risk test; the provision roll-forward with its P&L and OCI split; the reporting pack the bank files — exposures by stage, rating and past-due bucket, coverage ratios, forbearance, vintage and migration matrices — and the backtesting of PD and LGD against what happened | — |
@@ -695,6 +710,53 @@ recompute by hand is exactly the arithmetic a float would hide. The contract is
 frozen in `.m1-dev/CONTRACT.md` with twenty-two amendments recorded, each one a
 reading that a stage found in the middle of the work and the plan had got wrong.
 
+**M2, `irb-capital-from-scratch`**, registered (to author, after M1): the row
+the first M list implied and M1 did not cover — the bank's *own* parameter
+estimates and the regulator's version of them. PIT vs TTC and where each is
+legal; the IRB risk-weight formula in integer arithmetic (correlation R per
+asset class, the maturity adjustment, K as the exact series, the normal
+quantile as tabulated data — the no-float house rule and the reviewer's
+recomputation agree on a table); downturn LGD with the multiplier and the
+collateral haircut it is allowed; best-estimate LGD for the accounting stage
+against the downturn floor for the capital stage; BE-EAD and its CCFs; the
+output floor phased in; and the capstone that reconciles the two books —
+IFRS 9's provision and IRB's capital from the same world, per grade and in
+total, shown where they cannot agree with each other. Built over M1's
+`book.py`/`dates.py`/`rules.py`, policy extended, everything still basis
+points.
+
+---
+
+## Coreutils (phase G, row G9) — grep, tail and an editor, byte for byte
+
+Registered (to author, no prereqs): the tools the terminal is made of, judged
+byte-for-byte against the real ones. `grep` — a matcher whose anchors,
+character classes and `-v` inversion are decisions, not flags; `tail` —
+circulation over a fixed buffer for `-n`, a backward scan for `-c`, and `-f`
+as a polling loop the harness drives tick by tick; `sort`'s merge and key
+spec; `wc` with GNU's last-line-without-newline behaviour reproduced exactly;
+and an editor — gap buffer, a row/column screen model over the bytes, and the
+redraw that must show exactly the cursor's truth, graded against scripted
+keystrokes and the frame it had to have drawn. Same shape as H7: provided
+corpora, provided reference behaviour, and the checker that plants the byte
+you got wrong.
+
+---
+
+## Web3 and simulation (phase N) — the ledger, the contract, the engine
+
+Three rows registered (all to author):
+
+| Slot | Course to author | The mechanism | After |
+|---|---|---|---|
+| N1 | `blockchain-from-scratch` | A ledger as a hash chain plus a rule for who appends: block headers and the digest that seals them, Merkle trees and inclusion proofs, addresses and signatures, the UTXO set and the spend that names what it consumes, the mempool and the double-spend the ordering kills, proof-of-work's target and difficulty adjustment, then proof-of-stake's slots and attestations, fork choice recomputable from any node's view — accepted when every simulated peer converges and a planted fork with less honest weight loses | — |
+| N2 | `dapp-from-scratch` | A contract as a program the ledger runs exactly once, priced: the account model over N1's UTXO world, a bytecode VM (stack, memory, storage with cold-slot charges) and the gas schedule that makes the meter real, a toy contract language compiled to it with its ABI, escrow/token/voting contracts each carrying the reentrancy or overflow bug the tester plants, then the dApp: signed transactions, receipts, an event scanner you wrote, and a front-end state machine that reads the chain and never trusts it | N1 |
+| N3 | `physics-engine-from-scratch` | A constraint solver wearing a scene graph: rigid bodies and inertia tensors, narrowphase contacts, the contact Jacobian and the LCP a projected solver iterates, warm starts, integrator order and energy drift, actuators and PD control, an MJCF subset parsed into that world — and the capstone that justifies the exercise: MuJoCo exists for differentiable simulation, so A8's exact reverse mode runs over the solver's unrolled steps, checked against the finite-difference oracle at every parameter | A8 |
+
+Nothing else in the registry duplicates them: N1's agreement half is H6's
+subject but its ledger half is new; N2's VM shares G8's heap questions but
+the gas meter and the ABI are its own; N3 is the repo's first continuous
+dynamics, and A8 is the only engine here that can grade its gradients.
 ---
 
 ## Interconnects and distributed training (I9, H1) — the plan in two courses

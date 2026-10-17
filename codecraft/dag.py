@@ -41,6 +41,10 @@ ADVICE = {
     "J5": [("E1", "J5's thesis: 'E1's six-key trace is the input' to its metrics")],
     "K5": [("J4", "K5's thesis: 'J4 is the sandbox half and this is the "
                   "data-in-transit half'")],
+    "N3": [("A8", "N3's thesis: 'A8 is the engine that makes the last stage "
+                  "possible' \u2014 differentiable simulation is the point, and "
+                  "it is already a hard prereq; the advice is the order of the "
+                  "other half: solve contacts first, differentiate second")],
 }
 
 
