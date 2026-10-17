@@ -29,14 +29,16 @@ python3 codecraft/cli.py new my-course --title "Build X" --stages 3
 
 ## Projects still to build
 
-The registry (`codecraft/path.py`) tracks 72 rows; 36 are built and graded
-(`cz run <course>`), 25 legacy projects wait for a checker, and **33 are queued
+The registry (`codecraft/path.py`) tracks 73 rows; 36 are built and graded
+(`cz run <course>`), 25 legacy projects wait for a checker, and **34 are queued
 to build or port** — the list below is that queue, rendered from the registry
 so it cannot drift from `cz dag`. Every row names its course slug, what it is,
 and what must exist first; `python3 codecraft/cli.py stage <slug>` prints the
 full brief for any of them. The capstone of the machine stack is **G10, a
 bootable OS in C end to end** — bootloader to shell, drivers against the
-hardware, the judge QEMU.
+hardware, the judge QEMU — and **G11** turns La Rocca's 18-chapter algorithms
+book into one graded course, no prerequisites.
+
 
 | Slot | Course | One line | After |
 |---|---|---|---|
@@ -67,9 +69,10 @@ hardware, the judge QEMU.
 | M3 | `collections-workout-from-scratch` | Dunning state machine, forbearance, the waterfall, workout, write-off vs cash | M1 |
 | M4 | `bank-pl-from-scratch` | Interest, transfer price, provisions, RAROC, economic profit per loan | M1, M3 |
 | M5 | `distressed-debt-from-scratch` | The claim bought below par, valued three ways, IRR in basis points | M1, M3 |
+| N2 | `dapp-from-scratch` | Bytecode VM with gas, a toy contract language and ABI, the dApp front end that never trusts the chain | N1 |
 | N3 | `physics-engine-from-scratch` | Contacts, LCP solver, MJCF subset — then differentiable simulation via A8, checked against finite differences | A8 |
 | G10 | `custom-os-from-scratch` | **The capstone**: a bootable x86-64 kernel in C and a userland end to end — bootloader handoff, GDT/IDT, PIT/APIC, paging, interrupts, the real scheduler, syscalls across the ring, drivers written against the hardware itself (PS/2, ATA, PCI, e1000/virtio), a filesystem, an ELF loader running G5-compiled programs, and G7's shell on your own kernel; QEMU is the judge, the real machine the honest one; arm64 port the second half | G4, G5 |
-| N2 | `dapp-from-scratch` | Bytecode VM with gas, a toy contract language and ABI, the dApp front end that never trusts the chain | N1 |
+| G11 | `advanced-dsa-from-scratch` | La Rocca's *Advanced Algorithms and Data Structures* mechanised, one stage per chapter: d-way heaps on Dijkstra, treaps with the height profiler, Bloom filters with the measured false-positive rate, disjoint sets counted in finds, tries and autocomplete, LRU/LFU caches, k-d trees and SS-trees checked against the linear scan, DBSCAN/OPTICS, graphs to Dijkstra and MST, embeddings and force-directed drawing with counted crossings, gradient descent and simulated annealing, genetic algorithms on TSP | — |
 
 Two rows are marked **port first** rather than author: H2 (inference/serving
 material exists on a branch) and I5 (quantization, same). Before authoring any
