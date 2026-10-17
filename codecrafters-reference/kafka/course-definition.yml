@@ -1,0 +1,317 @@
+slug: "kafka"
+name: "Build your own Kafka"
+short_name: "Kafka"
+release_status: "live"
+
+description_md: |-
+  Apache Kafka is a distributed event streaming platform often used for high-performance data pipelines. In this challenge, you'll build your own Kafka broker
+  that's capable of serving basic requests.
+
+  Along the way you'll learn about TCP servers, the Kafka wire protocol and more.
+
+short_description_md: |-
+  Learn about TCP servers, the Kafka wire protocol and more.
+
+completion_percentage: 15
+
+concept_slugs: ["network-protocols", "tcp-overview"]
+
+languages:
+  - slug: "c"
+  - slug: "cpp"
+  - slug: "csharp"
+  - slug: "elixir"
+  - slug: "gleam"
+  - slug: "go"
+  - slug: "java"
+  - slug: "javascript"
+  - slug: "kotlin"
+  - slug: "python"
+  - slug: "rust"
+  - slug: "scala"
+  - slug: "typescript"
+  - slug: "zig"
+
+marketing:
+  difficulty: medium
+  sample_extension_idea_title: "On Disk Storage"
+  sample_extension_idea_description: "A Kafka broker that can read and write to disk"
+  testimonials:
+    - author_name: "Ananthalakshmi Sankar"
+      author_description: "Automation Engineer at Apple"
+      author_avatar: "https://codecrafters.io/images/external/testimonials/oxta.jpeg"
+      link: "https://github.com/anu294"
+      text: "There are few sites I like as much that have a step by step guide. The real-time feedback is so good, it's creepy!"
+
+    - author_name: "Patrick Burris"
+      author_description: "Senior Software Developer, CenturyLink"
+      author_avatar: "https://codecrafters.io/images/external/testimonials/patrick-burris.jpeg"
+      link: "https://github.com/Jumballaya"
+      text: |-
+        I think the instant feedback right there in the git push is really cool.
+        Didn't even know that was possible!
+
+extensions:
+  - slug: "concurrent-clients"
+    name: "Concurrent Clients"
+    description_markdown: |
+      In this challenge extension you'll add support for serving multiple clients simultaneously.
+
+      Along the way you'll learn about TCP connections, how to handle concurrency and more.
+
+  - slug: "listing-partitions"
+    name: "Listing Partitions"
+    description_markdown: |
+      In this challenge extension you'll add support for listing topic partitions by implementing the [DescribeTopicPartitions][describe-topic-partitions] API.
+
+      Along the way you'll learn about how Kafka stores messages on disk, the `__cluster_metadata` topic and more.
+
+      [describe-topic-partitions]: https://kafka.apache.org/42/design/protocol/#The_Messages_DescribeTopicPartitions
+
+  - slug: "consuming-messages"
+    name: "Consuming Messages"
+    description_markdown: |
+      In this challenge extension you'll add support for consuming messages by implementing the [Fetch][fetch-api] API.
+
+      Along the way you'll learn about how Kafka's Fetch API works, how Kafka stores messages on disk and more.
+
+      [fetch-api]: https://kafka.apache.org/42/design/protocol/#The_Messages_Fetch
+
+  - slug: "producing-messages"
+    name: "Producing Messages"
+    description_markdown: |
+      In this challenge extension you'll add support for producing messages by implementing the [Produce][produce-api] API.
+
+      Along the way you'll learn about how Kafka's Produce API works, how Kafka stores messages on disk and more.
+
+      [produce-api]: https://kafka.apache.org/42/design/protocol/#The_Messages_Produce
+
+stages:
+  - slug: "vi6"
+    name: "Bind to a port"
+    concept_slugs:
+      [
+        "network-protocols",
+        "tcp-overview",
+        "go-tcp-server",
+        "rust-tcp-server",
+        "python-tcp-server",
+        "java-tcp-server",
+        "cpp-tcp-server",
+      ]
+    difficulty: easy
+    marketing_md: |-
+      In this stage, you'll start a TCP server on port 9092, which is the
+      default port that Kafka uses.
+
+  - slug: "nv3"
+    name: "Send Correlation ID"
+    concept_slugs:
+      [
+        "network-protocols",
+        "tcp-overview",
+        "go-tcp-server",
+        "rust-tcp-server",
+        "python-tcp-server",
+        "java-tcp-server",
+        "cpp-tcp-server",
+      ]
+    difficulty: easy
+    marketing_md: |-
+      In this stage, you'll start implementing the ResponseHeader.
+
+  - slug: "wa6"
+    name: "Parse Correlation ID"
+    concept_slugs:
+      [
+        "network-protocols",
+        "tcp-overview",
+        "go-tcp-server",
+        "rust-tcp-server",
+        "python-tcp-server",
+        "java-tcp-server",
+        "cpp-tcp-server",
+      ]
+    difficulty: medium
+    marketing_md: |-
+      In this stage, you'll start decoding the RequestHeader.
+
+  - slug: "nc5"
+    name: "Parse API Version"
+    difficulty: medium
+    marketing_md: |-
+      In this stage, you'll start encoding your response to the `ApiVersions` requests.
+
+  - slug: "pv1"
+    name: "Handle ApiVersions requests"
+    difficulty: hard
+    marketing_md: |-
+      In this stage, you'll need to implement the `ApiVersions:V4` response.
+
+  # Concurrent Requests
+
+  - slug: "nh4"
+    name: "Serial requests"
+    concept_slugs:
+      [
+        "network-protocols",
+        "tcp-overview",
+        "go-tcp-server",
+        "rust-tcp-server",
+        "python-tcp-server",
+        "java-tcp-server",
+        "cpp-tcp-server",
+      ]
+    primary_extension_slug: "concurrent-clients"
+    difficulty: medium
+    marketing_md: |-
+      In this stage, you'll need to handle multiple sequential `ApiVersions` requests.
+
+  - slug: "sk0"
+    name: "Concurrent requests"
+    concept_slugs:
+      [
+        "network-protocols",
+        "tcp-overview",
+        "go-tcp-server",
+        "rust-tcp-server",
+        "python-tcp-server",
+        "java-tcp-server",
+        "cpp-tcp-server",
+      ]
+    primary_extension_slug: "concurrent-clients"
+    difficulty: hard
+    marketing_md: |-
+      In this stage, you'll need to handle concurrent `ApiVersions` requests.
+
+  # Describe Topic Partitions
+
+  - slug: "yk1"
+    primary_extension_slug: "listing-partitions"
+    name: "Include DescribeTopicPartitions in ApiVersions"
+    difficulty: medium
+    marketing_md: |-
+      In this stage, you'll add the DescribeTopicPartitions API to the ApiVersions response.
+
+  - slug: "vt6"
+    primary_extension_slug: "listing-partitions"
+    name: "List for an unknown topic"
+    difficulty: medium
+    marketing_md: |-
+      In this stage, you'll implement the DescribeTopicPartition response for an unknown topic.
+
+  - slug: "ea7"
+    primary_extension_slug: "listing-partitions"
+    name: "List for a single partition"
+    difficulty: hard
+    marketing_md: |-
+      In this stage, you'll implement the DescribeTopicPartition response for a single topic.
+
+  - slug: "ku4"
+    primary_extension_slug: "listing-partitions"
+    name: "List for multiple partitions"
+    difficulty: hard
+    marketing_md: |-
+      In this stage, you'll implement the DescribeTopicPartition response for a single topic with multiple partitions.
+
+  - slug: "wq2"
+    primary_extension_slug: "listing-partitions"
+    name: "List for multiple topics"
+    difficulty: hard
+    marketing_md: |-
+      In this stage, you'll implement the DescribeTopicPartition response for multiple topics.
+
+  # Consuming Messages
+
+  - slug: "gs0"
+    primary_extension_slug: "consuming-messages"
+    name: "Include Fetch in ApiVersions"
+    difficulty: medium
+    marketing_md: |-
+      In this stage, you'll add the Fetch API to the ApiVersions response.
+
+  - slug: "dh6"
+    primary_extension_slug: "consuming-messages"
+    name: "Fetch with no topics"
+    difficulty: medium
+    marketing_md: |-
+      In this stage, you'll start encoding your response to the `Fetch` requests.
+
+  - slug: "hn6"
+    primary_extension_slug: "consuming-messages"
+    name: "Fetch with an unknown topic"
+    difficulty: medium
+    marketing_md: |-
+      In this stage, you'll start encoding your response to the `Fetch` requests.
+
+  - slug: "cm4"
+    primary_extension_slug: "consuming-messages"
+    name: "Fetch with an empty topic"
+    difficulty: medium
+    marketing_md: |-
+      In this stage, you'll implement the Fetch response for a topic with no messages.
+
+  - slug: "eg2"
+    primary_extension_slug: "consuming-messages"
+    name: "Fetch single message from disk"
+    difficulty: hard
+    marketing_md: |-
+      In this stage, you'll implement the Fetch response for a topic with a single message, reading it from disk.
+
+  - slug: "fd8"
+    primary_extension_slug: "consuming-messages"
+    name: "Fetch multiple messages from disk"
+    difficulty: hard
+    marketing_md: |-
+      In this stage, you'll implement the Fetch response for a topic with multiple messages, reading them from disk.
+
+  # Producing Messages
+
+  - slug: "xz1"
+    primary_extension_slug: "producing-messages"
+    name: "Include Produce in ApiVersions"
+    difficulty: easy
+    marketing_md: |-
+      In this stage, you'll implement adding the Produce API to the ApiVersions response.
+
+  - slug: "zf2"
+    primary_extension_slug: "producing-messages"
+    name: "Respond for invalid topic or partition"
+    difficulty: medium
+    marketing_md: |-
+      In this stage, you'll implement the Produce response for invalid topics or partitions.
+
+  - slug: "gg1"
+    primary_extension_slug: "producing-messages"
+    name: "Respond for valid topic and partition"
+    difficulty: medium
+    marketing_md: |-
+      In this stage, you'll implement the Produce response for valid topics and partitions.
+
+  - slug: "ls8"
+    primary_extension_slug: "producing-messages"
+    name: "Produce a single record"
+    difficulty: hard
+    marketing_md: |-
+      In this stage, you'll implement producing a single record to disk.
+
+  - slug: "yd8"
+    primary_extension_slug: "producing-messages"
+    name: "Produce multiple records"
+    difficulty: hard
+    marketing_md: |-
+      In this stage, you'll implement producing multiple records in a single request.
+
+  - slug: "ct4"
+    primary_extension_slug: "producing-messages"
+    name: "Produce to multiple partitions"
+    difficulty: easy
+    marketing_md: |-
+      In this stage, you'll implement producing to multiple partitions of the same topic.
+
+  - slug: "ov0"
+    primary_extension_slug: "producing-messages"
+    name: "Produce to multiple partitions of multiple topics"
+    difficulty: easy
+    marketing_md: |-
+      In this stage, you'll implement producing to multiple partitions of multiple topics.
