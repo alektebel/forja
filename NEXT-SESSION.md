@@ -1,16 +1,25 @@
 # Next session — where everything is
 
-Written at the end of the session that shipped **K6 (`fde-from-scratch`)** — the
-twelve-stage FDE skill list built whole instead of left as prose, over a provided
-customer that *is* data: identity and the row, an air-gapped deployment, dirty
-invoices reconciled into a hybrid store, retrieval that filters before the limit,
-the legacy ERP as tools with the credential staying in the vault, PII masked out and
-restored back, a workflow that stops at a person, the model that fits somebody
-else's GPU, the work counted in hours and cents, the customer's own tickets run in
-shadow, a vague ask scoped to four weeks, and a runbook drilled against armed faults
-— **884 planted mutations**. Phase K now has one built slot and five promised ones.
-Everything in *Done* is committed and pushed; the section after it is the commit
-that carries this file.
+Written at the end of the session that shipped **K1 (`agentic-retrieval-from-scratch`)**,
+phase K's first slot as ten graded stages — and, earlier in the same session, **K6
+(`fde-from-scratch`)**, the twelve-stage FDE skill list built whole instead of left as
+prose. K1 is retrieval that checks itself over a provided contract corpus whose ground
+truth is data (`corpus.py`: 8 documents, 16 questions, 12 labelled failures, the estate's
+scale; `meter.py`: what a call costs): clauses and their cross-references, an index sized
+against a memory budget, two scorers and the fusion that has to beat both, a reranker
+that earns its place, an ambiguous question rewritten and recorded, the critique of what
+came back, grounded-or-abstain with a citation per claim, the loop under a budget that
+stops for a reason it names, the checking priced against the naive retrieve-and-answer,
+and a debugger that diagnoses the customer's own failures without ever reading the label
+they carried — **589 planted mutations**, 893 testers, no float anywhere. Phase K now has
+two built slots (K1 and K6) and four promised ones. Everything in *Done* is committed and
+pushed; the section after it is the commit that carries this file.
+
+**Asked for next, by the user, and not started**: the arithmetic and the data of a bank
+over a loan's life — **LGDs**, the **new definition of default**, **PD**, **provisioning**
+(ECL), and all the reporting and estimation a bank does across its lifecycle. The plan
+this file proposes for it is at the end of the K1 section, under *The unit after this
+one*.
 
 ## Done, pushed, on `origin/main`
 
@@ -40,8 +49,123 @@ that carries this file.
 | `4856935` | the L2 doc follow-up: the six files the flip left stale (`NETWORKING.md`, `NEXT-SESSION.md`, root `README.md`, `codecraft/README.md`, `codecraft/ROADMAP.md`, `codecraft/briefs.py`) |
 | `1268705` | **L3 `mqtt-broker-from-scratch`** — 10 stages, provided `streams.py` (the byte-pipe transport) and `grants.py` (the policy table), 600 mutations, smoke green, registered; phase L closed |
 | `eaf0a64` | **`ENTERPRISE.md`** — the twelve enterprise-AI projects kept verbatim with a per-project "already in this repo / the gap to build" table, and the queue folded into `path.py` |
+| `bc0e6bb` | **K6 `fde-from-scratch`** — twelve stages over a provided customer that is data (`estate.py`, `idp.py`, `network.py`, `meter.py`), 884 mutations, smoke green, registered: the twelve-stage FDE skill list built whole |
+| `3263177` | the K6 doc follow-up: `ENTERPRISE.md`'s coverage of the twelve enterprise projects, `codecraft/ROADMAP.md`'s K6 row and phase-K paragraph, and the course README's pointer |
 
-## The unit this file carries — K6 `fde-from-scratch`
+## The unit this file carries — K1 `agentic-retrieval-from-scratch`
+
+**K1 `agentic-retrieval-from-scratch`** — ten stages, **589 mutations**, 893 testers,
+phase K's first built slot: *retrieval that checks itself*, where the pipeline decides
+whether it may answer at all and every decision it makes about its own search is either
+recorded or priced. Its source is `AI-ENGINEER.md`'s phase-K row: interview problems
+**#1** (a RAG for 10M documents), **#2** (your RAG gives wrong answers — debug it), **#3**
+(chunking for legal contracts), **#4** (BM25 vs dense vs hybrid), **#5** (add a reranker
+and measure whether it helped) and **#14** (detect and reduce hallucinations), plus build
+**5** (self-correcting agentic RAG) — nothing cut for being hard to grade offline.
+
+### The world it is given, and never writes
+
+`agentic-retrieval-from-scratch/corpus.py` (`sha256 04009cad…`) and `meter.py`
+(`sha256 ef04c856…`), standard library only (`hashlib` in the one, nothing in the other),
+pinned by `.k1-dev/verify_provided.py` → `PROVIDED: 102, PROBLEMS: 0`. `Corpus.build(7)`
+is deterministic and carries the ground truth: `clause_index(doc)` (what a clause *is* —
+including a deliberately duplicated number, `msa-3:5.2`, and a skipped one in `sup-1`),
+`questions` (16, five with conversations, three two-hop, one superseded document `lic-2`,
+five carrying a glossary acronym), `failures` (12 rows, each labelled with the stage that
+failed, over the seven-name vocabulary), `glossary` (five acronyms, lower-case keys),
+`SCALE` (10M documents, 140M clauses, 250k terms, 480 bytes a clause, 10% hot),
+`terms`/`idf`/`embed`/`stats` — **the only analyzer in the world**, which is why every
+stage that tokenizes is handed the corpus. `Meter` prices five kinds of call in cents and
+keeps the injected tick.
+
+There is **no float anywhere in the course**: BM25 is fixed point (120bp, 75bp), fusion is
+`10000 // (60 + rank)`, and the world's vectors have an exact integer norm of 1000, so a
+similarity is a dot product — no `math`, no square root, no logarithm, no `statistics`.
+
+### The ten stages
+
+| # | File | What it builds | Mutations |
+|---|---|---|---|
+| 1 | `stage_01.py` | The clause chunker: numbered clauses, cross-references, definitions, and four parse problems **returned, never raised** | 50 |
+| 2 | `stage_02.py` | The index of 10M documents as a **decision**: three layouts × shards, a memory budget, a scan budget, the cheapest plan that pays, and a refusal naming its own numbers | 64 |
+| 3 | `stage_03.py` | Two scorers (BM25, dense) and the rank fusion that has to beat both, with per-question and aggregate measurement and the corpus's own ledger as the tie-breaker | 58 |
+| 4 | `stage_04.py` | The reranker that has to earn its place: lexical signals over a deep pool, a before/after comparison, and a verdict of earned / within-noise / hurt | 56 |
+| 5 | `stage_05.py` | The ambiguous question: the referent recovered from the conversation's last turn, the acronym expanded, the elliptical query filled, every fix recorded, and the two-hop split | 57 |
+| 6 | `stage_06.py` | The critique: supported / stale / conflicting / off-topic / unresolvable, decided in that order, and the survivors | 51 |
+| 7 | `stage_07.py` | Grounded or abstain: a claim per survivor, a citation per claim, the distinct-term grounding share, and four named abstentions in precedence order | 52 |
+| 8 | `stage_08.py` | The loop under a budget: five stops it names (answered, abstained, budget, round-cap, repeat), a round priced before it runs, and a loop that can stop with no answer at all | 56 |
+| 9 | `stage_09.py` | What the checking cost: the naive retrieve-and-answer beside it, the per-question "where did it lose", and "was it worth it" at a ±400bp noise band | 57 |
+| 10 | `stage_10.py` | The debugger: the failing stage decided from the failure's **own evidence** (never its label), the distribution, the agreement with the customer, and the checker's verdict against the baseline | 88 |
+
+### How it is verified, and the one rule that keeps it verified
+
+`.k1-dev/` is the harness, and it lives outside the repository on purpose:
+`verify_provided.py` (the world), `assemble.py` (writes `course.py` from the ten checks +
+`course_head.py` + `course_tail.py`), `run_all.py` (each stage's check against the
+template → must fail — and against the solution → must pass), `mutate_all.py` (the planted
+mistakes), `smoke.py`, `run_assembled.py`, `audit_course.py` (the eleven laws: the first
+docstring paragraph, no float literal, no banned import, the ladder, every public name
+declared) and `probe_stages.py` (the parent's own second reading of the contract, which
+never imports a stage's check).
+
+**A `mutate_NN.py` entry is anchored to exact solution text** (the substring must occur
+once), so any later rewrite of `solutions/stage_NN.py` must be followed by
+`mutate_all.py NN` and `audit_course.py NN`. And **the world is never edited to make a
+stage pass**: if a stage disagrees with `corpus.py`, the stage is wrong, and if the
+contract disagrees with both, the contract gets an amendment row (§7 has eight of them,
+each one a reading a stage found in the middle of the work).
+
+### What the next session should know
+
+- `codecraft/path.py`'s K1 row is `"kind": "ready"` with `"course":
+  "agentic-retrieval-from-scratch"`; `codecraft/stats.py` carries the measured row
+  `(74, 50), (104, 64), (93, 58), (95, 56), (91, 57), (84, 51), (75, 52), (82, 56),
+  (94, 57), (101, 88)`; `codecraft/briefs.py` maps `"K1"` to `.k1-dev/CONTRACT.md`.
+- The runtime files `codecraft/{history.jsonl,profile.json,mentor_cache.json}` and any
+  `__pycache__` are regenerated by any `./cz` invocation: delete them before a commit.
+- The course's own `README.md` carries the ten-stage table, the design decisions and the
+  measured "how this course is verified" block; the contract is frozen in
+  `.k1-dev/CONTRACT.md` (716+ lines) and is the thing to read first.
+
+### The unit after this one — a bank's lifecycle, from scratch
+
+Asked for by the user, not started: the arithmetic and the data a bank runs over a loan's
+life — **LGD**, the **new definition of default**, **PD**, **provisions** (ECL) and "all
+the reporting and estimation calculations a bank does in its lifecycle". It fits the house
+pattern exactly, and the shape to author is:
+
+- **A provided world that is the book**: a loan-level portfolio (contracts with their
+  contractual cash flows, collateral and guarantees, observed payment histories, the macro
+  scenarios the bank is given, and the bank's own reporting ledger), generated
+  deterministically from a seed with the counts a check can recompute. Same discipline as
+  `corpus.py`: the world holds the ground truth (which loans are defaulted under which
+  definition, which cured, what was actually recovered and when) and the course never
+  writes it.
+- **The stages**: the contractual cash-flow schedule and the effective interest rate that
+  discounts it; delinquency buckets and the *new definition of default* (the 90-days-past-due
+  backstop, the unlikeliness-to-pay indicators, the materiality threshold and the cure
+  period); the PD term structure from a rating migration matrix, and a lifetime PD; LGD
+  from observed recovery cash flows discounted to the default date; EAD and the credit
+  conversion factor on the undrawn limit; the ECL as PD × LGD × EAD discounted at the
+  effective rate, with forward-looking scenarios and their weights; the **three stages** of
+  IFRS 9 and the significant-increase-in-credit-risk test; the provisioning roll-forward
+  (opening, new business, transfers, write-offs, recoveries, the P&L and OCI split, the
+  discount unwind); the reporting stack the bank files (exposures by stage, by rating, by
+  past-due bucket, coverage ratios, forbearance, vintage and migration matrices) and the
+  backtesting of PD and LGD against what actually happened; and the estimation itself — the
+  model as a versioned artifact with out-of-time validation, and the journal of what moved
+  the provision between two runs.
+- **The laws are the house's**: a provided world, ten or twelve graded stages, one check
+  per stage, mutations behind every check, standard library only, no float literal (integer
+  basis points everywhere — a discipline that reads as *accounting* here, which is a gift),
+  no clock but the provided reporting date, and where the bank's own report would carry a
+  number, a recorded verdict rather than a raised exception.
+
+It belongs in a new phase (a bank's numbers are neither "quantitative finance" nor
+"applied AI"): `path.py` gets the phase, the course gets its own directory, and the
+contract gets written and frozen before stage 1 — the same order this unit followed.
+
+## The unit the previous session carried — K6 `fde-from-scratch`
 
 **K6 `fde-from-scratch`** — twelve stages, **884 mutations**, and the first built
 slot of phase K: *an FDE builds the smallest thing that survives the customer's own

@@ -117,7 +117,7 @@ as `author`.
 | # | Problem | Where it is today | Covered? |
 |---|---|---|---|
 | 1 | RAG for 10M documents | `rag-from-scratch` (B1: chunking, TF-IDF, exact index, BM25, rank fusion, reranking, citations, tenants) + `vector-index-from-scratch` (B2: k-means, IVF, the frontier, HNSW, deletions, int8) | yes |
-| 2 | RAG gives wrong answers — debug | `rag-from-scratch` (reranking, citations), `contextcite` (attribution by ablation + LASSO), `evals-from-scratch` (nDCG, paired significance) | mostly — no abstention and no query rewriting, which is K1 |
+| 2 | RAG gives wrong answers — debug | `rag-from-scratch` (reranking, citations), `contextcite` (attribution by ablation + LASSO), `evals-from-scratch` (nDCG, paired significance) | mostly — no abstention and no query rewriting, which is K1, built as `agentic-retrieval-from-scratch` |
 | 3 | Chunking for legal contracts | `rag-from-scratch` stage 1 (the chunking strategy and what it costs retrieval) | partly — the mechanism is taught; contract structure (clauses, cross-references) is a domain exercise, not a stage |
 | 4 | BM25 vs dense vs hybrid | `rag-from-scratch` (BM25, rank fusion) + `vector-index-from-scratch` (the dense half, and what recall costs) | yes |
 | 5 | Add a reranker and measure it | `rag-from-scratch` (reranking) + `evals-from-scratch` (nDCG, kappa, paired significance) + `eval-framework-from-scratch` (records and a baseline diff) | yes |
@@ -129,7 +129,7 @@ as `author`.
 | 11 | Agent stuck in a loop — fix it | `agents-from-scratch` (turn-aware memory, budgets), `agent-harness-from-scratch` (a spent budget is an outcome, not a crash), `queue-and-workers-from-scratch` (dead letters at the attempt budget) | yes |
 | 12 | Memory for a long-running assistant | `agent-harness-from-scratch` (compaction that summarizes the middle, a prompt budget), `agents-from-scratch` (memory bounded by turns) | partly — episodic summaries with importance scoring and eviction are K3 |
 | 13 | Always valid JSON | `agents-from-scratch` (parsing what a model actually writes), `mcp-from-scratch` (the protocol/execution error split), `eval-framework-from-scratch` (canonical records whose bytes two runs share) | yes |
-| 14 | Detect and reduce hallucinations | `rag-from-scratch` (citations), `contextcite` (which context caused the answer), `evals-from-scratch` (judge bias and its calibration) | partly — an abstention decision that is grounded or not is K1 |
+| 14 | Detect and reduce hallucinations | `rag-from-scratch` (citations), `contextcite` (which context caused the answer), `evals-from-scratch` (judge bias and its calibration) | partly — an abstention decision that is grounded or not is K1, built as `agentic-retrieval-from-scratch` |
 | 15 | Eval suite for a support bot | `evals-from-scratch` (splits, EM/F1, nDCG, the gate) + `eval-framework-from-scratch` (suites, budgets, records, gating, diff, resume) | yes |
 | 16 | LLM-as-a-judge, trustworthy | `evals-from-scratch` (judge bias, kappa, paired significance, Holm) + `eval-framework-from-scratch` (a judge session cached by prompt/answer/reference that asks both orders) | yes |
 | 17 | Block prompt injection in a tool agent | `agents-from-scratch` (an approval gate against injected content, a path sandbox), `mcp-from-scratch` (read-only first, idempotency keys, a confirmation that shows the diff, a trajectory policy) | partly — agent-to-agent injection and per-agent least privilege are K5 |
@@ -150,7 +150,7 @@ as `author`.
 | 2 | Durable State Machine Workflow | `orchestration-from-scratch` (J2: the graph, the reviewer, the gate that stops before the effect) and **J3 `durable-execution-from-scratch`** (being authored: leases, heartbeats, a journal, replay, resume, exactly-once effects) | yes — J2 shipped, J3 in flight |
 | 3 | Raw MCP Server & Client | `mcp-from-scratch` (D1: JSON-RPC, framing, the handshake, tools with scoped effects) | yes |
 | 4 | System-One Triage Router | `context-caching` (routing) | partly — K2 |
-| 5 | Self-Correcting Agentic RAG | `rag-from-scratch` (retrieval, fusion, reranking), `agents-from-scratch` (a loop that can search again) | partly — the critique/rewrite/abstain decision is K1 |
+| 5 | Self-Correcting Agentic RAG | `rag-from-scratch` (retrieval, fusion, reranking), `agents-from-scratch` (a loop that can search again) | partly — the critique/rewrite/abstain decision is K1, built as `agentic-retrieval-from-scratch` |
 | 6 | 3-Tier Memory Engine | `agent-harness-from-scratch` (compaction, a bounded prompt) | partly — K3 |
 | 7 | Trajectory CI Gate | `eval-framework-from-scratch` (the gate and its exit codes), `agent-harness-from-scratch` (the turn as the unit), `mcp-from-scratch` (trajectory policy) | partly — a *golden trajectory* diffed step by step, blocking a change, is K2's shadow-mode half |
 | 8 | Inter-Agent Sanitization Proxy | `orchestration-from-scratch` (J2: what a child is handed and nothing else) | partly — K5 |
@@ -173,7 +173,7 @@ deterministic and offline, like J1–J5: nothing is timed, no network, no thread
 
 | Slot | Course to author | Which items above it answers |
 |---|---|---|
-| K1 | `agentic-retrieval-from-scratch` | #1–#5, #14 and build 5 — retrieval that checks itself: critique the results, rewrite an ambiguous query, decide *grounded or abstain*, and price each of those decisions against the naive retrieve-and-answer. Contract-shaped chunking (clauses, cross-references) is a fixture here. |
+| K1 | `agentic-retrieval-from-scratch` — **built**, ten stages over a provided contract corpus (`corpus.py`, `meter.py`) whose clause index, questions, labelled failures and 10M-document scale are the ground truth; 893 testers and 589 mutations caught | #1–#5, #14 and build 5 — retrieval that checks itself: critique the results, rewrite an ambiguous query, decide *grounded or abstain*, and price each of those decisions against the naive retrieve-and-answer. Contract-shaped chunking (clauses, cross-references) is a fixture here. |
 | K2 | `prompt-ops-from-scratch` | #6, #8, #9, #24 and builds 4, 7, 11, 12 — a prompt and a model choice as versioned artifacts: a typed triage router with a measured escalation rate, shadow mode mirroring a fraction of traffic and diffing trajectories and costs, a rollout/rollback gate, the cost kill-switch and the degradation chain (frontier → mid → local → cache). |
 | K3 | `memory-engine-from-scratch` | #12 and build 6 — the three tiers as data structures: a working scratchpad with a hard budget, episodic summaries with a consolidation rule, a semantic store with importance scoring and eviction, and recall measured against a long conversation. |
 | K4 | `fine-tuning-from-scratch` | #19, #20 and build 10 — LoRA and preference tuning over `autograd-from-scratch`'s exact engine: the low-rank update and why it trains, a 5K-example budget that refuses a plan it cannot pay for, DPO preference pairs built from recorded failures, and the decision itself — fine-tune, RAG or prompting — defended against a number. |

@@ -15,14 +15,14 @@ how big that tester is. Two numbers, and only one of them can be recomputed:
            catches. Each one is a wrong implementation the check must notice,
            and the harness that plants them lives *outside* this repository: it
            is built while a course is authored and cleaned up once the course is
-           assembled. For the twelve courses below the harnesses still exist and
+           assembled. For the thirteen courses below the harnesses still exist and
            the number is exact; for the other ten it is recoverable nowhere, and
            `None` says so instead of pretending a zero.
 
 The pair is the honest answer to "how much does this stage test me": `tests` is
 what the check says about itself, `mutants` is what it was proven to catch.
 
-Measured 2026-10-16 against the twenty-two courses that carry a `course.py`. A check
+Measured 2026-10-17 against the twenty-three courses that carry a `course.py`. A check
 that changes invalidates its row: re-measure with the course's harness
 (`mutate_all.py <stage>` prints the caught and missed counts) and fix the tuple.
 """
@@ -101,6 +101,9 @@ STAGES = {
         (158, 87), (122, 78), (107, 76), (131, 65), (155, 77),
         (112, 67), (106, 74), (116, 68), (66, 54), (76, 75),
         (122, 79), (106, 84)],
+    "agentic-retrieval-from-scratch": [
+        (74, 50), (104, 64), (93, 58), (95, 56), (91, 57),
+        (84, 51), (75, 52), (82, 56), (94, 57), (101, 88)],
 }
 
 

@@ -581,10 +581,11 @@ Five gaps survived that mapping, and they are the first five K slots. The sixth 
 not from those two lists at all: the **twelve-stage FDE skill list** — what a
 forward deployed engineer is hired to do, learned, practised and defended, stage by
 stage — and it is built whole as `fde-from-scratch` rather than left as prose, over
-a customer that is data (`estate.py`, `network.py`, `meter.py`). All six are
-authorable in the house style (a provided simulator, ten or twelve graded stages, a
-check per stage, mutations behind every check), and none of them needs a server, a
-network or a thread:
+a customer that is data (`estate.py`, `network.py`, `meter.py`). **Two of the six are
+built** — K1, `agentic-retrieval-from-scratch`, and K6, `fde-from-scratch` (both
+below) — and the remaining four are authorable in the house style (a provided
+simulator, ten or twelve graded stages, a check per stage, mutations behind every
+check), and none of them needs a server, a network or a thread:
 
 | Slot | Course to author | The mechanism | After |
 |---|---|---|---|
@@ -600,6 +601,25 @@ why for each: serving at scale and 1M-user chat are systems exercises the repo
 already decomposes (phase I, `system-design`, the docs-only serving trio), and
 voice interruption and computer-use fallback are interface courses that would
 need a timeline and a DOM model — real gaps, not yet promises.
+
+**K1, `agentic-retrieval-from-scratch`**, is built: retrieval that checks itself,
+as ten stages over a provided contract corpus whose ground truth is data
+(`corpus.py` with 8 documents, 16 questions, 12 labelled failures and the estate's
+scale; `meter.py` for what a call costs). The world never changes and the course
+never writes it: what a clause *is* comes from `clause_index`, what an answer must
+cite comes from `questions`, which stage failed comes from `failures`, and the
+10M-document estate comes from `SCALE`. The ten stages are the two source items
+mechanised — chunk clauses and their cross-references, size the index against a
+memory budget, score lexically and semantically and fuse the rankings, rerank what
+earns it, rewrite an ambiguous question and record the rewrite, critique what came
+back, decide grounded-or-abstain with a citation per claim, run the loop under a
+budget, price the checking against the naive retrieve-and-answer, and diagnose the
+labelled failures without reading the label — one check per stage, 893 testers and
+589 planted mutations caught, no float anywhere (BM25 and the fusion are integer,
+and the world's vectors have an exact integer norm so a similarity is a dot
+product). The contract is frozen in `.k1-dev/CONTRACT.md` with eight amendments
+recorded, each one a reading that a stage found in the middle of the work and that
+the plan had got wrong.
 
 ---
 

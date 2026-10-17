@@ -549,15 +549,25 @@ PHASES = [
                 "other half."},
     ]),
     ("K", "Applied AI engineering", [
-        {"id": "K1", "title": "Agentic Retrieval", "course": None,
-         "kind": "author", "prereq": ["B1", "B2", "C2"],
-         "why": "Retrieval that checks itself, from the two lists in "
-                "`AI-ENGINEER.md`: critique the results you got, rewrite a query "
-                "that is ambiguous, decide grounded-or-abstain, and price each "
-                "decision against the naive retrieve-and-answer. Author "
-                "agentic-retrieval-from-scratch. B1's rank fusion and reranking "
-                "and B2's recall accounting are its parts; what is missing is "
-                "the agent's own judgement about them."},
+        {"id": "K1", "title": "Agentic Retrieval",
+         "course": "agentic-retrieval-from-scratch", "kind": "ready",
+         "prereq": ["B1", "B2", "C2"],
+         "why": "Retrieval that checks itself, as ten stages against a corpus "
+                "whose ground truth is data (clauses, cross-references, a "
+                "duplicated clause number and a superseded document): chunk a "
+                "document and name what is odd, size the index of a "
+                "ten-million-document estate against a budget, score lexically "
+                "and semantically and fuse the two rankings, make a reranker "
+                "earn its place against the noise, rewrite a question whose "
+                "referent lives only in the conversation, critique what came "
+                "back, decide grounded-or-abstain with a citation per claim, run "
+                "the loop under a budget that stops for a reason it names, price "
+                "the checking against the naive retrieve-and-answer, and "
+                "diagnose the customer's own twelve failures without reading the "
+                "label they carried. 10 checks and 589 mutations caught, with no "
+                "float, no library statistics and no clock but the injected "
+                "tick: B1's fusion and reranking and B2's recall accounting are "
+                "its parts, and the judgement about them is what it adds."},
         {"id": "K2", "title": "Prompt & Routing Ops", "course": None,
          "kind": "author", "prereq": ["E1", "F2", "J1"],
          "why": "A prompt and a model choice as versioned artifacts: a typed "
