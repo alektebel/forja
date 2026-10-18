@@ -22,6 +22,11 @@ CC BY 4.0 — they are here as **reading**, and no stage's solution copies them)
 | `cache-lite/` | kezhenxu94's **cache-lite** (Kotlin): one `GenericCache` interface over LRUCache/FIFOCache/ExpirableCache/Weak/Soft/Perpetual — the eviction-policy zoo as implementations of one contract, exactly the shape of system-design's cache module | **A5 `system-design`** (the cache/TTL modules) |
 | `write-a-hash-table/` | James Routley's **write-a-hash-table** in C, seven chapters: the struct, the hash function, open addressing with tombstones, the API, resizing — the mistake catalogue (delete leaves a tombstone, not a hole) is the lesson | **A5 `system-design`** (consistent hashing builds on it) |
 | `kafka-like-java/` | a **Kafka-like system in Java, staged 1–7** (protocol, zookeeper, storage, broker, client, producer/consumer APIs): the partition as an append-only log with an offset cursor, in worked code | **L6 `kafka-from-scratch`** — the second opinion beside the 25-stage CodeCrafters corpus |
+| `docker-mocker/` | Tony Baloney's **mocker**: a proof-of-concept Docker in pure Python — namespaces via `unshare`, cgroups v2, an overlayfs root, `pull`/`run`/`exec` as subprocess plumbing | **D-row candidate** `docker-from-scratch` — the Python end of the Linux-container mechanism, beside the 6-stage CodeCrafters corpus (`codecrafters-reference/docker/`) |
+| `docker-bocker/` | **bocker**: Docker in ~100 lines of bash — the same mechanism with nothing hidden: chroot, a network namespace, overlayfs mounts, and the API calls behind `bocker pull/run` | **D-row candidate** — the least code that still deserves the name |
+| `chip8-python/` | craigthomas' **Chip8Python**: a CHIP-8/Super-Chip emulator in Python — the decode dispatch over a closed opcode vocabulary, a display as a bitmap the emulator owns, the timers driven by a stepped clock | **D-row candidate** `emulator-from-scratch` (CHIP-8 first, Game Boy the second half), with the LC-3 tutorial beside it |
+| `rl-qlearning/` | **RL-from-zero**: tabular Q-learning in Python on gymnasium, staged (agent, replay, target, main), numpy + gymnasium only | **D-row candidate** `rl-control-from-scratch` — a provided world (a deterministic gridworld/MDP the course writes) with Q-learning, SARSA and policy iteration as the ladder |
+
 
 ## The rule, same as `codecrafters-reference/`
 

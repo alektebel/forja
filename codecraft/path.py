@@ -810,6 +810,48 @@ PHASES = [
                 "the queue whose delivery semantics this course makes the "
                 "broker's own decision. Source: the 25-stage CodeCrafters "
                 "corpus in `codecrafters-reference/kafka/`."},
+        {"id": "L7", "title": "Docker From Scratch", "course": None,
+         "kind": "author", "prereq": ["G4", "J4"],
+         "why": "A container is isolation you can name: a chroot whose root "
+                "is an overlay of layers, a PID and network and mount namespace "
+                "the process is born into, cgroups that charge CPU and memory "
+                "all or nothing, and capabilities that decide what the process "
+                "may still do — the image as a stack of layers addressed by "
+                "digest, `pull` resolving a manifest, `run` building the mount "
+                "table before the exec, and a health check the container "
+                "answers about itself. The namespaces are G4's process table "
+                "made real and the capability gate is J4's, applied to a "
+                "process that actually runs. Source: the 6-stage CodeCrafters "
+                "corpus in `codecrafters-reference/docker/`, mocker and bocker "
+                "in `tutorials-reference/`."},
+        {"id": "L8", "title": "Emulator From Scratch", "course": None,
+         "kind": "author", "prereq": ["G3"],
+         "why": "A machine implemented by being another machine: the CHIP-8's "
+                "35 opcodes decoded from bytes, a memory map where the font "
+                "lives where the spec says it lives, a display the emulator "
+                "owns as a bitmap, and two timers the program cannot read a "
+                "tick of but which everyone can see count down — then the "
+                "second machine on the same discipline, where a cycle is not "
+                "a step but a number of them and the ROM's behaviour is the "
+                "judge. G3 is the datapath habit; here the *programs* are "
+                "provided (the ROMs) and their accepted behaviour is the "
+                "answer key. Source: the CHIP-8 tutorials in "
+                "`tutorials-reference/chip8-python/` and the LC-3 VM."},
+        {"id": "L9", "title": "RL Control From Scratch", "course": None,
+         "kind": "author", "prereq": ["A8"],
+         "why": "Control as arithmetic over a value function: a world that is "
+                "a Markov chain you can step (a gridworld, a gambler, a "
+                "random walk — deterministic, seeded, its optimal policy "
+                "computable by hand), then the estimation of that policy from "
+                "experience alone — dynamic programming first, because the "
+                "answer key is checkable, then Monte-Carlo returns and their "
+                "first-visit variance, TD(0) and the bootstrapping that makes "
+                "it biased, SARSA against Q-learning and what off-policy "
+                "costs, a function approximator over A8's exact autograd "
+                "engine for the state the table cannot hold, and a report "
+                "whose every number (returns, regret, the policy's own "
+                "actions) the world can recompute. Source: RL-from-zero and "
+                "dennybritz's notebooks, in `tutorials-reference/`."},
         {"id": "L4", "title": "Git From Scratch", "course": None,
          "kind": "author", "prereq": ["G4"],
          "why": "The one artefact in this repository that another program "

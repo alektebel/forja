@@ -852,12 +852,14 @@ already has for it and the gap that remains.
 The rows registered in the units before this one queue behind it, one per slot —
 G8, H5, L4, H7, H6, then I13, I14, H8 — each carrying its own thesis in
 `path.py`, each with its place in `cz dag`. After those: G5/G6 (phase G's
-remaining two, which need checkers, not writing), phase K's five, and the two
-CodeCrafters-sourced rows registered from the recovered corpora — **L5
-`redis-from-scratch`** (prereq L2 + J3, both built) and **L6
-`kafka-from-scratch`** (prereq L2 + J1), whose theses came from the 124- and
-25-stage stage descriptions in `codecrafters-reference/`. The backlog
-is **22 `author`, 6 `legacy`, 2 `salvage`, 34 `ready` — 74 rows** — `./cz path`,
+remaining two, which need checkers, not writing), phase K's five, and the rows
+registered from the recovered corpora — **L5 `redis-from-scratch`** (L2 + J3),
+**L6 `kafka-from-scratch`** (L2 + J1) from the CodeCrafters stage descriptions,
+and **L7 `docker-from-scratch`** (G4 + J4), **L8 `emulator-from-scratch`**
+(G3 — CHIP-8, then a second machine) and **L9 `rl-control-from-scratch`**
+(A8 — DP, then MC, then TD/SARSA/Q-learning, then an approximator) from the
+build-your-own-x tutorials in `tutorials-reference/`. The backlog
+is **25 `author`, 6 `legacy`, 2 `salvage`, 34 `ready` — 78 rows** — `./cz path`,
 `./cz dag`, `./cz tracks` and the ROADMAP's own tables are authoritative over this
 file.
 

@@ -1,0 +1,246 @@
+# RL-from-zero
+
+<p align="center">
+  <img src="assets/rl-from-zero-logo.svg" alt="RL-from-zero logo showing converging reinforcement learning pathways" width="640">
+</p>
+
+[![Python Version](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![uv](https://img.shields.io/badge/uv-0.5%2B-6E56CF?logo=astral&logoColor=white)](https://github.com/astral-sh/uv)
+[![Last Commit](https://img.shields.io/github/last-commit/AlirezaShamsoshoara/RL-from-zero?logo=github)](https://github.com/AlirezaShamsoshoara/RL-from-zero/commits)
+[![Downloads](https://img.shields.io/github/downloads/AlirezaShamsoshoara/RL-from-zero/total?logo=github)](https://github.com/AlirezaShamsoshoara/RL-from-zero/releases)
+[![Code Style](https://img.shields.io/badge/code%20style-PEP%208-306998)](https://peps.python.org/pep-0008/)
+[![Hits of Code](https://hitsofcode.com/github/AlirezaShamsoshoara/RL-from-zero?branch=main&style=flat)](https://hitsofcode.com/github/AlirezaShamsoshoara/RL-from-zero/view?branch=main)
+[![Docs](https://img.shields.io/badge/docs-README-blue?logo=read-the-docs&logoColor=white)](README.md)
+[![GitHub stars](https://img.shields.io/github/stars/AlirezaShamsoshoara/RL-from-zero?logo=github)](https://github.com/AlirezaShamsoshoara/RL-from-zero/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/AlirezaShamsoshoara/RL-from-zero?logo=github)](https://github.com/AlirezaShamsoshoara/RL-from-zero/network/members)
+[![GitHub issues](https://img.shields.io/github/issues/AlirezaShamsoshoara/RL-from-zero?logo=gitbook)](https://github.com/AlirezaShamsoshoara/RL-from-zero/issues)
+[![GitHub pull requests](https://img.shields.io/github/issues-pr/AlirezaShamsoshoara/RL-from-zero?logo=github)](https://github.com/AlirezaShamsoshoara/RL-from-zero/pulls)
+[![GitHub license](https://img.shields.io/github/license/AlirezaShamsoshoara/RL-from-zero)](LICENSE)
+
+RL-from-zero is a collection of reinforcement learning agents implemented from scratch to refresh RL fundamentals and keep deep learning coding skills sharp. Each algorithm lives in its own self-contained package with a shared command-line interface, YAML-driven configuration, and optional experiment tracking via Weights & Biases.
+
+## Why this repository?
+- Revisit classic RL algorithms across discrete and continuous control settings without relying on heavyweight frameworks.
+- Compare tabular, value-based, and policy-gradient methods side by side with a consistent project layout.
+- Provide a starting point for quick experiments: tweak a YAML file, run a single command, and inspect checkpoints, logs, and metrics.
+- Serve as a personal sandbox for extending agents, adding environments, and experimenting with new ideas.
+- All gifs demos in the Table below are based on the trained models in this project.
+
+## Algorithms included
+| Folder | Algorithm | Action space | Default environment | Demo GIF |
+| --- | --- | --- | --- | --- |
+| [`Qlearning/`](Qlearning/) | Tabular Q-learning | Discrete | `FrozenLake-v1` (deterministic) | <img src="Qlearning/assets/qlearning_frozenlake_8x8.gif" alt="Q-learning FrozenLake demo" width="160"> |
+| [`Independent-QL/`](Independent-QL/) | Independent Q-learning (multi-agent) | Discrete | `LineWorld` (custom 2-agent grid) | <img src="Independent-QL/assets/independent_ql_lineworld.gif" alt="Independent-QL LineWorld demo" width="180"> |
+| [`Nash-QL/`](Nash-QL/) | Nash Q-learning (multi-agent game theory) | Discrete | `GridSoccer` (custom zero-sum 2-agent) | <img src="Nash-QL/assets/nash_ql_grid_soccer.gif" alt="Nash-QL Grid Soccer demo" width="180"> |
+| [`deepQN/`](deepQN/) | Deep Q-Network (with Double DQN option) | Discrete | `MountainCar-v0` | <img src="deepQN/assets/dqn_mountaincar.gif" alt="DQN MountainCar demo" width="160"> |
+| [`PPO/`](PPO/) | Proximal Policy Optimization | Discrete | `CartPole-v1` | <img src="PPO/assets/ppo_cartpole.gif" alt="PPO CartPole demo" width="160"> |
+| [`MAPPO/`](MAPPO/) | Multi-Agent PPO (centralized critic) | Continuous (default), optional discrete grid | `multiwalker_v9` (PettingZoo) | <img src="MAPPO/assets/mappo_full_delivery.gif" alt="One complete native MAPPO package-delivery episode" width="160"> |
+| [`A3C/`](A3C/) | Asynchronous Advantage Actor-Critic | Discrete | `LunarLander-v3` | <img src="A3C/assets/a3c_lunarlander.gif" alt="Three selected complete native A3C LunarLander landings" width="160"> |
+| [`SAC/`](SAC/) | Soft Actor-Critic | Continuous | `Pendulum-v1` | <img src="SAC/assets/sac_pendulum.gif" alt="Complete native SAC Pendulum swing-up and holding example" width="180"> |
+| [`DDPG/`](DDPG/) | Deep Deterministic Policy Gradient | Continuous | `LunarLanderContinuous-v3` | <img src="DDPG/assets/ddpg_lunarlander.gif" alt="DDPG LunarLanderContinuous demo" width="180"> |
+| [`MADDPG/`](MADDPG/) | Multi-Agent DDPG (centralized critic) | Continuous | `simple_spread_v3` (PettingZoo MPE) | <img src="MADDPG/assets/maddpg_simple_spread.gif" alt="MADDPG simple_spread demo" width="180"> |
+| [`TD3/`](TD3/) | Twin Delayed DDPG | Continuous | `MountainCarContinuous-v0` | <img src="TD3/assets/td3_mountaincar_continuous.gif" alt="Three complete deterministic native TD3 goal episodes" width="180">  |
+| [`TRPO/`](TRPO/) | Trust Region Policy Optimization | Discrete + Continuous | `Acrobot-v1` (discrete) | <img src="TRPO/assets/trpo_acrobot.gif" alt="TRPO Acrobot demo" width="180"> |
+| [`IQL/`](IQL/) | Implicit Q-Learning (offline) | Continuous | `Pendulum-v1` (offline dataset) | <img src="IQL/assets/iql_pendulum.gif" alt="IQL Pendulum demo" width="180"> |
+
+All agents expose a two-command Fire CLI (`train` and `demo`), use PyTorch under the hood, and save both periodic and best checkpoints in their respective `checkpoints/` directories.
+
+## Common toolkit
+- **Configuration:** YAML files under each `<algo>/configs/` folder feed into a typed `Config` object for reproducible experiments.
+- **Logging:** Python logging configured per algorithm, `tqdm` progress bars, and optional Weights & Biases integration (`--wandb_key` argument, `wandb_key` in config, or `WANDB_API_KEY` in your environment for trainers that read it).
+- **Checkpoints:** `best.pt` stores the top-performing policy by rolling average return; numbered checkpoints capture intermediate progress.
+- **Demos:** `demo` commands load a saved checkpoint, run evaluation rollouts, and render to the screen or console depending on the environment.
+
+## Getting started
+1. **Install uv (optional but recommended).**
+   - Windows: download the installer from https://github.com/astral-sh/uv.
+   - macOS: `brew install uv` (Homebrew) or use the installer linked above.
+   - Linux: run the install script from the release page or `pipx install uv`.
+2. **Create a virtual environment and install dependencies** (commands are identical on Windows, macOS, and Linux shells):
+   ```bash
+   uv venv .venv
+   uv sync
+   ```
+   The `pyproject.toml` lists core packages: Gymnasium (Box2D, classic-control and toy-text extras), NumPy, PyTorch, tqdm, Fire, PyYAML, wandb, and pygame for rendering.
+3. **Activate the environment** before running commands:
+   - PowerShell:
+     ```powershell
+     .\.venv\Scripts\Activate.ps1
+     ```
+   - Command Prompt:
+     ```cmd
+     .\.venv\Scripts\activate.bat
+     ```
+   - macOS/Linux shells:
+     ```bash
+     source .venv/bin/activate
+     ```
+
+## Running experiments
+Each algorithm can be launched with `python -m <package>.main` from the repository root. Supply a YAML config and optional overrides.
+
+### Tabular examples (Q-learning)
+```bash
+# Single-agent Q-learning
+python -m Qlearning.main train --config Qlearning/configs/frozenlake.yaml
+python -m Qlearning.main demo --config Qlearning/configs/frozenlake.yaml --model_path Qlearning/checkpoints/best.pt --episodes 5
+
+# Multi-agent Independent Q-learning
+python Independent-QL/main.py train --config Independent-QL/configs/line_world.yaml
+python Independent-QL/main.py demo --config Independent-QL/configs/line_world.yaml --model_path Independent-QL/checkpoints/best.pt
+
+# Multi-agent Nash Q-learning (game-theoretic)
+python Nash-QL/main.py train --config Nash-QL/configs/line_world.yaml
+python Nash-QL/main.py demo --config Nash-QL/configs/line_world.yaml --model_path Nash-QL/checkpoints/best.pt
+```
+
+### Multi-agent deep RL examples
+```bash
+# MAPPO native package delivery (full-course ability, not guaranteed success)
+python -m MAPPO.main train --config MAPPO/configs/multiwalker_delivery_long_credit.yaml
+python -m MAPPO.main demo --episodes 1 --seed 530019 --render_mode human
+
+# MADDPG on Simple Spread (PettingZoo MPE)
+python -m MADDPG.main train --config MADDPG/configs/simple_spread.yaml
+python -m MADDPG.main demo --config MADDPG/configs/simple_spread.yaml --model_path MADDPG/checkpoints/best.pt
+```
+
+### Discrete deep RL examples
+```bash
+# PPO on CartPole (longer-budget recipe; the 100k baseline is also retained)
+python -m PPO.main train --config PPO/configs/cartpole_tuned.yaml
+python -m PPO.main demo --config PPO/configs/cartpole_tuned.yaml --model_path PPO/checkpoints_tuned/best.pt
+
+# Deep Q-Network (native-reward temporal-exploration recipe)
+python -m deepQN.main train --config deepQN/configs/mountaincar_exploration.yaml
+python -m deepQN.main demo --config deepQN/configs/mountaincar_exploration.yaml --model_path deepQN/checkpoints_exploration/best.pt
+
+# A3C: asynchronous training, then development-only greedy model selection
+python -m A3C.main train --config A3C/configs/lunarlander.yaml
+python -m A3C.utils.select_checkpoint --config A3C/configs/lunarlander.yaml --episodes 20 --seed 90000
+python -m A3C.main demo --config A3C/configs/lunarlander_greedy.yaml --episodes 5
+```
+
+### Continuous control examples
+```bash
+# Soft Actor-Critic: bounded native Pendulum training profile
+python -m SAC.main train --config SAC/configs/pendulum_fast.yaml
+python -m SAC.main demo --config SAC/configs/pendulum_fast.yaml --render_mode human
+
+# Deep Deterministic Policy Gradient
+python -m DDPG.main train --config DDPG/configs/lunarlander_continuous_tuned.yaml
+python -m DDPG.main demo --config DDPG/configs/lunarlander_continuous_tuned.yaml --model_path DDPG/checkpoints_tuned/best.pt
+
+# Twin Delayed DDPG: native goal-reaching profile
+python -m TD3.main train --config TD3/configs/mountaincar_balanced.yaml
+python -m TD3.main demo --config TD3/configs/mountaincar_balanced.yaml --render_mode human
+
+# Trust Region Policy Optimization
+python -m TRPO.main train --config TRPO/configs/acrobot.yaml
+python -m TRPO.main demo --config TRPO/configs/acrobot.yaml --model_path TRPO/checkpoints_acrobot/best.pt
+
+# Implicit Q-Learning (offline)
+python -m IQL.main train --config IQL/configs/pendulum_mixed.yaml
+python -m IQL.main demo --config IQL/configs/pendulum_mixed.yaml --model_path IQL/checkpoints_mixed/best.pt
+```
+
+### Optional Weights & Biases logging
+Add `--wandb_key YOUR_KEY` to any `train` command or set `wandb_key` in the YAML config to authenticate and push metrics, losses, and episode returns to W&B. If `WANDB_API_KEY` is set in your environment, trainers that check the env var (for example, MAPPO, deepQN, Qlearning, PPO, SAC, A3C, TD3, DDPG, MADDPG, TRPO, IQL, Independent-QL, and Nash-QL) will read it automatically.
+
+## Configuring experiments
+- Duplicate a baseline YAML file (for example `PPO/configs/cartpole.yaml`) and edit environment ids, learning rates, rollout lengths, or logging cadence.
+- All configs share naming conventions (`env_id`, `total_steps` or `total_timesteps`, `checkpoint_interval`, etc.), so switching algorithms feels familiar.
+- Continuous control agents expose additional knobs like replay buffer sizes, target smoothing noise, and entropy targets.
+
+## Tests
+Run each algorithm's test directory separately. For example, PPO's suite covers
+GAE boundaries, deterministic actions, model/optimizer checkpoint restoration,
+W&B precedence, train/demo integration, and evaluation/asset helpers:
+```bash
+uv venv .venv-ppo-tests
+UV_PROJECT_ENVIRONMENT=.venv-ppo-tests uv sync
+OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 UV_PROJECT_ENVIRONMENT=.venv-ppo-tests \
+  uv run python -m pytest tests/ppo/ -q
+```
+PPO unit tests use stub environments and mocked W&B rather than real training.
+Q-learning has a tabular suite covering TD updates, checkpoints, train/demo
+integration and its evaluation/asset helpers:
+```bash
+uv venv .venv-qlearning-tests
+UV_PROJECT_ENVIRONMENT=.venv-qlearning-tests uv sync
+OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 UV_PROJECT_ENVIRONMENT=.venv-qlearning-tests \
+  uv run python -m pytest tests/qlearning/ -q
+```
+DQN's suite covers Bellman targets, replay, distinct online/target restoration,
+optimizer state, train/demo integration and evaluation/asset helpers:
+```bash
+uv venv .venv-dqn-tests
+UV_PROJECT_ENVIRONMENT=.venv-dqn-tests uv sync
+OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 UV_PROJECT_ENVIRONMENT=.venv-dqn-tests \
+  uv run python -m pytest tests/deepqn/ -q
+```
+MAPPO's suite covers continuous and discrete policies, shared/masked PPO updates,
+GAE, checkpoints, parallel-loop lifecycle and evaluation/asset tooling:
+```bash
+uv venv .venv-mappo-tests
+UV_PROJECT_ENVIRONMENT=.venv-mappo-tests uv sync
+OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 UV_PROJECT_ENVIRONMENT=.venv-mappo-tests \
+  uv run python -m pytest tests/mappo/ -q
+```
+A3C's suite uses fake workers and environments to cover asynchronous updates,
+timeout endpoints, native reward accounting, coherent checkpoints, and asset tools:
+```bash
+uv venv .venv-a3c-tests
+UV_PROJECT_ENVIRONMENT=.venv-a3c-tests uv sync --locked
+OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 WANDB_MODE=offline UV_PROJECT_ENVIRONMENT=.venv-a3c-tests \
+  uv run python -m pytest tests/a3c/ -q -W error
+```
+SAC's suite uses native-space stubs to cover twin soft-Q targets, temperature
+state, replay, true-terminal masks, persistence, and complete asset helpers:
+```bash
+uv venv .venv-sac-tests
+UV_PROJECT_ENVIRONMENT=.venv-sac-tests uv sync --locked
+OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 WANDB_MODE=offline UV_PROJECT_ENVIRONMENT=.venv-sac-tests \
+  uv run python -m pytest tests/sac/ -q -W error
+```
+TD3's suite checks delayed actor/target updates, replay wraps, native vector
+endpoints, checkpoints, cleanup, and complete evaluation/asset helpers:
+```bash
+uv venv .venv-td3-tests
+UV_PROJECT_ENVIRONMENT=.venv-td3-tests uv sync --locked
+OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 WANDB_MODE=offline UV_PROJECT_ENVIRONMENT=.venv-td3-tests \
+  uv run python -m pytest tests/td3/ -q -W error
+```
+See each algorithm's README for its test instructions.
+
+## Repository layout
+```
+RL-from-zero/
+|-- A3C/            # Async advantage actor-critic implementation
+|-- PPO/            # Proximal policy optimization agent
+|-- MAPPO/          # Multi-agent PPO (centralized training, decentralized execution)
+|-- Qlearning/      # Tabular Q-learning agent
+|-- Independent-QL/ # Multi-agent Independent Q-learning
+|-- Nash-QL/        # Multi-agent Nash Q-learning (game theory)
+|-- deepQN/         # Deep Q-Network agent
+|-- SAC/            # Soft Actor-Critic agent
+|-- DDPG/           # Deep Deterministic Policy Gradient agent
+|-- MADDPG/         # Multi-Agent DDPG (centralized training, decentralized execution)
+|-- TD3/            # Twin Delayed DDPG agent
+|-- TRPO/           # Trust Region Policy Optimization agent
+|-- IQL/            # Implicit Q-Learning (offline) agent
+|-- tests/          # Per-algorithm unit tests
+|-- pyproject.toml
+|-- uv.lock
+`-- README.md       # You are here
+```
+
+## License
+This project is licensed under the MIT License. See `LICENSE` for the full text.
+
+## References
+Each subdirectory README links to seminal papers and additional resources for that algorithm. Use them as a launchpad for deeper study or for extending the agents.
+
+Happy experimenting!
+
+<!-- [![Star History Chart](https://api.star-history.com/svg?repos=AlirezaShamsoshoara/RL-from-zero&type=Date)](https://www.star-history.com/#AlirezaShamsoshoara/RL-from-zero&Date) -->
