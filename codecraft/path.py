@@ -962,6 +962,32 @@ PHASES = [
                 "distressed-debt-from-scratch over M1's book and M3's "
                 "collections log; the bank's provisioning and the fund's "
                 "thesis are two readings of one default."},
+        {"id": "M6", "title": "LBO Model From Scratch",
+         "course": None, "kind": "author", "prereq": ["M1", "M3"],
+         "why": "The leveraged buyout as arithmetic that either holds or does "
+                "not, built over M1's amortisation machinery and M3's "
+                "workout realism: the target as facts \u2014 EBITDA, "
+                "capex, working capital, the cap table \u2014 on a provided "
+                "estate whose five-year path is the ground truth; the sources "
+                "and uses that balance to the cent, entry multiple and "
+                "financing structure as the two decisions that set "
+                "everything; the debt schedule as a waterfall of tranches "
+                "with covenants the model cannot quietly violate \u2014 "
+                "revolver drawn when cash falls short, mandatory prepayment "
+                "from excess cash, the incurrence test checked every period; "
+                "the operating build from revenue to EBITDA to free cash "
+                "flow with integer arithmetic and the day-count from M1; "
+                "exit on the multiple the estate actually realises, and the "
+                "returns decomposition the sponsor's own memo contains: how "
+                "much of the IRR is leverage, how much is EBITDA growth, "
+                "how much is multiple expansion \u2014 each named, each "
+                "checked against the estate. Sensitivity as the model's "
+                "honesty: the grid over entry price, exit multiple and "
+                "leverage where the downside case breaches the covenant and "
+                "the checker demands the breach be visible, not amortised "
+                "away. Author lbo-model-from-scratch; M5 values the claim "
+                "on the way down, M6 buys the whole company on the way in \u2014 "
+                "two prices, one discipline: the cash flows decide."},
     ]),
     ("N", "Web3 and simulation", [
         {"id": "N1", "title": "Blockchain From Scratch",

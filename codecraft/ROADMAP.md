@@ -710,12 +710,14 @@ first application to its final effect on the bank — the lifecycle end to end:*
 | M0 | `credit-origination-from-scratch` | The loan before it exists: the applicant as facts, the affordability and debt-service arithmetic, the application scorecard as an auditable table (weight, points, cutoff) rather than a model, the rating assigned and the price set from it — rate covering expected loss, funding and capital charge — the limit structure, collateral with its haircuts and lien, the covenant as a promise written before the drawdown, and the approval record; ends where M1 begins, at a booked facility with its schedule | — |
 | M3 | `collections-workout-from-scratch` | The loan after it goes wrong: the delinquency strategy as a state machine (dunning, call, referral, each a record the customer's history answers), forbearance as the bank's decision with its probation and cure, cure rate and re-default as the strategy's measurement, the collections waterfall over the cash that arrives, the workout — collateral sale with its costs, settlement, the deficiency that survives — the write-off as an accounting act distinct from the cash that follows, and one loan followed from first missed payment to final recovery, every action and movement on its own line | M1 |
 | M5 | `distressed-debt-from-scratch` | The same default from the buy side, where it is an opportunity with a price: the capital structure as a waterfall of claims over M1's borrower, the distressed claim bought below par and the question every price asks — recovery, reorganisation, or death; the distressed exchange and maturity extension as negotiated outcomes, the restructuring waterfall against the absolute-priority rule and the violations that settle it in practice, the claim valued three ways — expected recovery from M3's actual cash flows, Merton distance-to-default on the borrower's assets, comparables — where the three disagree is the trade; entry price, implied return and the IRR in basis points that survives the recovery's timing, the hold decision against the carry, and the thesis report checked against what actually happened | M1, M3 |
+| M6 | `lbo-model-from-scratch` | The buyout as arithmetic that either holds or does not, over M1's amortisation and M3's workout realism: the target as facts on a provided estate whose five-year path is the ground truth, sources and uses balancing to the cent, the debt schedule as a waterfall of tranches with covenants the model cannot quietly violate (revolver drawn when cash falls short, mandatory prepayment, the incurrence test every period), the operating build from revenue to free cash flow in integer arithmetic, exit on the multiple the estate actually realises, and the returns decomposition the sponsor's memo contains — leverage vs EBITDA growth vs multiple expansion, each named, each checked; the sensitivity grid where the downside case breaches the covenant and the checker demands the breach be visible, not amortised away | M1, M3 |
 
-With M1 (built) and M2 (below), phase M is then six rows:
+With M1 (built) and M2 (below), phase M is then seven rows:
 origination → the lifecycle arithmetic → collections/workout → capital →
-the P&L — and M5, the same default priced by the fund that buys it, which is
-the whole of a bank's credit question in the order a bank does it, plus the
-other side of the trade.
+the P&L — M5, the same default priced by the fund that buys it, and M6, the
+buyout of a whole company, which is the whole of a bank's credit question in
+the order a bank does it, plus both other sides of the trade: the fund buying
+the claim and the sponsor buying the firm.
 
 | Slot | Course to author | What it is | After |
 |---|---|---|---|
