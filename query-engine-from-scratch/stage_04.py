@@ -48,10 +48,11 @@ import ops
 
 TREE_KEYS = ("root", "height", "leaves", "entries")
 
-#: how many (key, rid) entries one leaf holds before it splits — small on
-#: purpose: a 256-byte page is a handful of pairs, and the check needs a
-#: leaf it can fill.
-LEAF_FANOUT = 4
+#: how many (key, rid) entries one leaf holds before it splits — eight, the
+#: number the planner's arithmetic needs: 120 entries at fanout 8 are 15
+#: leaves, height 2, and an index scan wins exactly when the matches fit
+#: four leaves (the boundary the world's facts pin). The check holds it.
+LEAF_FANOUT = 8
 
 
 class QueryError(ValueError):
