@@ -655,6 +655,19 @@ product). The contract is frozen in `.k1-dev/CONTRACT.md` with eight amendments
 recorded, each one a reading that a stage found in the middle of the work and that
 the plan had got wrong.
 
+**Candidates, not yet registered** — the three gaps a 20-topic AI-engineering
+syllabus audit found against the registry (the other seventeen are covered by
+A3, B1, B2, C1, C2, D1, E1, F2, J2, J4, K1, K4, K5 and the inference spine):
+`query-transform-from-scratch` (HyDE, step-back, multi-query — the rewrite
+measured by the recall it buys, K1's corpus as the estate),
+`graphrag-from-scratch` (a knowledge graph over B1's corpus, entity and
+relation extraction with the hallucinated edge the checker plants, community
+detection, the graph walk beside the vector search and the fused answer citing
+which half produced it), and `llm-observability-from-scratch` (tracing as
+spans over C2's event stream, the OpenTelemetry-shaped model, cost and latency
+attributed per span, the drift the trace catches — I11's percentile pipeline
+is the sibling to build second).
+
 ---
 
 ## Programs that talk (phase L) — three series, as three courses
