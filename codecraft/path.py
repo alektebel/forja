@@ -223,8 +223,9 @@ PHASES = [
                 "end on a session the harness replays byte for byte, where `set -e`, "
                 "`&&` and a pipeline's exit status are decided by the rules and not "
                 "by luck. Author shell-from-scratch against the kernel of G4."},
-        {"id": "G8", "title": "Runtime From Scratch", "course": None,
-         "kind": "author", "prereq": ["G3", "G4"],
+        {"id": "G8", "title": "Runtime From Scratch",
+         "course": "runtime-from-scratch",
+         "kind": "ready", "prereq": ["G3", "G4"],
          "why": "A language runtime makes two promises — the program runs, and "
                 "memory stops being your problem — and a provided bytecode, "
                 "assembler and heap are where you keep both. Execute a stack "
