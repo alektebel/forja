@@ -38,6 +38,8 @@ import repo as rp
 import objects as ob
 import stage_03 as s3
 
+INDEX_KEYS = ("entries", "stats")
+
 _INDEX_MAGIC = b"DIRC"
 _INDEX_VERSION = 2
 _FLAG_CAP = 0xFFF
@@ -49,6 +51,8 @@ def read_index(repo):
     if not repo.fs.exists(path):
         return ()
     raw = repo.fs.read(path)
+    if len(raw) < 32:
+        raise rp.GitError("read_index: %d bytes is no index" % (len(raw),))
     if raw[:4] != _INDEX_MAGIC:
         raise rp.GitError("read_index: the magic is %r, not DIRC"
                           % (raw[:4],))
@@ -56,6 +60,8 @@ def read_index(repo):
     if version != _INDEX_VERSION:
         raise rp.GitError("read_index: version %d, not %d"
                           % (version, _INDEX_VERSION))
+    if ob.sha1(raw[:-20]) != raw[-20:].hex():
+        raise rp.GitError("read_index: the trailing sha disagrees")
     count = int.from_bytes(raw[8:12], "big")
     entries = []
     at = 12
