@@ -134,9 +134,9 @@ one by one and says which three have a course nowhere.
 
 ---
 
-## What this repo has never built — ten registered rows (G7, G8, G10, G11, G12, G13, H5, H6, H7, L4)
+## What this repo has never built — eleven registered rows (G7, G8, G10, G11, G12, G13, G14, H5, H6, H7, L4)
 
-Ten rows came out of reviewing the corpus by subject rather than by project: each is the
+Eleven rows came out of reviewing the corpus by subject rather than by project: each is the
 artefact its own field is normally taught from, each is gradeable on the house rule (a
 provided world, a ladder of decisions, planted mutations the checks must catch), and
 none of them exists here in any form — the repo has never built a shell over a provided
@@ -155,12 +155,13 @@ what `codecraft path` renders.
 | G11 | `advanced-dsa-from-scratch` | La Rocca's *Advanced Algorithms and Data Structures*, one stage per chapter, every structure judged against a work counter and a reference: d-way heaps measured on Dijkstra, treaps with the height profiler, Bloom filters with the measured false-positive rate, disjoint sets counted in finds, tries and autocomplete, LRU/LFU caches, k-d trees and SS-trees checked against the linear scan, DBSCAN/OPTICS, graphs to Dijkstra and MST, embeddings and force-directed drawing with counted crossings, gradient descent, simulated annealing, genetic algorithms on TSP against branch-and-bound | — |
 | G12 | `sqlite-from-scratch` | A real single-file database that `sqlite3` itself opens, from the recovered codecrafters corpus (9 stages): header and schema table, table B-trees page by page — cell pointer array, varints, overflow pages, freelist — the record format's serial types, then the WAL and the commit that is not acknowledged before the WAL says so; the judge is sqlite3 reading what you wrote and the row counts matching | G9 |
 | G13 | `regex-from-scratch` | The engine built twice: Thompson's construction — shunting yard, NFA, epsilon-closures, linear-time simulation — then the backtracking engine whose catastrophic cases the work counter exposes; classes, anchors, quantifiers, groups, backreferences the NFA refuses; grep (G9) re-derives its -E from this engine, tail's scrollback filter and G7's globs borrow the same compile step; the judge is the match sets agreeing with Python's `re` on a corpus built to distinguish the two engines | — |
+| G14 | `reverse-engineering-from-scratch` | Reading a program you have no source for, on binaries you can verify: ELF and PE parsed until `readelf` and yours agree, x86-64 disassembly with the length-decoding problem (prefixes, ModRM, where data is code and back), calling conventions and stack frames from prologues, CFG recovery by linear sweep and recursive descent and where they disagree, the decompiler lift to a C-like IR and what it always gets wrong; then the dynamic half — ptrace attach, breakpoints, memory dumps, the syscall trace that catches the static reading lying; strings, imports, the entropy profile that finds packed sections; capstone: a crackme and a stripped binary from the estate, the licence check found, understood and written up, every claim checked against ground truth the estate carries — objdump, gdb and radare2 the reference outputs your own parser and lifter are checked against | G3, G5 |
 | L4 | `git-from-scratch` | A `.git` directory real `git` reads: blobs addressed by their own digest, sorted trees with exact modes, commits, refs and a detachable HEAD, an index, a diff that names a hunk, a merge that finds the base and marks conflicts instead of guessing, and a packfile whose delta-compressed objects are reachable through its index — where `git` is on PATH, `git fsck` and `git log` are the judge | G4 |
 
-Two more were considered and left out rather than registered: a regex engine and
-a hand-rolled crypto handshake. The first is small enough to be a stage of G5
-rather than a course, and the second duplicates the `cryptographic-library`
-project the G6 legacy slot already carries.
+One more was considered and left out rather than registered: a hand-rolled crypto
+handshake — it duplicates the `cryptographic-library` project the G6 legacy slot
+already carries. The regex engine considered here was registered anyway as G13,
+with G9's grep as its customer.
 
 ---
 

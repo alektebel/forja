@@ -346,6 +346,34 @@ PHASES = [
                 "match sets agreeing with Python's `re` on a corpus built to "
                 "distinguish the two engines. Author regex-from-scratch; "
                 "nothing must come first."},
+        {"id": "G14", "title": "Reverse Engineering",
+         "course": None, "kind": "author", "prereq": ["G3", "G5"],
+         "why": "The discipline of reading a program you do not have the "
+                "source for, taught on binaries you can verify: the ELF and "
+                "PE formats as data \u2014 headers, sections, symbols, "
+                "relocations \u2014 parsed until `readelf` and yours agree; "
+                "x86-64 disassembly with the length-decoding problem that "
+                "makes it not just a table (prefixes, ModRM, the cases "
+                "where data is code and back); the calling conventions and "
+                "the stack frame reconstructed from prologues; control-flow "
+                "recovery \u2014 the CFG from a linear sweep and the "
+                "recursive descent and where they disagree; the "
+                "decompilation lift to a C-like IR and what it always gets "
+                "wrong; then the dynamic half: the ptrace attach, "
+                "breakpoints, the memory dump, the syscall trace that tells "
+                "you what the binary does when the static reading lies; "
+                "strings, imports and the entropy profile that finds the "
+                "packed sections; and the capstone, a crackme and a stripped "
+                "binary from the provided estate, where the licence check "
+                "must be found, understood and described \u2014 the judge "
+                "being the write-up whose every claim (function boundaries, "
+                "the key derivation, the anti-debug trick) is checked "
+                "against ground truth the estate carries. Built with the "
+                "tools, not around them: objdump, gdb, radare2 are the "
+                "reference outputs your own parser and lifter are checked "
+                "against. Author reverse-engineering-from-scratch; G3 built "
+                "the CPU, G5 built the compiler \u2014 this reads what they "
+                "emit, without the source."},
     ]),
     ("H", "The rest", [
         {"id": "H1", "title": "Distributed Training",
