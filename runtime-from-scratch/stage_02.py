@@ -37,6 +37,9 @@ stage-3 loop has to reproduce before any jump changes it. A stage that reached
 into `run`'s record for it would depend on the loop, not the semantics, and the
 mutation battery for stage 3 would then have to distinguish a loop bug from a
 semantics bug through one record instead of two.
+
+
+TODO: implement the functions this stage names; the docstrings above are the contract.
 """
 
 import bytecode as bc

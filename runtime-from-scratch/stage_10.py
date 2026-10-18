@@ -34,6 +34,16 @@ Because a corrupt record can fail more than one way — a miscount can also be
 a leak — and the diagnostic that names only its first finding hides the
 second. The verdict is the worst thing the audit found; the reasons are
 everything it found.
+
+
+TODO: implement the functions this stage names; the docstrings above are the contract.
+
+DESIGN DECISION — Why does the audit walk defensively instead of trusting
+`heap.validate_reachability` on a corrupt heap?
+Because the audit's whole job is to look at corrupt records: the walk that
+raises on a dangling slot is the walk that cannot report on the premature free
+that caused it. The verdicts are earned from the evidence — including evidence
+of damage.
 """
 
 import bytecode as bc

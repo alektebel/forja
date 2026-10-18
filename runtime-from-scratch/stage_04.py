@@ -55,6 +55,9 @@ ledger that says nothing happened, and `agree` would compare the world's
 demand against zeroes. Law 11 (the world is never written) has this face too:
 the heap is the only allocator in the room, and `heap.allocate` returning ids
 the stage stores in slots is the whole mechanism the later collectors trace.
+
+
+TODO: implement the functions this stage names; the docstrings above are the contract.
 """
 
 import bytecode as bc

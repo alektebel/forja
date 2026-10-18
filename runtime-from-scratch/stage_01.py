@@ -53,6 +53,9 @@ reference loop refuses them by name, and so does this stage — refusing is the
 honest answer, and it is what keeps stages 1–3 provably frame-free until stage
 2's step arithmetic and stage 3's control flow are done on programs that need
 nothing but a value stack.
+
+
+TODO: implement the functions this stage names; the docstrings above are the contract.
 """
 
 import bytecode as bc

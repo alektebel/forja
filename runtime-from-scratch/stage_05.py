@@ -59,6 +59,9 @@ frees one fewer object than it claims. The record's numbers come from
 `heap.stats()` — taken before and after — so a stage whose claim and whose
 act disagree is caught by comparing its own record against the heap it
 acted on.
+
+
+TODO: implement the functions this stage names; the docstrings above are the contract.
 """
 
 import bytecode as bc

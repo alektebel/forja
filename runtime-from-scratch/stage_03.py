@@ -41,6 +41,9 @@ asserting. The world defines it as `JUMP`'s sibling (§2.1: "like JUMP, but the
 counted-jump a loop back-edge emits"), and the step count cannot tell them
 apart unless the runtime treats them identically. A stage that gave `OP_LOOP`
 its own semantics has invented a machine the world's pins do not describe.
+
+
+TODO: implement the functions this stage names; the docstrings above are the contract.
 """
 
 import bytecode as bc

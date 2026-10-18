@@ -38,6 +38,16 @@ Because the unit is the pause granularity the chapter records: the mutator
 runs between pops, and the invariant "a black object's children are gray or
 black" holds at every pause boundary. Per-child units would let a pause land
 mid-object, where the invariant is unstatable.
+
+
+TODO: implement the functions this stage names; the docstrings above are the contract.
+
+DESIGN DECISION — Why does `finish_marking` sweep the colours it drained
+rather than trusting stage 5's sweep?
+Because the incremental mark's marked set is the colour table's blacks, not
+stage 5's bit-set: the two collectors share the shape of their answer, not
+their state. Reusing stage 5's sweep would mean writing stage 5's marks — the
+world's read-only rule, held here too.
 """
 
 import bytecode as bc

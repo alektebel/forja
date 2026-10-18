@@ -43,6 +43,9 @@ the roots let go, and what dies is what RC can reach *downward*. A partial
 drop is stage 9's business (the nursery's survivors), and giving this stage a
 drop-set argument would let it answer a question the record could not check
 against the programs' pinned shapes.
+
+
+TODO: implement the functions this stage names; the docstrings above are the contract.
 """
 
 import bytecode as bc

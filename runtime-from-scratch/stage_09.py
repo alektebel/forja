@@ -1,5 +1,4 @@
-"""Runtime From Scratch — stage 9: Generations — the nursery, promotion, and
-what survives.
+"""Runtime From Scratch — stage 9: Generations: the nursery, promotion, and what survives.
 
 The last collector idea, and the one the whole ledger was built to test: most
 objects die young. The heap already knows where everything was born — every
@@ -47,6 +46,9 @@ object: freeing it would follow the forwarding pointer and kill the twin
 (the heap's own rule), and counting it would make the threshold fire on
 bodies instead of objects. The nursery's population is live, un-forwarded,
 born in NURSERY — the definition the check recomputes on its own.
+
+
+TODO: implement the functions this stage names; the docstrings above are the contract.
 """
 
 import bytecode as bc

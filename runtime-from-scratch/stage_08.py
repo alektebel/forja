@@ -34,6 +34,16 @@ job), and remembering is the cure when the mark has already passed — the
 chapter's two-barrier menu. `needs_barrier` names the danger; `write` answers
 which cure it applied (`darkened` or `remembered`), and the check holds both
 against the record.
+
+
+TODO: implement the functions this stage names; the docstrings above are the contract.
+
+DESIGN DECISION — Why does the barrier consult the *stage 7* colour table
+rather than keeping its own?
+Because there is one mark in flight and one set of grays, and two tables would
+let the barrier's black disagree with the collector's black — the exact
+disagreement the barrier exists to prevent. The mutator and the collector
+share the desk, not the judgment.
 """
 
 import bytecode as bc
