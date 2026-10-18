@@ -859,7 +859,7 @@ and **L7 `docker-from-scratch`** (G4 + J4), **L8 `emulator-from-scratch`**
 (G3 — CHIP-8, then a second machine) and **L9 `rl-control-from-scratch`**
 (A8 — DP, then MC, then TD/SARSA/Q-learning, then an approximator) from the
 build-your-own-x tutorials in `tutorials-reference/`. The backlog
-is **25 `author`, 6 `legacy`, 2 `salvage`, 34 `ready` — 78 rows** — `./cz path`,
+is **28 `author`, 6 `legacy`, 2 `salvage`, 34 `ready` — 81 rows** — `./cz path`,
 `./cz dag`, `./cz tracks` and the ROADMAP's own tables are authoritative over this
 file.
 
