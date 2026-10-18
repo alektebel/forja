@@ -45,6 +45,13 @@ ADVICE = {
                   "possible' \u2014 differentiable simulation is the point, and "
                   "it is already a hard prereq; the advice is the order of the "
                   "other half: solve contacts first, differentiate second")],
+    "G12": [("H5", "G12's thesis: 'H5 is the query engine; this is the storage "
+                   "layer it runs on' \u2014 not a prereq, but the pairing "
+                   "makes both click: H5 builds the planner, G12 the pages "
+                   "and the WAL it reads")],
+    "G13": [("G9", "G9's grep re-derives its -E from G13's engine, and G7's "
+                   "globs borrow the same compile step \u2014 build the engine "
+                   "first, wire the tools second")],
 }
 
 

@@ -313,6 +313,39 @@ PHASES = [
                 "18). Author advanced-dsa-from-scratch in pure Python with "
                 "no float where a counter suffices \u2014 nothing must come "
                 "first; the book is the reading, the checker the grade."},
+        {"id": "G12", "title": "SQLite From Scratch",
+         "course": None, "kind": "author", "prereq": ["G9"],
+         "why": "The database embebida, from the recovered codecrafters corpus "
+                "(codecrafters-reference/sqlite/, nine stages with the tester's "
+                "own commands): a real single-file database that `sqlite3` "
+                "itself opens. Parse the database header and walk the schema "
+                "table whose rows are the other tables; decode a table B-tree "
+                "page by page — cell pointer array, varints, overflow pages — "
+                "until `SELECT` over your file returns the rows sqlite3 "
+                "returns; build the record format serial types and the "
+                "freelist; then the write half: the WAL, the commit that is "
+                "not acknowledged before the WAL says so, and the crash that "
+                "loses nothing. The judge is sqlite3 itself reading what you "
+                "wrote and the row counts matching on the files both wrote. "
+                "H5 is the query engine; this is the storage layer it runs "
+                "on, done for real. Author sqlite-from-scratch."},
+        {"id": "G13", "title": "Regex From Scratch",
+         "course": None, "kind": "author", "prereq": [],
+         "why": "The one language every tool in phase G already assumes, taught "
+                "by building the engine twice: Thompson's construction first — "
+                "parse with the shunting yard, compile to an NFA whose states "
+                "are epsilon-closures, simulate in linear time — then the "
+                "backtracking engine, whose catastrophic cases (`(a+)+$`) the "
+                "work counter exposes by the seconds it burns where the NFA "
+                "spent microseconds. Character classes, anchors, quantifiers "
+                "greedy and lazy, groups and backreferences the NFA refuses "
+                "(and why PCRE pays for them), then the integration that "
+                "gives the course its teeth: grep (G9) re-derives its -E from "
+                "this engine, tail -f's scrollback filter and G7's shell "
+                "globs borrow the same compile step, and the judge is the "
+                "match sets agreeing with Python's `re` on a corpus built to "
+                "distinguish the two engines. Author regex-from-scratch; "
+                "nothing must come first."},
     ]),
     ("H", "The rest", [
         {"id": "H1", "title": "Distributed Training",
