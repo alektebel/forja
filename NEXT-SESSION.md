@@ -837,16 +837,21 @@ directory sector per inode *slot*, so a lookup's arithmetic is the layout's and
 not a scan's; and three public names (`SECTOR`, `PROBLEMS`, `checksum`) added to
 stage 9 so the format's own vocabulary is readable from outside.
 
-## In flight — nothing
+## In flight — G8 `runtime-from-scratch`, shipped through stage 10
 
-The next unit is **G8, `runtime-from-scratch`** — a language runtime over a provided
-bytecode, assembler and heap: a stack machine with calls, frames and exact step
-accounting, then mark-sweep, reference counting that cannot free a cycle, a tri-colour
-incremental collector with write barriers and a remembered set, a nursery, and a
-copying collector that moves objects without breaking a reference — accepted on a
-program's own output plus its collection counts, never on a reachable object being
-freed. It needs G3 and G4, and both are built. Twelve
-*projects* — not slots — are queued in `ENTERPRISE.md`: the enterprise-AI list kept
+**G8 is built and pushed.** The world (`bytecode.py`, `assembler.py`, `heap.py`)
+froze at `PROVIDED: 55, PROBLEMS: 0`; the contract lives in `.g8-dev/CONTRACT.md`.
+All ten stages ship templates + solutions: 1 dispatch, 2 stack pricing, 3 control
+flow (the step pins hold: arith 6, branch 7, countdown 31, fib10 129), 4 heap and
+ledger, 5 mark-sweep, 6 reference counting and its honest cycle, 7 tri-colour
+incremental, 8 the write barrier, 9 generations, 10 the copying collector and the
+audit. The harness in `.g8-dev/` is complete: `run_all.py` 10/10 green, `smoke.py`
+PASS on the assembled manifest, `run_assembled.py` 10/10, `audit_course.py`
+`PROBLEMS: 0`, `verify_provided.py` 55 facts, `probe_stages.py` `PROBED: 10,
+PROBLEMS: 0`, and the mutation sweep `mutate_all.py` **168/168, MISSED OR BROKEN:
+0**. The assembled `runtime-from-scratch/course.py` (2,319 lines) is committed and
+pushed. The next unit in the queue is **H5** — see the rows below.
+Twelve *projects* — not slots — are queued in `ENTERPRISE.md`: the enterprise-AI list kept
 on `claude/enterprise-ai-project-guides`, each row naming what this repository
 already has for it and the gap that remains.
 The rows registered in the units before this one queue behind it, one per slot —
