@@ -9,13 +9,12 @@ let a `40000` entry point at a blob.
 
 TODO: implement each function; the docstring is the contract.
 
-DESIGN DECISION — why does `ls_tree` answer the file's order and
-`ls_tree_names` the sorted order?
-Because they answer different questions: `ls_tree` is the *format* door —
-later stages read trees entry by entry and the file's order is the fact —
-while `ls_tree_names` is the *user* door, and real git's `ls-tree
---name-only` prints byte-sorted names whatever order the file holds. One
-answers "what is written", the other "what the user sees".
+DESIGN DECISION — why do both doors answer the file's order?
+Because `ls-tree --name-only` is a *reader*, not a sorter: real git prints
+what the tree holds, and a tree git wrote was sorted at write time. The
+sort lives in the writer (stage 5's `entry_sort_key`); a reader that
+sorted would hide a tree written out of order — the corruption the format
+door exists to surface.
 
 DESIGN DECISION — why is a bad mode a refusal rather than a passthrough?
 Because the mode is the entry's type claim: `40000` promises a tree, a

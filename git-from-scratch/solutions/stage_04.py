@@ -52,10 +52,6 @@ def ls_tree(repo, sha):
 
 
 def ls_tree_names(repo, sha):
-    """The names byte-sorted, directories sorted as `name/` but printed
-    plain — the order real git's `ls-tree --name-only` prints."""
-    entries = ls_tree(repo, sha)
-    keyed = sorted(
-        ((ob.entry_sort_key(name, mode == "40000"), name)
-         for (mode, name, _sha) in entries))
-    return tuple(name for (_key, name) in keyed)
+    """The names in the file's order — real git's `ls-tree --name-only`
+    prints what the tree holds, and a tree git wrote is already sorted."""
+    return tuple(name for (_mode, name, _sha) in ls_tree(repo, sha))
