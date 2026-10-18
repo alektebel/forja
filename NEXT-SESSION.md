@@ -34,8 +34,8 @@ fixed-point discipline. Everything in *Done* is committed and pushed; the sectio
 it is the commit that carries this file.
 
 **Asked for next, by the user, and not started**: nothing outstanding. What remains is
-the queue this file has been carrying — **G8 `runtime-from-scratch`** first, then H5,
-L4, H7, H6, H8, I2 → I3 → {I6, I7, I8, I10, I12, I14} → I13, and phase K's remaining
+the queue this file has been carrying — **L4 `git-from-scratch`** first, then H7,
+H6, H8, I2 → I3 → {I6, I7, I8, I10, I12, I14} → I13, and phase K's remaining
 four (K2, K3, K4, K5), one unit per commit, in the order its own section records.
 
 ## Done, pushed, on `origin/main`
@@ -68,6 +68,7 @@ four (K2, K3, K4, K5), one unit per commit, in the order its own section records
 | `bc0e6bb` | **K6 `fde-from-scratch`** — twelve stages over a provided customer that is data (`estate.py`, `idp.py`, `network.py`, `meter.py`), 884 mutations, smoke green, registered: the twelve-stage FDE skill list built whole |
 | `3263177` | the K6 doc follow-up: `ENTERPRISE.md`'s coverage of the twelve enterprise projects, `codecraft/ROADMAP.md`'s K6 row and phase-K paragraph, and the course README's pointer |
 | `4e64609` | **K1 `agentic-retrieval-from-scratch`** — 10 stages over a provided contract corpus that *is* the ground truth (`corpus.py`, `meter.py`), 589 mutations, 893 testers, smoke green, registered: retrieval that checks itself, with phase K's census and the dependency tree's measured lines refreshed |
+| `817d228` | **H5 `query-engine-from-scratch`** — 10 stages, provided `disk.py` + `pages.py` + `tables.py` + `ops.py`, 133 mutations, smoke green, registered: the proof's audit re-reads the stack against the reference and names the ids that failed |
 
 ## The unit this file carries — G7 `shell-from-scratch`
 
@@ -851,6 +852,28 @@ PASS on the assembled manifest, `run_assembled.py` 10/10, `audit_course.py`
 PROBLEMS: 0`, and the mutation sweep `mutate_all.py` **168/168, MISSED OR BROKEN:
 0**. The assembled `runtime-from-scratch/course.py` (2,319 lines) is committed and
 pushed. The next unit in the queue is **H5** — see the rows below.
+
+## In flight — H5 `query-engine-from-scratch`, shipped through stage 10
+
+**H5 is built and pushed.** The world (`disk.py`, `pages.py`, `tables.py`,
+`ops.py`) froze at `PROVIDED: 55, PROBLEMS: 0`; the contract lives in
+`.g5-dev/CONTRACT.md` (§7's amendments include the commit record that rides the
+sector's edge — its length at both ends, the tear eats the far half — and
+`LEAF_FANOUT = 8`, so the planner's arithmetic and the tree's shape are one
+law). All ten stages ship templates + solutions: 1 parse (the five refusals),
+2 resolve (the catalog that lies), 3 pushdown, 4 B+tree (splits, 120 entries,
+15 leaves), 5 plan (the earned index on all hundred), 6 executor (iterators,
+row order restored after an index scan), 7 buffer (pinning, the planted byte),
+8 commit (one buffered byte and a barrier), 9 recovery (redo, undo, discard —
+the torn-log fixture's `discarded: 1` is the tear's own trace), 10 the proof
+(a hundred queries on a fresh world each, the audit's lying-reference and
+lying-plan-fact controls). The harness in `.g5-dev/` is complete: `run_all.py`
+10/10 green, `smoke.py` PASS on the assembled manifest, `audit_course.py`
+`PROBLEMS: 0`, `verify_provided.py` 55 facts, `count_tests.py` 308 asserts
+across ten stages, and the mutation sweep `mutate_all.py` **133/133, MISSED OR
+BROKEN: 0**. The assembled `query-engine-from-scratch/course.py` (2,037 lines)
+is committed and pushed. The next unit in the queue is **L4** — see the rows
+below.
 Twelve *projects* — not slots — are queued in `ENTERPRISE.md`: the enterprise-AI list kept
 on `claude/enterprise-ai-project-guides`, each row naming what this repository
 already has for it and the gap that remains.

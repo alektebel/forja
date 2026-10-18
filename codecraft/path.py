@@ -403,8 +403,8 @@ PHASES = [
         {"id": "H4", "title": "Long tail", "course": None, "kind": "legacy", "prereq": [],
          "why": "quantitative-trading, spectral-graphs, lean-proofs, haskell-projects, "
                 "mlops, ml-in-production, sas-lineage-tool, web-scraping."},
-        {"id": "H5", "title": "Query Engine From Scratch", "course": None,
-         "kind": "author", "prereq": ["G4"],
+        {"id": "H5", "title": "Query Engine From Scratch", "course": "query-engine-from-scratch",
+         "kind": "ready", "prereq": ["G4"],
          "why": "A database is a file format plus a promise about what a query "
                 "returns. A heap file of pages on a disk that can lose what was not "
                 "synced, a catalog, and tables to query are provided. Parse a SQL "
