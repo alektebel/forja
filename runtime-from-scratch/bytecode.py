@@ -57,6 +57,9 @@ OP_JUMP = 20          # unconditional: next instruction is CODE[arg]
 OP_JUMP_IF_FALSE = 21  # pop; if falsy, next instruction is CODE[arg]
 OP_LOOP = 22          # like JUMP, but the counted-jump a loop back-edge emits
 
+OP_PICK = 28          # copy the n-th item from the top onto it (PICK 0 = DUP)
+OP_ROT3 = 29          # rotate the top three: (a, b, c) -> (b, c, a) — the
+                      # shuffle a loop body needs when the counter lives on top
 OP_CALL = 30          # call NAMES[arg]: a new frame, its args already stacked
 OP_RETURN = 31        # pop the return value, end the current frame
 OP_HALT = 32          # stop the module
@@ -64,6 +67,7 @@ OP_HALT = 32          # stop the module
 OPCODES = {
     "LOAD_CONST": OP_LOAD_CONST, "LOAD_NAME": OP_LOAD_NAME,
     "STORE_NAME": OP_STORE_NAME, "POP": OP_POP, "DUP": OP_DUP,
+    "PICK": OP_PICK, "ROT3": OP_ROT3,
     "ADD": OP_ADD, "SUB": OP_SUB, "MUL": OP_MUL, "NEG": OP_NEG,
     "EQ": OP_EQ, "LT": OP_LT, "GT": OP_GT, "NOT": OP_NOT,
     "JUMP": OP_JUMP, "JUMP_IF_FALSE": OP_JUMP_IF_FALSE, "LOOP": OP_LOOP,
@@ -72,12 +76,11 @@ OPCODES = {
 #: the reverse: op int -> its mnemonic. The decoder's error messages name it.
 OP_NAMES = {v: k for k, v in OPCODES.items()}
 
-# --- the operand forms -------------------------------------------------------
 # no-operand: NONE. index into CONSTS: CONST. index into NAMES: NAME.
-# an absolute instruction index: TARGET.
+# an absolute instruction index: TARGET. a stack depth to copy: DEPTH.
 FORMS = {
     OP_LOAD_CONST: "CONST", OP_LOAD_NAME: "NAME", OP_STORE_NAME: "NAME",
-    OP_POP: "NONE", OP_DUP: "NONE",
+    OP_POP: "NONE", OP_DUP: "NONE", OP_PICK: "DEPTH", OP_ROT3: "NONE",
     OP_ADD: "NONE", OP_SUB: "NONE", OP_MUL: "NONE", OP_NEG: "NONE",
     OP_EQ: "NONE", OP_LT: "NONE", OP_GT: "NONE", OP_NOT: "NONE",
     OP_JUMP: "TARGET", OP_JUMP_IF_FALSE: "TARGET", OP_LOOP: "TARGET",
@@ -123,10 +126,13 @@ class Module:
     __slots__ = ("consts", "code", "names", "entry")
 
     def __init__(self, consts, code, names, entry):
-        self.consts = tuple(consts)
-        self.code = tuple(code)
-        self.names = tuple(names)
-        self.entry = entry
+        object.__setattr__(self, "consts", tuple(consts))
+        object.__setattr__(self, "code", tuple(code))
+        object.__setattr__(self, "names", tuple(names))
+        object.__setattr__(self, "entry", entry)
+
+    def __setattr__(self, name, value):
+        raise BytecodeError("a Module is immutable: %r cannot be set" % (name,))
 
     def __eq__(self, other):
         return (isinstance(other, Module)
@@ -147,3 +153,113 @@ class Module:
 # executed, including the HALT. A correct runtime matches it exactly.
 
 PROGRAMS = {}
+def _program(name, source, output, heap, steps=None):
+    """Register one provided program: assemble it here, once, at import.
+
+    `steps` is pinned only for the frame-free programs the reference loop can
+    run (stages 1–3's programs); the heap programs' step count depends on the
+    runtime's own allocation strategy, so the world pins their *output* and
+    their *heap demand* and leaves the steps to the stage's report.
+    """
+    from assembler import assemble
+    PROGRAMS[name] = {"source": source, "module": assemble(source),
+                      "output": tuple(output), "heap": dict(heap),
+                      "steps": steps}
+
+
+# 1. arithmetic: 20 - 4*3 = 8, printed once. No allocation.
+_program("arith", '''
+    LOAD_CONST 20
+    LOAD_CONST 4
+    LOAD_CONST 3
+    MUL
+    SUB
+    HALT
+''', output=[8], heap={}, steps=6)
+
+# 2. branch: sign of -7. No allocation.
+_program("branch", '''
+    LOAD_CONST -7
+    LOAD_CONST 0
+    LT
+    JUMP_IF_FALSE positive
+    LOAD_CONST "negative"
+    JUMP done
+positive:
+    LOAD_CONST "nonnegative"
+done:
+    HALT
+''', output=["negative"], heap={}, steps=7)
+
+# 3. countdown: descends 5→0, keeping every value it passes: the final stack
+#    holds 5, 4, 3, 2, 1, 0 — the program's output is what it leaves behind.
+#    No allocation.
+_program("countdown", '''
+    LOAD_CONST 5
+loop:
+    DUP
+    LOAD_CONST 1
+    SUB
+    DUP
+    JUMP_IF_FALSE done
+    JUMP loop
+done:
+    HALT
+''', output=[5, 4, 3, 2, 1, 0], heap={}, steps=31)
+
+# 4. fib: f(10) = 55, computed iteratively. The loop holds (b, a, counter),
+#    b = f(k+1), a = f(k); each iteration PICKs the pair back out from under
+#    the counter, adds it, and ROT3s the counter up again. The counter is
+#    why ROT3 exists: without it a frame-free loop cannot keep a value
+#    *under* the working pair. No allocation.
+_program("fib10", '''
+    LOAD_CONST 1
+    LOAD_CONST 0
+    LOAD_CONST 10
+loop:
+    DUP
+    JUMP_IF_FALSE done
+    LOAD_CONST 1
+    SUB
+    PICK 2
+    PICK 2
+    ADD
+    ROT3
+    POP
+    ROT3
+    ROT3
+    JUMP loop
+done:
+    ROT3
+    POP
+    POP
+    HALT
+''', output=[55], heap={}, steps=129)
+
+# 5-7. the heap programs: their source is not bytecode — they are *heap
+# shapes* the runtime executes by its own means (a stage that has not built
+# the allocator yet answers them with a refusal, which is itself graded).
+# `source` documents the shape; `heap` is the demand a check holds the
+# runtime's ledger against.
+_program("conslist", '''
+    # build the cons list 1 -> 2 -> 3 (pair holds value-box, next-pair),
+    # then sum it: every box's value, added, is 6. Three pairs + three boxes.
+    (shape only — executed by the runtime's allocator, not by dispatch)
+''', output=[6], heap={SHAPE_PAIR: 3, SHAPE_BOX: 3})
+
+_program("shared", '''
+    # two parents, one shared child: parent1.pair(box4, child), parent2.pair(
+    # box5, child) — the child's refcount reaches 2 and a collector that
+    # frees it when the first parent dies has lost it for the second. The
+    # sum of both parents' box values plus the child's is 9. Four pairs,
+    # four boxes.
+    (shape only — executed by the runtime's allocator, not by dispatch)
+''', output=[9], heap={SHAPE_PAIR: 4, SHAPE_BOX: 4})
+
+_program("cycle", '''
+    # a -> b -> a, both dropped from the roots together: the cycle's
+    # refcount never falls to zero from the outside, so reference counting
+    # keeps both alive forever and mark-sweep frees exactly two pairs and
+    # two boxes. The sum of the boxes is 2.
+    (shape only — executed by the runtime's allocator, not by dispatch)
+''', output=[2], heap={SHAPE_PAIR: 2, SHAPE_BOX: 2})
