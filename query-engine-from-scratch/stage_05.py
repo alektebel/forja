@@ -1,6 +1,8 @@
 """Query Engine From Scratch — stage 5: The plan: pushdown, selectivity, and
 the earned index.
 
+
+TODO: implement each function; the docstring is the contract.
 The predicates stage said where each conjunct goes; the plan says what each
 scan costs and which scan to run. `cost_of` prices a scan in pages — a table
 scan costs the table's page count, an index scan costs the tree's height plus

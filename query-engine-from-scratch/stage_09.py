@@ -1,5 +1,7 @@
 """Query Engine From Scratch — stage 9: The recovery: redo, undo, discard.
 
+
+TODO: implement each function; the docstring is the contract.
 The commit stage made the log a promise; the recovery is where the promise is
 kept. `recover` reads the durable log after a crash and answers three lists:
 the committed transactions (those whose commit record is durable), the

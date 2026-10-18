@@ -1,6 +1,8 @@
 """Query Engine From Scratch — stage 1: The parse: words, trees, and the five
 refusals.
 
+
+TODO: implement each function; the docstring is the contract.
 A query is text before it is anything else, and the parse is the one stage
 whose product every later stage consumes: `tokenize` splits the SQL into
 words, ints, quoted strings and operators; `parse` turns the tokens into the

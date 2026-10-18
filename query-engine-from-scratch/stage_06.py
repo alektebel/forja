@@ -1,5 +1,7 @@
 """Query Engine From Scratch — stage 6: The executor: iterators over pages.
 
+
+TODO: implement each function; the docstring is the contract.
 The plan named the scans; the executor runs them and answers the rows — the
 world's rows, exactly, by law 13: the pin is law, and an executor that
 answered a row the reference does not hold is wrong whatever else it got

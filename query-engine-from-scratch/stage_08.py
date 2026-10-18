@@ -1,5 +1,7 @@
 """Query Engine From Scratch — stage 8: The commit: a log, and a rule.
 
+
+TODO: implement each function; the docstring is the contract.
 A transaction is words until the log holds it; the commit is the rule that
 makes the words durable: append the commit record, **sync the log**, and only
 then answer. `WAL.append` serializes one log record — xid, table, op, row,

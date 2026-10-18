@@ -1,5 +1,7 @@
 """Query Engine From Scratch — stage 4: The index: a B+tree that splits.
 
+
+TODO: implement each function; the docstring is the contract.
 The events index is a sorted list of `(ts, id)` pairs the world pinned; the
 B+tree is what turns a sorted list into a structure a scan can walk and a
 point query can land in. `build` inserts the entries leaf by leaf — each leaf

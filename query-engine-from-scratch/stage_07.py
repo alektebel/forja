@@ -1,6 +1,8 @@
 """Query Engine From Scratch — stage 7: The buffer: pinning, eviction, and
 the page you did not keep.
 
+
+TODO: implement each function; the docstring is the contract.
 The executor read every page through the pager; the buffer pool is the layer
 that decides which pages are worth keeping. `BufferPool` holds `frames`
 pages: `fetch` answers a page's bytes — a hit from the pool, a miss from the

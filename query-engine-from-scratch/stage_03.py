@@ -1,6 +1,8 @@
 """Query Engine From Scratch — stage 3: The predicates: conjuncts, and where
 they go.
 
+
+TODO: implement each function; the docstring is the contract.
 A WHERE is a list the parse kept in order; the predicates stage gives each
 conjunct its address and its destination. `conjuncts_of` splits the resolved
 WHERE into `(table, column, op, value)` — every conjunct now names the table

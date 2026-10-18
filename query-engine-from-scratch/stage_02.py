@@ -1,6 +1,8 @@
 """Query Engine From Scratch — stage 2: The resolve: names against a catalog
 that may lie.
 
+
+TODO: implement each function; the docstring is the contract.
 The parse answered shapes; the resolve answers *names*. Every column the tree
 carries becomes `(table, index)` — the address the executor will index rows
 with — and every table is checked to exist in the catalog it is resolved

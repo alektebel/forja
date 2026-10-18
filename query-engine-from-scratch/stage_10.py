@@ -1,56 +1,49 @@
-"""stage_10.py — the proof: a hundred queries, and the audit.
+"""Query Engine From Scratch — stage 10: The proof: a hundred queries, and the
+audit.
 
-The course's last stage composes everything and holds the answer against
-the reference: parse, resolve, plan, execute, buffer — the hundred queries
-run through the whole stack, each query's rows compared with the rows the
-world pinned, each plan compared with the index the world pinned, and one
-crash fixture re-run so the durability half (law 15) is inside the proof
-too. The audit re-reads the proof against the world and classifies what
-failed: the rows, the plans, or a commit the crash lost.
+The nine stages built the engine; this one proves it. `run_all` walks the
+world's hundred queries through the whole stack — parse, resolve, plan,
+execute — on a fresh world per query, so each query's page count is its own
+receipt. `prove` adds the two halves a run cannot see: the plan facts held
+as a set, and one crash fixture re-run so a commit the crash lost is
+`lost_commit` in the proof's own vocabulary. `audit` re-reads the proof
+against the world — not against the proof — and names the ids that failed.
 
-Import the world and every stage; answer only what the surface names.
+TODO: implement each function; the docstring is the contract.
 
-Constants:
+DESIGN DECISION — Why does `run_all` build a fresh world per query?
+Because the pages receipt is per query: a buffer shared across queries
+accumulates everyone's reads, and a count that names page 4 twice because
+two queries read it is not either query's receipt. A fresh pager and disk
+per query makes `pages` the receipt the contract names, and the cost —
+loading the world a hundred times — is the honesty price.
 
-PROOF_KEYS  the record a run answers: ("rows", "plans", "pages", "verdict")
-AUDIT_KEYS  the record the audit answers:
-            ("verdict", "reasons", "rows_agree", "plans_agree")
-VERDICTS    ("pass", "wrong_rows", "wrong_plan", "lost_commit") — the audit's
-            whole vocabulary, in strictness order
+DESIGN DECISION — Why is the stack's answer the evidence and the reference
+the judge?
+Because a proof that compares the reference with itself proves nothing: the
+rows the executor computed are the only thing under test. `run_all` answers
+the stack's rows even when the reference lies — the check plants a lying
+reference and holds the answer against the executor's own arithmetic — and
+the verdict classifies, it never overrides.
 
-Design decisions (each is a law the checks hold):
+DESIGN DECISION — Why does the audit re-compare rather than trust the
+proof's verdict?
+Because a proof that says pass while its own rows disagree is the failure
+mode the audit exists for. `rows_agree` and `plans_agree` are the audit's
+own comparison against QUERIES; `reasons` names the failing ids in query
+order; and the verdict is the strictest class the evidence supports —
+`lost_commit` over `wrong_rows` over `wrong_plan` over `pass`.
 
-1. One pipeline, run a hundred times. `run_all` walks QUERIES in order:
-   parse the sql, push the predicates, plan against the pushdown, execute
-   through the buffer. Every query goes through the same door; no query is
-   special-cased, and none is skipped.
-
-2. The verdict is the proof's own word, strictest first. A query's rows
-   that differ from the reference's is wrong_rows; a plan whose
-   uses_index disagrees with the reference's is wrong_plan; a committed
-   transaction the crash lost is lost_commit. The first failure in
-   strictness order is the verdict — `pass` only when nothing failed.
-
-3. `prove` is run_all plus the two halves run_all cannot see. The plan
-   facts (§4.5) are checked as a set — every query the world pins as
-   indexed is indexed in the plan, and no other. One crash fixture (the
-   clean one) is re-run through stage 9's run_crash: every transaction
-   that committed must be in the recovery's committed list, and the
-   recovered rows must carry the committed work.
-
-4. `audit` re-reads the proof against the world, not against the proof.
-   rows_agree and plans_agree are the audit's own comparison of the
-   proof's rows and plans with QUERIES' — a proof that says pass while
-   the rows disagree is caught here. reasons names the query ids that
-   failed, in query order; the verdict is the strictest class the
-   evidence supports.
-
-5. The audit is graded against the reference, not against anyone's prose.
-   Its verdicts are exactly VERDICTS; anything else is refused.
+DESIGN DECISION — Why is one crash fixture inside the proof?
+Because a hundred rows prove the reads and none of the promises: the commit
+stage's rule is about durability, and a proof that never crashes the disk
+proves the arithmetic and not the engine. The clean fixture re-run through
+stage 9's own door — with every committed transaction required in the
+recovery's committed list — is the smallest run that makes `lost_commit` a
+verdict the proof can answer rather than a word.
 """
 
 import disk as dk
-import ops
 import pages as pg
 import tables as tb
 
