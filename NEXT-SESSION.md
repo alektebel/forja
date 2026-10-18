@@ -855,7 +855,7 @@ Twelve *projects* — not slots — are queued in `ENTERPRISE.md`: the enterpris
 on `claude/enterprise-ai-project-guides`, each row naming what this repository
 already has for it and the gap that remains.
 The rows registered in the units before this one queue behind it, one per slot —
-G8, H5, L4, H7, H6, then I13, I14, H8 — each carrying its own thesis in
+H5, L4, H7, H6, then I13, I14, H8 (G8 is now among the shipped) — each carrying its own thesis in
 `path.py`, each with its place in `cz dag`. After those: G5/G6 (phase G's
 remaining two, which need checkers, not writing), phase K's five, and the rows
 registered from the recovered corpora — **L5 `redis-from-scratch`** (L2 + J3),
