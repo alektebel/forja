@@ -760,6 +760,18 @@ total, shown where they cannot agree with each other. Built over M1's
 `book.py`/`dates.py`/`rules.py`, policy extended, everything still basis
 points.
 
+**Candidates, not yet registered** — the finance rows the registry could grow,
+in the order the existing M rows make them land: `transfer-pricing-from-scratch`
+(the internal liquidity desk — every deposit and loan pays for its tenor and its
+optionality; closes M4's funding loop), `ledger-from-scratch` (double-entry as an
+invariant — debits equal credits, always — the general ledger as a data structure,
+statements derived, not drawn; the root M1 and M4 assume), `fixed-income-from-scratch`
+(bootstrapping the curve, duration and convexity, the swap priced as legs),
+`xva-from-scratch` (CVA/DVA/FVA over M1+M2 — future exposure as a distribution),
+`options-from-scratch` (Black-Scholes by formula, by Monte Carlo and by tree, all
+three agreeing; the one row where float is the domain), and
+`portfolio-from-scratch` (constrained Markowitz, backtested VaR/ES).
+
 ---
 
 ## Coreutils (phase G, row G9) — grep, tail and an editor, byte for byte
