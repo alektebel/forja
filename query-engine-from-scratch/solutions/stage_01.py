@@ -115,11 +115,7 @@ def parse(sql):
     else:
         names = []
         while True:
-            kind, value = peek()
-            if kind != "word" or value in KEYWORDS or value in "(*,":
-                _refuse("bad_column", value)
-            names.append(value)
-            take()
+            names.append(_column_ref(take, peek))
             if peek() == ("word", ","):
                 take()
                 continue
