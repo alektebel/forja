@@ -33,6 +33,8 @@ stage's answer carries.
 
 import repo as rp
 
+LOG_KEYS = ("sha", "tree", "parent", "message")
+
 
 def log(repo, sha):
     """The history from `sha`, newest first, every step verified."""
