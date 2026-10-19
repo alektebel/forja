@@ -1,4 +1,4 @@
-"""The stage 7 solution: frames, pins, and the arithmetic of keeping."""
+"""The stage 7 solution: frames held, pins kept, the LRU that respects them."""
 
 import disk as dk
 import pages as pg
@@ -18,102 +18,101 @@ def _refuse(reason, what):
 
 
 class BufferPool:
-    """`frames` pages, LRU over the unpinned, the counter the check reads."""
+    """frames pages, LRU over the unpinned, dirty pages written back."""
 
     def __init__(self, pager, frames):
-        self._pager = pager
+        """The pool over a pager, holding at most `frames` pages."""
         if frames < 1:
             _refuse("no_frames", frames)
+        self._pager = pager
         self._frames = frames
-        self._pages = {}      # page -> bytes
+        self._pages = {}          # page -> bytes (the frame's contents)
+        self._order = []          # unpinned pages, least-recently-used first
         self._pinned = set()
         self._dirty = set()
-        self._lru = []        # page ids, least-recent first
-        self._hits = 0
-        self._misses = 0
-        self._evictions = 0
+        self.record = {"hits": 0, "misses": 0, "evictions": 0, "dirty": 0}
 
     def fetch(self, page):
         """A page's bytes: a hit from the pool, a miss from the pager."""
         if page in self._pages:
-            self._hits += 1
-            if page in self._lru:
-                self._lru.remove(page)
-            self._lru.append(page)
+            self.record["hits"] += 1
+            if page not in self._pinned:
+                self._order.remove(page)
+                self._order.append(page)
             return self._pages[page]
-        if not 0 <= page < pg.PAGES:
-            _refuse("no_page", page)
-        self._misses += 1
+        self.record["misses"] += 1
         data = self._pager.read(page)
-        while len(self._pages) >= self._frames:
-            victim = next((p for p in self._lru if p not in self._pinned),
-                          None)
-            if victim is None:
-                _refuse("all_pinned", self._frames)
-            self._lru.remove(victim)
-            victim_data = self._pages.pop(victim)
-            self._evictions += 1
-            if victim in self._dirty:
-                self._pager.write(victim, victim_data)
-                self._dirty.discard(victim)
-        self._pages[page] = data
-        self._lru.append(page)
+        self._hold(page, data)
         return data
 
     def pin(self, page):
-        """Hold a frame: eviction skips it until it is unpinned."""
-        if page not in self._pages:
-            self.fetch(page)
+        """Pin a page: it will not be evicted while pinned."""
+        self.fetch(page)
+        if page in self._order:
+            self._order.remove(page)
         self._pinned.add(page)
 
     def unpin(self, page, dirty=False):
-        """Release a frame; a dirty page is written back on eviction."""
+        """Unpin a page; `dirty` marks the frame for write-back."""
         if page not in self._pinned:
             _refuse("not_pinned", page)
         self._pinned.discard(page)
         if dirty:
             self._dirty.add(page)
+        self._order.append(page)
 
-    def record(self):
-        """BUFFER_KEYS: hits, misses, evictions, dirty count."""
-        return {"hits": self._hits, "misses": self._misses,
-                "evictions": self._evictions, "dirty": len(self._dirty)}
+    def _hold(self, page, data):
+        """Take a frame for the page, evicting the LRU unpinned if full."""
+        while len(self._pages) >= self._frames and page not in self._pages:
+            victim = None
+            for candidate in list(self._order):
+                if candidate not in self._pinned:
+                    victim = candidate
+                    break
+            if victim is None:
+                _refuse("all_pinned", self._frames)
+            self._evict(victim)
+        self._pages[page] = data
+        if page not in self._pinned:
+            self._order.append(page)
+
+    def _evict(self, page):
+        """Write back a dirty page, then forget it."""
+        if page in self._dirty:
+            self._pager.write(page, self._pages[page])
+            self._dirty.discard(page)
+            self.record["dirty"] += 1
+        self.record["evictions"] += 1
+        self._order.remove(page)
+        del self._pages[page]
 
 
-def run_buffered(pager, tree, plan_record, frames):
-    """A plan through the pool: EXEC_KEYS plus BUFFER_KEYS.
-
-    The pipeline is the executor's; the join streams the inner table
-    through the pool with its pages pinned — the fixture that makes
-    pinning real. Answers the executor's keys plus BUFFER_KEYS."""
-    import stage_06 as s6
-
+def run_buffered(plan, pager, frames):
+    """A plan through the pool: the executor's keys plus the buffer's."""
+    import stage_06
     pool = BufferPool(pager, frames)
-    view = _PagedPager(pool)
-    result = s6.execute(view, tree, plan_record)
-    out = dict(result)
-    out.update(pool.record())
-    return out
+    # the executor's pipeline runs with every page fetch through the pool:
+    # wrap the pager so the executor's reads are pool reads
+    class _Pooled:
+        def __init__(self, pool):
+            self._pool = pool
+            self.disk = pager.disk
 
+        def read(self, page):
+            return self._pool.fetch(page)
 
-class _PagedPager:
-    """A pager-shaped view: reads through the pool, writes straight."""
+        def write(self, page, data):
+            pager.write(page, data)
 
-    def __init__(self, pool):
-        self._pool = pool
-        self.disk = pool._pager.disk
+        def sync(self):
+            pager.sync()
 
-    def read(self, page):
-        return self._pool.fetch(page)
-
-    def write(self, page, data):
-        self._pool._pager.write(page, data)
-
-    def sync(self):
-        self._pool._pager.sync()
-
-    def allocate(self):
-        return self._pool._pager.allocate()
-
-    def counters(self):
-        return self._pool._pager.disk.counters()
+        def allocate(self):
+            return pager.allocate()
+    buffered = _Pooled(pool)
+    # the executor's scans read the world's pinned pages through the pool;
+    # the plan's pages-read record is the executor's own arithmetic
+    answer = stage_06.execute(plan, buffered)
+    record = dict(answer)
+    record.update(pool.record)
+    return record

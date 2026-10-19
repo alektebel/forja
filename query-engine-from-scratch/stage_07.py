@@ -1,41 +1,47 @@
 """Query Engine From Scratch — stage 7: The buffer: pinning, eviction, and
 the page you did not keep.
 
+The executor read every page it needed, every time. The buffer pool is the
+difference between a database and a script: `frames` pages held in memory,
+`fetch` answering a hit from the pool or a miss from the pager — and the
+disk's counter is the judge of which — with `pin`/`unpin` as the discipline
+that keeps the working set working: a pinned page is never evicted, an
+unpinned dirty page is written back on its way out, and eviction is LRU over
+the unpinned. `run_buffered` runs a plan through the pool and answers the
+executor's keys plus the buffer's — hits, misses, evictions, dirty — and the
+check's central arithmetic is the one that makes pools exist: a plan over a
+table smaller than the pool answers with zero evictions and every page read
+from the pager exactly once.
 
-TODO: implement each function; the docstring is the contract.
-The executor read every page through the pager; the buffer pool is the layer
-that decides which pages are worth keeping. `BufferPool` holds `frames`
-pages: `fetch` answers a page's bytes — a hit from the pool, a miss from the
-pager (and the disk's counter moves, which is how the check counts) — and
-`pin`/`unpin` are the discipline: a pinned page is never evicted, an unpinned
-dirty page is written back, and eviction is LRU over the unpinned. The
-arithmetic the check lives on: a plan over a table smaller than the pool
-answers with zero evictions and every page read exactly once; a pool of one
-frame running a join is the fixture that makes pinning *real* — without it
-the inner table's page is evicted between outer rows and the misses explode,
-with it the record says one read.
+The fixture that makes pinning *real* is a pool of one frame running a join:
+without pinning, the inner table's page is evicted between outer rows and
+the misses explode; with it, the record says one read. A buffer that pinned
+nothing would still answer — and its counters would tell on it.
 
-DESIGN DECISION — Why is `run_buffered` a stage way in rather than wrapping
-the executor by hand?
-Because the buffer's record is the stage's answer, not a side effect the
-caller reassembles: EXEC_KEYS plus BUFFER_KEYS from one call, so the check's
-arithmetic (zero evictions below capacity, one read pinned) is held against
-the same record the proof will see. An executor wrapped ad hoc would let the
-hit/miss counters and the actual page traffic drift apart.
+DESIGN DECISION — Why is eviction LRU over the unpinned rather than LRU over
+everything?
+Because a pinned page is a promise the executor is still holding: evicting
+it does not free a frame, it corrupts a run. LRU over everything is the
+classic bug — it shows up as the join's inner page vanishing between outer
+rows. The pool's law is: evict the *least recently used page nobody still
+needs*, and refuse when that set is empty rather than break a pin.
 
 DESIGN DECISION — Why does `unpin` carry the dirty flag rather than the pool
 tracking writes?
-Because dirtiness is a property of how the page was *used*, and the user of
-the frame knows; a pool that guessed would write back pages that never
-changed (harmless, but the record would say dirty when nothing was) or miss
-one that did (fatal, and silent). The flag is the discipline's contract:
-pin, use, unpin dirty only if you wrote.
+Because dirtiness is the *caller's* claim about what it did to the page, and
+the pool is the record-keeper, not the witness: the executor mutates a
+frame's bytes through its own hands. The flag keeps the pool honest in the
+one direction it can be — write back what it was told changed — and the
+crash stages will hold the truth of that claim against the log.
 
-DESIGN DECISION — Why LRU over the unpinned rather than a global LRU?
-Because a pinned page is in use *right now* — evicting it corrupts the
-operator above the pool. The recency order is shared, but eviction skips
-whatever is pinned; a pool of one frame running a join keeps the inner
-page's frame exactly because pinning outranks recency.
+DESIGN DECISION — Why does `run_buffered` answer the buffer's record beside
+the executor's rather than hiding it in counters?
+Because the two records are the stage's argument: the executor's pages-read
+claim and the buffer's hits/misses are checkable against each other and
+against the disk's own counters — a pool that answers rows but loses its
+record is a pool nobody can audit, and the check's central arithmetic (zero
+evictions under the pool's size; one read under the pin) is an arithmetic
+over that record.
 """
 
 import disk as dk
@@ -51,41 +57,30 @@ class QueryError(ValueError):
 
 
 class BufferPool:
-    """`frames` pages, LRU over the unpinned, the counter the check reads."""
+    """frames pages, LRU over the unpinned, dirty pages written back."""
 
     def __init__(self, pager, frames):
-        """The pool over one pager, holding `frames` pages."""
-        raise NotImplementedError("stage 7: implement BufferPool.__init__()")
+        """The pool over a pager, holding at most `frames` pages."""
+        raise NotImplementedError("stage 7: implement BufferPool()")
 
     def fetch(self, page):
-        """A page's bytes: a hit from the pool, a miss from the pager.
-
-        A miss reads the pager (the disk's counter moves), caches, and
-        evicts LRU-over-unpinned when the pool is full. Refuses a page the
-        pager does not hold."""
-
+        """A page's bytes: a hit from the pool, a miss from the pager."""
         raise NotImplementedError("stage 7: implement BufferPool.fetch()")
 
     def pin(self, page):
-        """Hold a page's frame: eviction skips it until it is unpinned."""
-
+        """Pin a page: it will not be evicted while pinned."""
         raise NotImplementedError("stage 7: implement BufferPool.pin()")
 
     def unpin(self, page, dirty=False):
-        """Release a frame; a dirty page is written back on eviction."""
-
+        """Unpin a page; `dirty` marks the frame for write-back."""
         raise NotImplementedError("stage 7: implement BufferPool.unpin()")
 
-    def record(self):
-        """BUFFER_KEYS: hits, misses, evictions, dirty count."""
 
-        raise NotImplementedError("stage 7: implement BufferPool.record()")
+def run_buffered(plan, pager, frames):
+    """A plan through the pool: the executor's keys plus the buffer's.
 
-
-def run_buffered(pager, tree, plan_record, frames):
-    """A plan through the pool: EXEC_KEYS plus BUFFER_KEYS.
-
-    Runs the executor's pipeline with every page read through the pool, and
-    answers the executor's keys plus the buffer's record."""
+    Answers EXEC_KEYS and BUFFER_KEYS — the rows by law 13, the pages, the
+    operator chain, and the buffer's own record: hits, misses, evictions,
+    dirty."""
 
     raise NotImplementedError("stage 7: implement run_buffered()")
