@@ -869,11 +869,13 @@ the torn-log fixture's `discarded: 1` is the tear's own trace), 10 the proof
 (a hundred queries on a fresh world each, the audit's lying-reference and
 lying-plan-fact controls). The harness in `.g5-dev/` is complete: `run_all.py`
 10/10 green, `smoke.py` PASS on the assembled manifest, `audit_course.py`
-`PROBLEMS: 0`, `verify_provided.py` 55 facts, `count_tests.py` 308 asserts
-across ten stages, and the mutation sweep `mutate_all.py` **133/133, MISSED OR
-BROKEN: 0**. The assembled `query-engine-from-scratch/course.py` (2,037 lines)
-is committed and pushed. The next unit in the queue is **L4** — see the rows
-below.
+`PROBLEMS: 0`, `verify_provided.py` 55 facts, `count_tests.py` 331 asserts
+across ten stages (`[53, 38, 33, 31, 34, 29, 30, 22, 29, 32]`), and the
+mutation sweep `mutate_all.py` **134/134, MISSED OR BROKEN: 0**. The assembled
+`query-engine-from-scratch/course.py` (1,985 lines) is committed and pushed,
+and the course README carries the stage table, the measured-verification table
+and the world's four digests. The next unit in the queue is **L4** — see the
+rows below.
 Twelve *projects* — not slots — are queued in `ENTERPRISE.md`: the enterprise-AI list kept
 on `claude/enterprise-ai-project-guides`, each row naming what this repository
 already has for it and the gap that remains.
