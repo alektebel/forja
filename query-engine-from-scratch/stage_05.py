@@ -1,46 +1,46 @@
 """Query Engine From Scratch — stage 5: The plan: pushdown, selectivity, and
 the earned index.
 
+Stages 1–4 built the machinery; the plan is where a query earns its route.
+`cost_of` prices a scan in pages — the currency the storage floor deals in:
+a table scan costs the table's page count, a fact the world pinned in
+`TABLE_PAGES`; an index scan costs the tree's height plus the matched leaf
+pages, where *matched* is the world's own arithmetic — the conjuncts run
+against the rows, and a quarter of the table is the bar the index must clear.
+`plan` answers the whole route per query: the scans chosen, the conjuncts
+stage 3 pushed to each, the pinned `uses_index` fact, and the total cost.
+The choice is the cost comparison's answer, never a lookup of the pin — a
+planner that read `uses_index` and echoed it back would be a pin with a
+title, and the check proves the two agree on all hundred queries exactly
+because they are computed separately.
 
-TODO: implement each function; the docstring is the contract.
-The predicates stage said where each conjunct goes; the plan says what each
-scan costs and which scan to run. `cost_of` prices a scan in pages — a table
-scan costs the table's page count, an index scan costs the tree's height plus
-the leaves the conjuncts match — and `plan` answers the choice that
-comparison made: per scan, `table` or `index`; the conjuncts pushed to it;
-the total. The pin (`uses_index`) is not consulted — the pin is the world's
-answer the plan must *agree with*, and the check proves the agreement on all
-hundred queries. A planner that read the pin would pass every test it was
-written against and fail the first query the world had not measured; the
-arithmetic — matches ≤ a quarter of the table — is the same arithmetic that
-pinned the facts, and it runs here, on the plan's own account.
+`explain` renders the plan as one line the check holds against the plan's
+own record — the scans in order, the predicates attached, the joins between
+them — because a plan the operator cannot read is a plan nobody can argue
+with.
 
-`explain` renders the record one line wide — `events: index[ts] (ts<=60) |
-users: table` — because a plan the user cannot read is a plan the user cannot
-argue with, and the check holds the line against the plan's own record, not
-against a string the stage was handed.
+DESIGN DECISION — Why does the index scan's cost count *matched leaf pages*
+rather than matched rows?
+Because the storage floor reads pages, not rows: the index scan's real cost
+is the leaves it touches plus the height it descends. Counting rows would
+price the index in a currency the disk does not accept, and the comparison
+against a table scan — priced in pages — would be arithmetic over two
+currencies. The same matched-rows arithmetic picks the leaves; the price
+stays in pages.
 
-DESIGN DECISION — Why does `cost_of` take the matched count rather than the
-conjuncts?
-Because the world pinned its facts on the rows themselves — matched ≤ a
-quarter of the table — and the planner must run the *same* arithmetic, not a
-recapitulation of it. Deriving matches from the conjuncts here would make the
-planner trust its own guess about selectivity; taking the matched count the
-world computes (stage 4's `lookup` over the tree, or the count over rows)
-keeps one law: the rows are the answer.
+DESIGN DECISION — Why does `plan` carry the pinned `uses_index` in its
+record at all, when the choice must not come from it?
+Because the record is the *audit*: the choice the planner made, and the
+world's fact beside it, so the check can hold one against the other on all
+hundred queries. A plan record that hid the pin could not be audited — the
+agreement would be unfalsifiable.
 
-DESIGN DECISION — Why does the plan carry the pin it did not use?
-Because the record is also the audit's: stage 10's `audit` answers
-`wrong_plan` by holding the plan's choice against the world's pinned fact. A
-plan that agreed by accident and a plan that agreed by arithmetic look the
-same in the record; the check's job is to tell them apart *here*, on all
-hundred, by proving the choice changes when the costs change — the mutation
-battery plants a planner that reads the pin and the check must catch it.
-
-DESIGN DECISION — Why is `explain` a public way in rather than a repr?
-Because the line is a contract: the checks hold it, the tail course greps it,
-and a repr is whatever the class felt like. One renderer, one shape, the same
-line whether the plan came from a cost comparison or a crash recovery.
+DESIGN DECISION — Why is `explain` a way in rather than a `__str__` on the
+record?
+Because the line is a *claim about the record* the check can compare
+token by token — a rendering function the tester can mutate and watch the
+line stop matching the record. A `__str__` would be the record vouching for
+itself, and the check needs an independent mouth.
 """
 
 import disk as dk
@@ -50,33 +50,42 @@ import ops
 
 PLAN_KEYS = ("scans", "pushed", "uses_index", "cost")
 
+#: the bar the world pinned: an events conjunct's matched rows must clear a
+#: quarter of the table for the index to earn its keep.
+SELECTIVITY_BAR = 4
+
 
 class QueryError(ValueError):
     """Raised for anything the *caller* of a stage got wrong."""
 
 
-def cost_of(scan, table, matched, pager=None):
-    """A scan's price in pages: the table's pages, or height plus leaves.
+def cost_of(scan, table, matches=0):
+    """A scan's price in pages: the table's pages, or the tree's walk.
 
-    `scan` is `"table"` or `"index"`; `matched` is the rows the conjuncts
-    match, the world's own arithmetic. An index scan prices the tree's
-    height plus the leaves the matches spread over."""
+    `scan` is `"table"` or `"index"`. A table scan costs the table's page
+    count from `TABLE_PAGES`; an index scan costs the tree's height plus the
+    matched leaf pages — `matches` is the conjuncts' matched row count, and
+    the leaves those rows sit on are what the scan reads. Refuses a scan
+    that is neither, naming it."""
 
     raise NotImplementedError("stage 5: implement cost_of()")
 
 
 def plan(tree, facts):
-    """The scans chosen, the conjuncts pushed, the pin, the total cost.
+    """The route: scans chosen, conjuncts pushed, the pin, the total cost.
 
-    `tree` is the resolved tree (stage 2's record with stage 3's pushdown
-    available); `facts` is the world's `PLAN_FACTS`-shaped pin the plan must
-    agree with. The choice is `cost_of`'s comparison, never a lookup of the
-    pin."""
+    `tree` is the resolved tree (stage 2) with its predicates (stage 3);
+    `facts` is the world's `PLAN_FACTS`. The choice is `cost_of`'s
+    comparison — an events WHERE whose conjuncts match at most a quarter of
+    the table makes the index earn its keep, and nothing else does."""
 
     raise NotImplementedError("stage 5: implement plan()")
 
 
-def explain(plan_record):
-    """The plan, one line: `events: index[ts] (ts<=60) | users: table`."""
+def explain(record):
+    """The plan as one line the check holds against the record.
+
+    `events: index[ts] (ts<=60) | users: table` — the scans in order, the
+    predicates attached, the joins between them."""
 
     raise NotImplementedError("stage 5: implement explain()")
