@@ -1,67 +1,85 @@
-"""Query Engine From Scratch — stage 10: The proof: a hundred queries, and the
-audit.
+"""Query Engine From Scratch — stage 10: The proof: a hundred queries, and
+the audit.
 
-The nine stages built the engine; this one proves it. `run_all` walks the
-world's hundred queries through the whole stack — parse, resolve, plan,
-execute — on a fresh world per query, so each query's page count is its own
-receipt. `prove` adds the two halves a run cannot see: the plan facts held
-as a set, and one crash fixture re-run so a commit the crash lost is
-`lost_commit` in the proof's own vocabulary. `audit` re-reads the proof
-against the world — not against the proof — and names the ids that failed.
+Nine stages built the machinery; the proof is the course's answer to the
+only question that matters: *does the whole stack return the world's rows,
+every time, with the plans the costs chose, and a commit that survives the
+power cut?* `run_all` runs the hundred through everything — parse, resolve,
+plan, execute, buffer — and answers PROOF_KEYS: the rows per query, the
+plans per query, the pages read, and the verdict. `prove` is stage 10's own
+run: run_all plus the plan facts beside it (law 14: the index is earned,
+and the proof says so) plus one crash fixture re-run for the durability
+half — because rows and plans prove the engine, and the crash proves the
+promise. `audit` re-reads the proof against the world: `wrong_rows` when any
+query's rows differ from the reference's, `wrong_plan` when any plan
+disagrees with its `uses_index`, `lost_commit` when a committed transaction
+did not survive the crash, `pass` when all three hold — the reasons naming
+the query ids that failed, because an audit that says *wrong* without
+saying where is a puzzle, not a diagnosis.
 
-TODO: implement each function; the docstring is the contract.
+DESIGN DECISION — Why does `run_all` answer the *verdict* rather than just
+the records?
+Because a stack that returns a hundred correct-looking records with one
+wrong row is not a stack that works — and the consumer's question is the
+verdict, not the dump. The records are the evidence; the verdict is the
+answer. An audit that only ran on demand would let a wrong answer travel.
 
-DESIGN DECISION — Why does `run_all` build a fresh world per query?
-Because the pages receipt is per query: a buffer shared across queries
-accumulates everyone's reads, and a count that names page 4 twice because
-two queries read it is not either query's receipt. A fresh pager and disk
-per query makes `pages` the receipt the contract names, and the cost —
-loading the world a hundred times — is the honesty price.
+DESIGN DECISION — Why does `audit` take the *proof* rather than re-running
+the stack itself?
+Because the audit's job is to judge what ran, not to run it again: a proof
+is a record of a run, and re-running it would make the audit the stack's
+twin — able to agree with itself rather than with the reference. The audit
+holds the proof against the world's own pins (rows, `uses_index`, the
+fixture's committed split), which is the one direction of grading that
+matters at the end of a course.
 
-DESIGN DECISION — Why is the stack's answer the evidence and the reference
-the judge?
-Because a proof that compares the reference with itself proves nothing: the
-rows the executor computed are the only thing under test. `run_all` answers
-the stack's rows even when the reference lies — the check plants a lying
-reference and holds the answer against the executor's own arithmetic — and
-the verdict classifies, it never overrides.
-
-DESIGN DECISION — Why does the audit re-compare rather than trust the
-proof's verdict?
-Because a proof that says pass while its own rows disagree is the failure
-mode the audit exists for. `rows_agree` and `plans_agree` are the audit's
-own comparison against QUERIES; `reasons` names the failing ids in query
-order; and the verdict is the strictest class the evidence supports —
-`lost_commit` over `wrong_rows` over `wrong_plan` over `pass`.
-
-DESIGN DECISION — Why is one crash fixture inside the proof?
-Because a hundred rows prove the reads and none of the promises: the commit
-stage's rule is about durability, and a proof that never crashes the disk
-proves the arithmetic and not the engine. The clean fixture re-run through
-stage 9's own door — with every committed transaction required in the
-recovery's committed list — is the smallest run that makes `lost_commit` a
-verdict the proof can answer rather than a word.
+DESIGN DECISION — Why is `lost_commit` one of the closed four?
+Because it is the one failure the other three cannot see: rows exact, plans
+right, and the commit still lost — a durability bug in a stack that
+*answers* correctly is the sneakiest wrong a database can be. The four
+verdicts name every way a stack can be exactly wrong; a fifth would be a
+prose category, and the audit does not grade prose.
 """
 
 import disk as dk
 import pages as pg
 import tables as tb
+import ops
 
-PROOF_KEYS = None
-AUDIT_KEYS = None
-VERDICTS = None
+PROOF_KEYS = ("rows", "plans", "pages", "verdict")
+AUDIT_KEYS = ("verdict", "reasons", "rows_agree", "plans_agree")
+VERDICTS = ("pass", "wrong_rows", "wrong_plan", "lost_commit")
 
 
-def run_all(pager=None):
-    """The hundred queries through the whole stack, and the verdict."""
+class QueryError(ValueError):
+    """Raised for anything the *caller* of a stage got wrong."""
+
+
+def run_all(pager):
+    """The hundred through the whole stack, one proof.
+
+    Answers PROOF_KEYS — the rows per query, the plans per query, the pages
+    read, and the verdict the stack's own answers earn."""
+
     raise NotImplementedError("stage 10: implement run_all()")
 
 
-def prove(pager=None):
-    """run_all, plus the plan facts, plus one crash re-run."""
+def prove(pager):
+    """run_all plus the plan facts and one crash fixture re-run.
+
+    Answers PROOF_KEYS with the crash half beside the engine half: the rows
+    (law 13), the plans (law 14), the pages, and the verdict — where a
+    committed transaction that did not survive the crash is `lost_commit`."""
+
     raise NotImplementedError("stage 10: implement prove()")
 
 
 def audit(proof):
-    """The proof re-read against the world, classified."""
+    """The proof re-read against the world: the verdict and its reasons.
+
+    `wrong_rows` names the query ids whose rows differ from the
+    reference's; `wrong_plan` names the ids whose plans disagree with their
+    `uses_index`; `lost_commit` names the transactions that did not survive
+    the crash; `pass` when all three hold."""
+
     raise NotImplementedError("stage 10: implement audit()")
