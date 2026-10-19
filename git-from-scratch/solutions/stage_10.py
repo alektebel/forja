@@ -40,6 +40,11 @@ import stage_06 as s6
 import stage_08 as s8
 
 
+PROOF_KEYS = ("objects", "hashes", "git_verdict")
+AUDIT_KEYS = ("verdict", "reasons")
+VERDICTS = ("pass", "git_disagrees", "refusal")
+
+
 def run_all(repo):
     """The ladder end to end on a fresh repo; the evidence answered."""
     s1.init(repo)
@@ -72,6 +77,14 @@ def verify(repo):
     tmp = tempfile.mkdtemp(prefix="l4-verify-")
     repo.export(tmp)
     git_dir = os.path.join(tmp, repo.git_dir)
+    if not os.path.isdir(git_dir):
+        # nothing was exported to judge: a refusal, not a disagreement —
+        # git has no store to read, so its complaint would be about the
+        # absence, not the content
+        import shutil
+        shutil.rmtree(tmp, ignore_errors=True)
+        return {"verdict": "refusal",
+                "reasons": ("no %s was exported" % (repo.git_dir,),)}
     reasons = []
     for command in (["git", "--git-dir=%s" % git_dir, "fsck", "--strict"],
                     ["git", "--git-dir=%s" % git_dir, "log", "--oneline"]):
