@@ -37,6 +37,8 @@ comparison; the failure they prevent is silent corruption.
 import repo as rp
 import objects as ob
 
+PACK_KEYS = ("count", "objects")
+
 _TYPES = ("commit", "tree", "blob", "tag")
 
 
