@@ -1,5 +1,6 @@
 """Query Engine From Scratch — stage 6: The executor: iterators over pages.
 
+TODO: implement each function; the docstring is the contract.
 The plan named the route; the executor walks it. `seq_scan` yields a table's
 records from its pinned pages, in row order — the page count it reads is the
 world's own `TABLE_PAGES`, and the check holds it against the disk's

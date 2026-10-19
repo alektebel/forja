@@ -1,5 +1,6 @@
 """Query Engine From Scratch — stage 8: The commit: a log, and a rule.
 
+TODO: implement each function; the docstring is the contract.
 A commit is not a function call; it is a *promise about bytes on disk*: when
 `commit` answers, the transaction's records are in a log that a power cut
 cannot unwrite. The write-ahead log is the promise's paper: `WAL.append`

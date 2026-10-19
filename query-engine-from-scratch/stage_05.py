@@ -1,6 +1,7 @@
 """Query Engine From Scratch — stage 5: The plan: pushdown, selectivity, and
 the earned index.
 
+TODO: implement each function; the docstring is the contract.
 Stages 1–4 built the machinery; the plan is where a query earns its route.
 `cost_of` prices a scan in pages — the currency the storage floor deals in:
 a table scan costs the table's page count, a fact the world pinned in

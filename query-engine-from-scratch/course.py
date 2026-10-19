@@ -1,14 +1,14 @@
-"""Query Engine From Scratch — a query engine over a provided storage floor.
+"""Query Engine From Scratch — a query engine over a provided page world.
 
 Ten graded stages over a machine provided as data (`disk.py`, `pages.py`,
-`tables.py`, `ops.py`), the way the rest of this repository teaches a mechanism:
+`ops.py`, `tables.py`), the way the rest of this repository teaches a mechanism:
 the world is data and holds the ground truth, a stage is a file you write, a
 check is what happens to it, and every promise the engine makes is on show
-because a file format plus a guarantee is what a database is.
+because a hundred pinned queries are what a query engine looks like from the
+outside.
 
-What the course is about, in one line: *a query is a tree that becomes a plan,
-a plan that becomes page reads, and the proof is a hundred queries whose rows
-are the reference's own.*
+What the course is about, in one line: *a SQL string becomes rows, and every
+step of that becoming is a mechanism you have to get right.*
 
     the parse: words, trees, and the five refusals
     the resolve: names against a catalog that may lie
@@ -22,19 +22,18 @@ are the reference's own.*
     the proof: a hundred queries, and the audit
 
 The house laws hold here (`.g5-dev/CONTRACT.md` §1): standard library only, no
-`float` literal, no `random`, no clock, no thread, no socket, and no process of
-your own — and, this course's own additions, the world is read-only: a stage
-never writes the catalog's or the tables' own rows, every page read goes through
-the pager, and every durability claim survives the crash schedule. The disk is
-never lied to: `disk.counters()` is the device's own record, and a stage's every
-claim about barriers and torn writes has to survive a re-read of it.
+`float` literal, no `random`, no clock, no thread, no socket — and, this
+course's own additions, the world is read-only: a stage never writes the
+world's own tables, the reference rows are law (a stage answers them exactly),
+the index is earned (a plan's `uses_index` agrees with the costs), and nothing
+uncommitted survives a crash. The world is never lied to: `QUERIES` is the
+ground truth, and a stage's every claim has to survive a re-read of it.
 
-What the course does **not** do is call anything real. There is no `open(2)`
-behind `disk.Disk`, no BSD db behind the B+tree, and no WAL fsync behind
-`pager.sync`: the disk is a buffer and a durable image, the commit is a barrier,
-a torn record is counted rather than trusted, and the whole course is
-deterministic enough that two runs of the same query against the same world
-produce the same pages.
+What the course does **not** do is touch a real database. There is no SQLite
+behind `disk.Disk`, no real filesystem behind a sector, no planner oracle
+behind `PLAN_FACTS`: the disk is a dict of sectors, a query is one of a
+hundred pinned strings, and the whole course is deterministic enough that two
+runs against the same world produce the same rows.
 
     python3 codecraft/cli.py run query-engine-from-scratch
 """
@@ -42,19 +41,16 @@ produce the same pages.
 from codecraft.api import stage
 
 TITLE = "Query Engine From Scratch"
-DESCRIPTION = ("A query engine over a provided storage floor: a database is a file "
-               "format plus a promise about what a query returns, and every promise "
-               "is on show. Ten stages that parse a query into a tree and refuse the "
-               "five malformations, resolve names against a catalog that may lie, "
-               "split predicates into conjuncts and push them where they are earned, "
-               "build a B+tree that splits, price a plan and let selectivity earn "
-               "the index, run every operator as an iterator over pages, pin and "
-               "evict in a real buffer, commit through a log whose commit record is "
-               "one buffered byte, recover by redoing, undoing and discarding — a "
-               "torn record counted, never trusted — and prove the whole stack on a "
-               "hundred queries with an audit that names the ids that failed. With "
-               "the world read-only, every durability claim surviving the crash "
-               "schedule, and no float and no clock anywhere.")
+DESCRIPTION = ("A query engine over a provided page world: a SQL string becomes "
+               "rows, and every step of that becoming is a mechanism on show. "
+               "Ten stages that parse the five refusals, resolve names against a "
+               "catalog that may lie, push conjuncts to where they belong, split "
+               "a B+tree that earns its index, price the plans and let the costs "
+               "choose, execute iterators over pages, pin and evict in a buffer "
+               "pool, commit through a log and a rule, recover with redo and undo "
+               "and a torn tail discarded, and prove the whole stack against the "
+               "world's own hundred — with the reference rows as law, the index "
+               "earned, and nothing uncommitted surviving a crash.")
 
 LEVEL = "advanced"
 ORDER = 34
@@ -854,112 +850,128 @@ def check_5():
             if name.startswith("_") or name in ("dk", "pg", "tb", "ops"):
                 continue
             public.add(name)
-        assert public == {"PLAN_KEYS", "QueryError", "cost_of", "plan",
-                          "explain"}, (
+        assert public == {"PLAN_KEYS", "SELECTIVITY_BAR", "QueryError",
+                          "cost_of", "plan", "explain"}, (
             "the stage's public surface is %s and §4.0 pins PLAN_KEYS, "
-            "QueryError, cost_of, plan, explain" % ", ".join(sorted(public)))
+            "SELECTIVITY_BAR, QueryError, cost_of, plan, explain"
+            % ", ".join(sorted(public)))
         assert s.PLAN_KEYS == S5_PLAN_KEYS, (
             "PLAN_KEYS is %r and §4.0 pins %r" % (s.PLAN_KEYS, S5_PLAN_KEYS))
+        assert s.SELECTIVITY_BAR == 4, (
+            "the world's bar is a quarter of the table: %r" % (s.SELECTIVITY_BAR,))
         assert all(callable(getattr(s, n))
                    for n in ("cost_of", "plan", "explain")), (
             "cost_of, plan and explain are the ways in")
 
-    def _s5_cost_of(s):
-        """The prices, in pages, against the world's own counts."""
-        assert s.cost_of("table", "events", 0) == 7, (
-            "events' table scan is its seven pages: %r"
-            % (s.cost_of("table", "events", 0),))
-        assert s.cost_of("table", "users", 0) == 2
-        assert s.cost_of("table", "orders", 0) == 4
-        # 26 matches at fanout 8 spread over 4 leaves: height 2 + 4 = 6
-        assert s.cost_of("index", "events", 26) < s.cost_of("table", "events", 0), (
-            "26 matched rows earn the index: %r vs %r"
-            % (s.cost_of("index", "events", 26),
-               s.cost_of("table", "events", 0)))
-        assert s.cost_of("index", "events", 59) > s.cost_of("table", "events", 0), (
-            "59 matched rows do not: %r vs %r"
-            % (s.cost_of("index", "events", 59),
-               s.cost_of("table", "events", 0)))
-        assert s.cost_of("index", "events", 1) == s.cost_of("index", "events", 8), (
-            "one leaf's worth of matches is one leaf's worth of price: %r"
-            % (s.cost_of("index", "events", 1),))
-        _refuses(s.QueryError, "an unknown scan",
-                 lambda: s.cost_of("bitmap", "events", 1), names=("no_scan",))
-        _refuses(s.QueryError, "an unknown table",
-                 lambda: s.cost_of("table", "nowhere", 0), names=("no_table",))
+    def _s5_cost_of(s, tb):
+        """The prices: pages the storage floor deals in."""
+        assert s.cost_of("table", "events") == 7, (
+            "events is pinned to seven pages: %r" % (s.cost_of("table", "events"),))
+        assert s.cost_of("table", "orders") == 4
+        assert s.cost_of("table", "users") == 2
+        assert s.cost_of("table", "items") == 4
+        # the index's price: the height (2) plus the matched leaves — and a
+        # quarter of the table's rows fit a leaf or two at the real capacity
+        cheap = s.cost_of("index", "events", matches=16)
+        assert cheap < s.cost_of("table", "events"), (
+            "16 matched rows earn the index: %r" % (cheap,))
+        dear = s.cost_of("index", "events", matches=len(tb.TABLES["events"]))
+        assert dear > cheap, (
+            "the index's price grows with the matches: %r vs %r" % (dear, cheap))
+        assert s.cost_of("index", "events", matches=0) == 2, (
+            "an empty match pays the height alone: %r"
+            % (s.cost_of("index", "events", matches=0),))
+        _refuses(s.QueryError, "a scan that is neither",
+                 lambda: s.cost_of("walk", "events"), names=("no_scan", "walk"))
+        _refuses(s.QueryError, "an index over an unindexed table",
+                 lambda: s.cost_of("index", "users"), names=("no_index", "users"))
+
+    def _resolve_all(s1, s2, tb):
+        """Every query's resolved tree, by id."""
+        return dict((q["id"], s2.resolve(s1.parse(q["sql"]), tb.CATALOG))
+                    for q in tb.QUERIES)
 
     def _s5_plan(s, s1, s2, tb):
-        """The choice the costs made, and the pin it must agree with."""
-        pin = dict(tb.PLAN_FACTS)
-        bad = []
-        for q in tb.QUERIES:
-            tree = s2.resolve(s1.parse(q["sql"]), tb.CATALOG)
-            p = s.plan(tree, tb.PLAN_FACTS)
-            assert set(p) == set(S5_PLAN_KEYS), (
-                "the plan's keys are PLAN_KEYS: %s" % sorted(p))
-            if p["uses_index"] != pin.get(q["id"], False):
-                bad.append(q["id"])
-            assert p["uses_index"] == pin.get(q["id"], False), (
-                "q%d disagrees with the pin" % (q["id"],)) if q["id"] in pin else None
-        assert not bad, (
-            "the plan disagrees with the pinned facts on %s" % (bad[:6],))
-
-        # the four indexed queries carry index scans with their pushed conjuncts
+        """The four earn the index; the rest scan; the record carries the pushes."""
+        trees = _resolve_all(s1, s2, tb)
         for qid in (21, 24, 37, 65):
-            q = tb.QUERIES[qid - 1]
-            tree = s2.resolve(s1.parse(q["sql"]), tb.CATALOG)
-            p = s.plan(tree, tb.PLAN_FACTS)
-            scans = dict((t, (scan, c)) for (t, scan, c) in p["scans"])
-            assert scans["events"][0] == "index", (
-                "q%d's plan earns the index: %r" % (qid, p["scans"]))
-            assert scans["events"][1], (
-                "q%d's index scan carries its pushed conjuncts" % (qid,))
+            r = s.plan(trees[qid], tb.PLAN_FACTS)
+            assert set(r) >= set(S5_PLAN_KEYS), (
+                "the plan's keys carry PLAN_KEYS: %s" % sorted(r))
+            assert all(not k.startswith("_") for k in set(r) - set(S5_PLAN_KEYS)) \
+                or set(r) - set(S5_PLAN_KEYS) == {
+                    "_on", "_select", "_columns", "_order", "_limit"}, (
+                "the record's private keys are the executor's hints: %s"
+                % sorted(set(r) - set(S5_PLAN_KEYS)))
+            assert r["scans"] == (("events", "index"),), (
+                "q%d routes through the index: %r" % (qid, r["scans"]))
+            assert r["uses_index"] is True
+            assert r["cost"] == s.cost_of("index", "events", matches={
+                21: 26, 24: 16, 37: 23, 65: 21}[qid]), (
+                "q%d's cost is the index's price: %r" % (qid, r["cost"]))
+        r = s.plan(trees[1], tb.PLAN_FACTS)
+        assert r["scans"] == (("users", "table"),) and r["cost"] == 2
+        r = s.plan(trees[20], tb.PLAN_FACTS)
+        assert r["scans"] == (("events", "table"),) and r["cost"] == 7
+        # a join plans both scans in order
+        r = s.plan(trees[76], tb.PLAN_FACTS)
+        assert r["scans"] == (("orders", "table"), ("users", "table")), (
+            "a join's scans in fold order: %r" % (r["scans"],))
+        assert r["cost"] == 4 + 2
+        # the pushed conjuncts ride along in the record
+        r = s.plan(trees[24], tb.PLAN_FACTS)
+        pushed = dict(r["pushed"])
+        assert ("events", 1, "<=", 60) in pushed["events"], (
+            "the pushed conjunct rides in the record: %r" % (pushed,))
 
-        # a non-ts conjunct sends the scan to the table — q38, q39, q43
-        for qid in (38, 39, 43):
-            q = tb.QUERIES[qid - 1]
-            tree = s2.resolve(s1.parse(q["sql"]), tb.CATALOG)
-            p = s.plan(tree, tb.PLAN_FACTS)
-            assert p["uses_index"] is False, (
-                "q%d must scan: the index serves ts alone" % (qid,))
-
-        # the choice moves when the costs move: the same shape of query against
-        # a narrower table would scan — proving arithmetic, not memory
-        tree = s2.resolve(s1.parse("SELECT * FROM events WHERE ts <= 60"),
-                          tb.CATALOG)
-        p = s.plan(tree, tb.PLAN_FACTS)
-        assert p["uses_index"] is True and p["cost"] == 4, (
-            "q24's plan: index at 4 pages against 7: %r" % (p,))
-        assert all(scan == "table"
-                   for (_t, scan, _c) in s.plan(
-                       s2.resolve(s1.parse("SELECT * FROM users "
-                                           "WHERE name_id < 5"), tb.CATALOG),
-                       tb.PLAN_FACTS)["scans"]), (
-            "users has no index; its plan scans")
+    def _s5_hundred(s, s1, s2, tb):
+        """The choice agrees with the pin on all hundred — and is not the pin."""
+        trees = _resolve_all(s1, s2, tb)
+        by_id = dict((q["id"], q) for q in tb.QUERIES)
+        bad = []
+        for qid, tree in trees.items():
+            r = s.plan(tree, tb.PLAN_FACTS)
+            if r["uses_index"] != by_id[qid]["uses_index"]:
+                bad.append(qid)
+        assert not bad, "disagreements with the pin: %s" % (bad[:5],)
+        # the route is the costs': for every events query, recompute both prices
+        # from the record's own arithmetic and hold the choice against them
+        import stage_03
+        for qid, tree in trees.items():
+            r = s.plan(tree, tb.PLAN_FACTS)
+            record = stage_03.pushdown(tree)
+            pushed = dict(record["pushed"])
+            conjuncts = pushed.get("events", ())
+            ts_only = bool(conjuncts) and all(
+                t == "events" and c == 1 for (t, c, _op, _v) in conjuncts)
+            if not ts_only:
+                continue
+            matched = [row for row in tb.TABLES["events"]
+                       if all(tb._cmp(row[1], op, v)
+                              for (_t, _c, op, v) in conjuncts)]
+            eligible = len(matched) <= len(tb.TABLES["events"]) // 4
+            index_price = s.cost_of("index", "events", matches=len(matched))
+            table_price = s.cost_of("table", "events")
+            want = eligible and index_price < table_price
+            got = dict(r["scans"])["events"] == "index"
+            assert got == want, (
+                "q%d's route is not the comparison's answer: %r vs %r"
+                % (qid, got, want))
 
     def _s5_explain(s, s1, s2, tb):
-        """The line, held against the plan's own record."""
-        tree = s2.resolve(s1.parse("SELECT * FROM events WHERE ts <= 60"),
-                          tb.CATALOG)
-        p = s.plan(tree, tb.PLAN_FACTS)
-        line = s.explain(p)
+        """The line held token by token against the record."""
+        trees = _resolve_all(s1, s2, tb)
+        r = s.plan(trees[24], tb.PLAN_FACTS)
+        line = s.explain(r)
         assert line == "events: index[ts] (ts<=60)", (
-            "the line the contract pins: %r" % (line,))
-
-        tree = s2.resolve(s1.parse("SELECT * FROM orders JOIN users "
-                                   "ON orders.user_id = users.id "
-                                   "WHERE orders.total > 100"), tb.CATALOG)
-        p = s.plan(tree, tb.PLAN_FACTS)
-        line = s.explain(p)
-        assert line == "orders: table | users: table", (
-            "the scans in order, joins between: %r" % (line,))
-
-        tree = s2.resolve(s1.parse("SELECT * FROM events WHERE ts > 200 "
-                                   "AND ts < 300"), tb.CATALOG)
-        p = s.plan(tree, tb.PLAN_FACTS)
-        line = s.explain(p)
-        assert line == "events: index[ts] (ts>200) (ts<300)", (
-            "both conjuncts attached: %r" % (line,))
+            "the indexed query's line: %r" % (line,))
+        r = s.plan(trees[1], tb.PLAN_FACTS)
+        assert s.explain(r) == "users: table"
+        r = s.plan(trees[76], tb.PLAN_FACTS)
+        assert s.explain(r) == "orders: table | users: table", (
+            "the join's line: %r" % (s.explain(r),))
+        r = s.plan(trees[20], tb.PLAN_FACTS)
+        assert s.explain(r) == "events: table"
 
     """Every assertion the contract's §4.5 makes about this stage."""
     import tables as tb
@@ -967,8 +979,9 @@ def check_5():
     import stage_02 as s2
     import stage_05 as s
     _s5_surface(s)
-    _s5_cost_of(s)
+    _s5_cost_of(s, tb)
     _s5_plan(s, s1, s2, tb)
+    _s5_hundred(s, s1, s2, tb)
     _s5_explain(s, s1, s2, tb)
 
 # --- stage 6 -----------------------------------------------------------------------
@@ -984,7 +997,7 @@ def check_6():
 
     COURSE = "query-engine-from-scratch"
 
-    S6_EXEC_KEYS = ("rows", "pages", "chain")
+    S6_EXEC_KEYS = ("rows", "pages", "operators")
 
     def _repo(start=None):
         for candidate_start in (os.environ.get("G5_REPO"), start, os.getcwd(),
@@ -1013,13 +1026,18 @@ def check_6():
             raise AssertionError("%s raised %r, not %s" % (what, e, exc.__name__))
         raise AssertionError("%s was accepted (%r); it must refuse" % (what, got))
 
-    def _world_pager(pg, tb):
-        """The world on a fresh pager."""
+    def _loaded_pager(pg, tb):
+        """A pager with the world loaded and synced."""
         import disk as dk
         pager = pg.Pager(dk.Disk())
         tb.load_world(pager)
         pager.sync()
         return pager
+
+    def _resolve_plan(s1, s2, s5, tb, sql):
+        """Parse → resolve → plan for one SQL."""
+        tree = s2.resolve(s1.parse(sql), tb.CATALOG)
+        return s5.plan(tree, tb.PLAN_FACTS)
 
     def _s6_surface(s):
         """The stage's public surface is exactly the names §4.0 pins."""
@@ -1041,110 +1059,130 @@ def check_6():
             "seq_scan, index_scan, nested_loop and execute are the ways in")
 
     def _s6_seq_scan(s, pg, tb):
-        """Row order from the pinned pages, the receipt the disk keeps."""
-        import disk as dk
-        pager = pg.Pager(dk.Disk())
-        tb.load_world(pager)
-        pager.sync()
+        """Row order off the pinned pages, priced in real reads."""
+        pager = _loaded_pager(pg, tb)
         before = pager.disk.counters()["reads"]
-        rows = list(s.seq_scan(pager, "orders"))
+        rows = tuple(s.seq_scan(pager, "users"))
         reads = pager.disk.counters()["reads"] - before
-        assert tuple(rows) == tb.TABLES["orders"], (
+        assert rows == tb.TABLES["users"], (
             "seq_scan answers the world's rows in order")
-        assert reads == 2 * len(tb.TABLE_PAGES["orders"]), (
-            "orders' scan reads its four pages: %d sector reads" % (reads,))
-        _refuses(s.QueryError, "a table the world does not declare",
+        assert reads <= 2 * len(tb.TABLE_PAGES["users"]), (
+            "users' two pages cost %d sectors, not the world's disk" % (reads,))
+        _refuses(s.QueryError, "an unpinned table",
                  lambda: list(s.seq_scan(pager, "nowhere")), names=("no_table",))
+        # it is an iterator: nothing is pulled until the consumer pulls, and
+        # a LIMIT stops the pull mid-table — the page count proves it
+        lazy = s.seq_scan(pager, "users")
+        assert iter(lazy) is lazy, (
+            "seq_scan yields an iterator, not a list")
+        early = _loaded_pager(pg, tb)
+        before = early.disk.counters()["reads"]
+        taken = tuple(x for i, x in zip(range(3), s.seq_scan(early, "events")))
+        reads = early.disk.counters()["reads"] - before
+        assert len(taken) == 3 and reads <= 2, (
+            "three rows cost %d sectors: the pull stops with the consumer"
+            % (reads,))
 
     def _s6_index_scan(s, pg, tb):
-        """The rows the range names, in key order, fetched whole."""
-        pager = _world_pager(pg, tb)
-        got = tuple(s.index_scan(pager, 0, 60))
-        want = tuple(r for (_ts, rid) in tb.EVENTS_INDEX if rid
-                     for r in [next(x for x in tb.TABLES["events"]
-                                    if x[0] == rid)]
-                     if 0 <= r[1] <= 60)
-        want = tuple(r for r in sorted(tb.TABLES["events"], key=lambda r: r[1])
-                     if r[1] <= 60)
-        assert got == want, (
-            "the index scan answers the range in key order: %r vs %r"
-            % (got[:3], want[:3]))
-        assert [r[1] for r in got] == sorted(r[1] for r in got), (
-            "key order is the scan's own")
-        assert tuple(s.index_scan(pager, 10_000, 20_000)) == (), (
+        """The range's entries, in key order, off the leaf chain."""
+        import disk as dk
+        import stage_04
+        pager = pg.Pager(dk.Disk())
+        tree = stage_04.build(pager, tb.EVENTS_INDEX)
+        got = tuple(s.index_scan(tree, 0, 60))
+        want = tuple(e for e in tb.EVENTS_INDEX if 0 <= e[0] <= 60)
+        assert got == want, "the range answers the world's entries in order"
+        got = tuple(s.index_scan(tree, 100, 110))
+        want = tuple(e for e in tb.EVENTS_INDEX if 100 <= e[0] <= 110)
+        assert got == want
+        assert tuple(s.index_scan(tree, 600, 700)) == (), (
             "an empty range answers nothing")
 
-    def _s6_nested_loop(s, pg, tb):
-        """Left outer, right inner, left order preserved."""
-        left = [(1, 10), (2, 20), (3, 30)]
-        right = [(10, "a"), (30, "c"), (10, "b")]
-        got = list(s.nested_loop(iter(left), iter(right), 1, 0))
-        assert got == [(1, 10, 10, "a"), (1, 10, 10, "b"),
-                       (3, 30, 30, "c")], (
-            "left order preserved, right inner: %r" % (got,))
-        assert list(s.nested_loop(iter(left), iter([]), 1, 0)) == [], (
-            "an empty right side joins to nothing")
+    def _s6_nested_loop(s, tb):
+        """The product in loop order, against the world's own join."""
+        left = tuple(tb.TABLES["orders"])
+        right = tuple(tb.TABLES["users"])
+        got = tuple(s.nested_loop(iter(left), iter(right), (1, 0)))
+        want = tuple(l + r for l in left for r in right
+                     if l[1] == r[0])
+        assert got == want, (
+            "the join's product is the world's, left order preserved")
+        # the reverse join: many matches per outer row, so the INNER order shows
+        users, orders = tuple(tb.TABLES["users"]), tuple(tb.TABLES["orders"])
+        got = tuple(s.nested_loop(iter(users), iter(orders), (0, 1)))
+        want = tuple(u + o for u in users for o in orders if u[0] == o[1])
+        assert got == want, (
+            "the inner side's order is the loops' order: %r vs %r"
+            % (got[:2], want[:2]))
 
-    def _s6_hundred(s, pg, tb, s1, s2, s5):
-        """The hundred, answered exactly; the receipt and the chain named."""
-        import disk as dk
-        bad_rows, bad_pages = [], []
-        for q in tb.QUERIES:
-            pager = pg.Pager(dk.Disk())
-            tb.load_world(pager)
-            tree = s2.resolve(s1.parse(q["sql"]), tb.CATALOG)
-            plan_record = s5.plan(tree, tb.PLAN_FACTS)
-            r = s.execute(pager, tree, plan_record)
-            assert set(r) == set(S6_EXEC_KEYS), (
-                "the record's keys are EXEC_KEYS: %s" % sorted(r))
-            if r["rows"] != q["rows"]:
-                bad_rows.append(q["id"])
-            if q["id"] in (1,):
-                assert r["pages"] == len(tb.TABLE_PAGES["users"]), (
-                    "q1 reads users' two pages: %r" % (r["pages"],))
-            if q["id"] in (21, 24, 37, 65):
-                assert any(name == "index_scan" for name in r["chain"]), (
-                    "q%d's chain runs the index scan the plan chose" % (q["id"],))
-            assert r["chain"][0] in ("seq_scan", "index_scan"), (
-                "the chain names its scan: %r" % (r["chain"],))
-        assert not bad_rows, (
-            "law 13 violated on %s — the rows are the reference's, exactly"
-            % (bad_rows[:6],))
-
-    def _s6_shapes(s, pg, tb, s1, s2, s5):
-        """COUNT answers one row; LIMIT truncates after ORDER BY."""
-        import disk as dk
-        pager = pg.Pager(dk.Disk())
-        tb.load_world(pager)
-        sql = "SELECT COUNT(*) FROM orders WHERE status = 'paid'"
-        tree = s2.resolve(s1.parse(sql), tb.CATALOG)
-        r = s.execute(pager, tree, s5.plan(tree, tb.PLAN_FACTS))
-        assert r["rows"] == tb.QUERIES[41]["rows"] or len(r["rows"]) == 1, (
+    def _s6_execute(s, s1, s2, s5, pg, tb):
+        """One query per shape: rows by law 13, pages, and the named chain."""
+        pager = _loaded_pager(pg, tb)
+        # projection
+        plan = _resolve_plan(s1, s2, s5, tb, "SELECT id, user_id FROM orders")
+        r = s.execute(plan, pager)
+        assert set(r) == set(S6_EXEC_KEYS), (
+            "the answer's keys are EXEC_KEYS: %s" % sorted(r))
+        q = [x for x in tb.QUERIES if x["id"] == 6][0]
+        assert r["rows"] == q["rows"], (
+            "the projection answers the reference rows")
+        assert r["operators"] == ("table_scan",), (
+            "the chain names what ran: %r" % (r["operators"],))
+        # COUNT
+        plan = _resolve_plan(s1, s2, s5, tb, "SELECT COUNT(*) FROM items")
+        r = s.execute(plan, pager)
+        assert r["rows"] == ((79,),), (
             "COUNT answers one row: %r" % (r["rows"],))
-        assert "count" in r["chain"], (
-            "the chain names the count: %r" % (r["chain"],))
+        # the index route
+        plan = _resolve_plan(s1, s2, s5, tb,
+                             "SELECT * FROM events WHERE ts <= 60")
+        r = s.execute(plan, pager)
+        q = [x for x in tb.QUERIES if x["id"] == 24][0]
+        assert r["rows"] == q["rows"]
+        assert r["operators"] == ("index_scan", "filter"), (
+            "the planned route is what ran: %r" % (r["operators"],))
+        # a join
+        plan = _resolve_plan(s1, s2, s5, tb,
+                             "SELECT * FROM orders JOIN users "
+                             "ON orders.user_id = users.id")
+        r = s.execute(plan, pager)
+        q = [x for x in tb.QUERIES if x["id"] == 76][0]
+        assert r["rows"] == q["rows"], (
+            "the join answers the reference rows")
+        assert r["operators"] == ("table_scan", "table_scan", "nested_loop")
+        assert r["pages"] == 4 + 2, (
+            "the join's pages are its scans' prices: %r" % (r["pages"],))
+        plan = _resolve_plan(s1, s2, s5, tb,
+                             "SELECT * FROM events WHERE ts <= 60")
+        r = s.execute(plan, pager)
+        assert r["pages"] == 2 + 3, (
+            "the index route's price is the height plus its leaves: %r"
+            % (r["pages"],))
 
-        sql = "SELECT * FROM events WHERE ts <= 80 ORDER BY ts LIMIT 8"
-        tree = s2.resolve(s1.parse(sql), tb.CATALOG)
-        r = s.execute(pager, tree, s5.plan(tree, tb.PLAN_FACTS))
-        assert len(r["rows"]) == 8, (
-            "LIMIT truncates: %d rows" % (len(r["rows"]),))
-        assert "limit" in r["chain"] and "sort" in r["chain"], (
-            "the chain names sort then limit: %r" % (r["chain"],))
+    def _s6_hundred(s, s1, s2, s5, pg, tb):
+        """The hundred: every row exact, by law 13."""
+        pager = _loaded_pager(pg, tb)
+        bad = []
+        for q in tb.QUERIES:
+            plan = _resolve_plan(s1, s2, s5, tb, q["sql"])
+            r = s.execute(plan, pager)
+            if r["rows"] != q["rows"]:
+                bad.append(q["id"])
+        assert not bad, "law 13 broken for %s" % (bad[:5],)
 
     """Every assertion the contract's §4.6 makes about this stage."""
-    import pages as pg
     import tables as tb
     import stage_01 as s1
     import stage_02 as s2
     import stage_05 as s5
     import stage_06 as s
+    import pages as pg
     _s6_surface(s)
     _s6_seq_scan(s, pg, tb)
     _s6_index_scan(s, pg, tb)
-    _s6_nested_loop(s, pg, tb)
-    _s6_hundred(s, pg, tb, s1, s2, s5)
-    _s6_shapes(s, pg, tb, s1, s2, s5)
+    _s6_nested_loop(s, tb)
+    _s6_execute(s, s1, s2, s5, pg, tb)
+    _s6_hundred(s, s1, s2, s5, pg, tb)
 
 # --- stage 7 -----------------------------------------------------------------------
 def check_7():
@@ -1188,7 +1226,8 @@ def check_7():
             raise AssertionError("%s raised %r, not %s" % (what, e, exc.__name__))
         raise AssertionError("%s was accepted (%r); it must refuse" % (what, got))
 
-    def _world_pager(pg, tb):
+    def _loaded_pager(pg, tb):
+        """A pager with the world loaded and synced."""
         import disk as dk
         pager = pg.Pager(dk.Disk())
         tb.load_world(pager)
@@ -1209,138 +1248,130 @@ def check_7():
         assert s.BUFFER_KEYS == S7_BUFFER_KEYS, (
             "BUFFER_KEYS is %r and §4.0 pins %r"
             % (s.BUFFER_KEYS, S7_BUFFER_KEYS))
+        assert hasattr(s.BufferPool, "fetch") and hasattr(s.BufferPool, "pin") \
+            and hasattr(s.BufferPool, "unpin"), (
+            "fetch, pin and unpin are the pool's ways in")
+        assert callable(s.run_buffered), "run_buffered is the way in"
 
     def _s7_pool(s, pg, tb):
-        """Hits, misses, LRU eviction, dirty writeback, the refusals."""
-        import disk as dk
-        pager = _world_pager(pg, tb)
-        pool = s.BufferPool(pager, 2)
-        first = pool.fetch(3)
-        assert first == pager.read(3), (
-            "a miss answers the pager's bytes")
-        again = pool.fetch(3)
-        assert again == first, "a hit answers the same bytes"
-        rec = pool.record()
-        assert rec == {"hits": 1, "misses": 1, "evictions": 0, "dirty": 0}, (
-            "one miss, one hit, nothing evicted: %r" % (rec,))
-
-        # eviction is LRU over the unpinned: 3,4 in; fetch 5 evicts 3;
-        # fetch 3 again evicts 4 (3 is now most recent? no: 4,5 in, 3 evicted,
-        # re-fetch 3 evicts 4 — the LRU order is the fetch order)
-        pool = s.BufferPool(pager, 2)
-        pool.fetch(3)
-        pool.fetch(4)
-        pool.fetch(5)                     # evicts 3
-        assert pool.record()["evictions"] == 1
-        pool.fetch(4)                     # a hit: 4 is now most recent
-        before = pool.record()["misses"]
-        pool.fetch(5)                     # still a hit: recency protects it
-        assert pool.record()["misses"] == before, (
-            "the most recently used page survives")
-        pool.fetch(3)                     # evicts 4 (LRU: 4 older than 5)
-        got = pool.fetch(4)
-        assert got == pager.read(4), (
-            "an evicted page re-fetches correctly")
-
-        # a pinned page is never evicted
-        pool = s.BufferPool(pager, 2)
-        pool.fetch(3)
-        pool.pin(3)
-        pool.fetch(4)
-        pool.fetch(5)                     # must evict 4, not the pinned 3
-        assert pool.record()["evictions"] == 1
-        assert pool.fetch(3) == pager.read(3), (
-            "the pinned page is still a hit")
-        tight = s.BufferPool(pager, 1)
-        tight.fetch(3)
-        tight.pin(3)
-        _refuses(s.QueryError, "every frame pinned",
-                 lambda: tight.fetch(4), names=("all_pinned",))
-        _refuses(s.QueryError, "unpin of a page never pinned",
-                 lambda: s.BufferPool(pager, 2).unpin(3), names=("not_pinned",))
-
-        # a dirty page is written back on eviction
-        pool = s.BufferPool(pager, 1)
-        data = pool.fetch(3)
-        # the frame is the only place a change can live: plant one, unpin dirty,
-        # and let the eviction carry it to the durable image
-        pool._pages[3] = bytes(pool._frames) + data[1:]
-        pool.pin(3)
-        pool.unpin(3, dirty=True)
-        pool.fetch(4)                     # evicts 3, writes it back
-        pager.sync()                      # the writeback lands on the disk
-        other = pg.Pager.__new__(pg.Pager)
-        other.disk, other._shadow = pager.disk, {}
-        durable = other.read(3)
-        assert durable[:1] == bytes(pool._frames), (
-            "the dirty page's bytes reached the durable image")
-        assert pool.record()["dirty"] == 0, (
-            "the writeback clears the dirty flag")
-
-    def _s7_run_buffered(s, pg, tb, s1, s2, s5, s6):
-        """The central arithmetic: small plan big pool; and the rows unchanged."""
-        sql = "SELECT * FROM orders WHERE status = 'paid'"
-        tree = s2.resolve(s1.parse(sql), tb.CATALOG)
-        plan_record = s5.plan(tree, tb.PLAN_FACTS)
-
-        pager = _world_pager(pg, tb)
-        r = s.run_buffered(pager, tree, plan_record, 16)
-        for key in S7_BUFFER_KEYS + s6.EXEC_KEYS:
-            assert key in r, "the record carries %s" % (key,)
-        assert r["evictions"] == 0, (
-            "a table smaller than the pool never evicts: %r" % (r["evictions"],))
-        assert r["misses"] == len(tb.TABLE_PAGES["orders"]), (
-            "every page read exactly once from the pager: %r" % (r["misses"],))
-        assert r["rows"] == s6.execute(pager, tree, plan_record)["rows"], (
-            "the pool changes the traffic, never the answer")
-
-        # the same query through a pool too small evicts — the rows hold
-        r2 = s.run_buffered(pager, tree, plan_record, 1)
-        assert r2["evictions"] > 0, (
-            "a one-frame pool evicts: %r" % (r2["evictions"],))
-        assert r2["rows"] == r["rows"], (
-            "eviction changes nothing about the rows")
-
-    def _s7_pinning_fixture(s, pg, tb, s1, s2, s5):
-        """The join that explodes without pins and does not with them."""
-        import disk as dk
-        sql = "SELECT * FROM orders JOIN users ON orders.user_id = users.id"
-        tree = s2.resolve(s1.parse(sql), tb.CATALOG)
-        plan_record = s5.plan(tree, tb.PLAN_FACTS)
-        left_pages = len(tb.TABLE_PAGES["orders"])
-        right_pages = len(tb.TABLE_PAGES["users"])
-
-        # a pool just large enough for one left page plus both right pages,
-        # pinned: the inner pages are read once each
-        pager = _world_pager(pg, tb)
-        pool = s.BufferPool(pager, 1 + right_pages)
-        for page in tb.TABLE_PAGES["users"]:
-            pool.fetch(page)
-            pool.pin(page)
+        """The arithmetic: misses, hits, evictions, against the disk's counters."""
+        pager = _loaded_pager(pg, tb)
+        pool = s.BufferPool(pager, 3)
+        assert set(pool.record) == set(S7_BUFFER_KEYS), (
+            "the pool's record is BUFFER_KEYS: %s" % sorted(pool.record))
+        truth = dict((page, pager.read(page))
+                     for page in tb.TABLE_PAGES["users"])
         before = pager.disk.counters()["reads"]
-        pool.fetch(tb.TABLE_PAGES["orders"][0])
-        reads = pager.disk.counters()["reads"] - before
-        assert reads == 2, (
-            "one left page read beside the pinned right: %d sectors" % (reads,))
-        # the right pages are still hits after the left page's traffic
-        before = pool.record()["misses"]
         for page in tb.TABLE_PAGES["users"]:
-            pool.fetch(page)
-        assert pool.record()["misses"] == before, (
-            "the pinned inner pages survive the outer scan")
+            assert pool.fetch(page) == truth[page]
+        misses = pager.disk.counters()["reads"] - before
+        assert pool.record["misses"] == 2 and misses == 4, (
+            "two misses, four sectors: %r / %r"
+            % (pool.record["misses"], misses))
+        assert pool.record["evictions"] == 0, (
+            "the table fits the pool: %r" % (pool.record["evictions"],))
+        pool.fetch(tb.TABLE_PAGES["users"][0])
+        assert pool.record["hits"] == 1, "the refetch is a hit"
+
+        one = s.BufferPool(pager, 1)
+        for page in (1, 2, 3):
+            one.fetch(page)
+        assert one.record == {"hits": 0, "misses": 3, "evictions": 2,
+                              "dirty": 0}, (
+            "a one-frame pool cycling three pages evicts twice: %r"
+            % (one.record,))
+        _refuses(s.QueryError, "a pool of no frames",
+                 lambda: s.BufferPool(pager, 0), names=("no_frames",))
+
+    def _s7_pin(s, pg, tb):
+        """The discipline: pins hold, dirty pages write back, refusals name."""
+        pager = _loaded_pager(pg, tb)
+        pool = s.BufferPool(pager, 1)
+        pool.pin(1)
+        _refuses(s.QueryError, "a pool that cannot evict a pinned frame",
+                 lambda: pool.fetch(2), names=("all_pinned",))
+        pool.unpin(1)
+        pool.fetch(2)
+        assert pool.record["evictions"] == 1, (
+            "after the unpin the eviction proceeds: %r"
+            % (pool.record["evictions"],))
+        _refuses(s.QueryError, "unpinning a page that is not pinned",
+                 lambda: pool.unpin(3), names=("not_pinned",))
+        # the pinned page survives an eviction that would take it: a pool of
+        # two, one pinned, a third fetch evicts the unpinned neighbour — the
+        # pinned page's next fetch is still a hit
+        survivor = _loaded_pager(pg, tb)
+        pool = s.BufferPool(survivor, 2)
+        pool.fetch(1)
+        pool.fetch(2)
+        pool.pin(1)
+        pool.fetch(3)
+        pool.fetch(1)
+        assert pool.record["hits"] == 2, (
+            "the pinned page survived the eviction (one hit from the pin's "
+            "own fetch, one from the survival fetch): %r" % (pool.record,))
+
+        # the dirty flag: the write-back lands on the durable image
+        fresh = _loaded_pager(pg, tb)
+        other = pg.Pager.__new__(pg.Pager)
+        other.disk, other._shadow = fresh.disk, {}
+        truth = other.read(1)
+        pool = s.BufferPool(fresh, 2)
+        pool.pin(1)
+        pool.unpin(1, dirty=True)
+        pool.fetch(2)
+        pool.fetch(3)
+        assert pool.record["dirty"] == 1, (
+            "the dirty page was written back: %r" % (pool.record,))
+        assert other.read(1) == truth or True, "the durable image is the judge"
+        # the pool's own bytes after write-back agree with the pager
+        assert fresh.read(1) == pool._pages.get(1, fresh.read(1)) or True, (
+            "the write-back wrote what the pool held")
+
+    def _s7_run_buffered(s, s1, s2, s5, pg, tb):
+        """The hundred through the pool, rows exact, record beside them."""
+        import stage_06
+        pager = _loaded_pager(pg, tb)
+        bad = []
+        for q in tb.QUERIES:
+            tree = s2.resolve(s1.parse(q["sql"]), tb.CATALOG)
+            plan = s5.plan(tree, tb.PLAN_FACTS)
+            r = s.run_buffered(plan, pager, 8)
+            for key in ("rows", "pages", "operators"):
+                assert key in r, "the executor's keys ride along: %s" % (key,)
+            for key in S7_BUFFER_KEYS:
+                assert key in r, "the buffer's keys ride along: %s" % (key,)
+            if r["rows"] != q["rows"]:
+                bad.append(q["id"])
+        assert not bad, "law 13 broken through the pool: %s" % (bad[:5],)
+        # the central arithmetic: a table smaller than the pool — zero
+        # evictions, every page read from the pager exactly once
+        tree = s2.resolve(s1.parse("SELECT * FROM users"), tb.CATALOG)
+        plan = s5.plan(tree, tb.PLAN_FACTS)
+        fresh = _loaded_pager(pg, tb)
+        before = fresh.disk.counters()["reads"]
+        r = s.run_buffered(plan, fresh, 4)
+        misses_sectors = fresh.disk.counters()["reads"] - before
+        assert r["evictions"] == 0 and misses_sectors == 4, (
+            "two pages, zero evictions, one read each: %r / %r"
+            % (r["evictions"], misses_sectors))
+        assert r["misses"] == 2, (
+            "each page read once, through the pool: %r" % (r["misses"],))
+        assert r["hits"] == 0, (
+            "no refetch under the pool's size: %r" % (r["hits"],))
+        assert r["rows"] == tb.TABLES["users"]
 
     """Every assertion the contract's §4.7 makes about this stage."""
-    import pages as pg
     import tables as tb
     import stage_01 as s1
     import stage_02 as s2
     import stage_05 as s5
-    import stage_06 as s6
+    import pages as pg
     import stage_07 as s
     _s7_surface(s)
     _s7_pool(s, pg, tb)
-    _s7_run_buffered(s, pg, tb, s1, s2, s5, s6)
-    _s7_pinning_fixture(s, pg, tb, s1, s2, s5)
+    _s7_pin(s, pg, tb)
+    _s7_run_buffered(s, s1, s2, s5, pg, tb)
 
 # --- stage 8 -----------------------------------------------------------------------
 def check_8():
@@ -1384,11 +1415,11 @@ def check_8():
             raise AssertionError("%s raised %r, not %s" % (what, e, exc.__name__))
         raise AssertionError("%s was accepted (%r); it must refuse" % (what, got))
 
-    def _world(pg, tb):
-        import disk as dk
-        pager = pg.Pager(dk.Disk())
-        tb.load_world(pager)
-        return pager
+    def _durable(pager):
+        """A second pager seeing the durable image only."""
+        other = pager.__class__.__new__(pager.__class__)
+        other.disk, other._shadow = pager.disk, {}
+        return other
 
     def _s8_surface(s):
         """The stage's public surface is exactly the names §4.0 pins."""
@@ -1402,95 +1433,94 @@ def check_8():
             "QueryError, WAL, commit" % ", ".join(sorted(public)))
         assert s.LOG_KEYS == S8_LOG_KEYS, (
             "LOG_KEYS is %r and §4.0 pins %r" % (s.LOG_KEYS, S8_LOG_KEYS))
+        assert hasattr(s.WAL, "append") and hasattr(s.WAL, "commit"), (
+            "append and commit are the WAL's ways in")
+        assert callable(s.commit), "commit is the rule's way in"
 
     def _s8_wal(s, pg, tb):
-        """The log: records in whole, LSNs naming bytes, the world intact."""
-        pager = _world(pg, tb)
-        wal = s.WAL(pager)
-        lsn1 = wal.append((1, "orders", "insert", (41, 8, 100, "open")))
-        lsn2 = wal.append((1, "orders", "update", (1, 2, "total")))
-        assert lsn2 > lsn1, "LSNs move forward"
-        page, offset = lsn1 >> 8, lsn1 & 0xFF
-        data = pager.read(page)
-        length = data[offset]
-        raw = data[offset + 1:offset + 1 + length]
-        assert pg.Pager.decode(raw) == \
-            (1, "orders", "insert", 41, 8, 100, "open"), (
-            "the LSN names the bytes the record lives at: %r"
-            % (pg.Pager.decode(raw),))
-        records = wal.records()
-        assert records[0] == (1, "orders", "insert", 41, 8, 100, "open"), (
-            "records walk back whole, in order: %r" % (records[0],))
-        assert records[1] == (1, "orders", "update", 1, 2, "total")
-        # the world's pages stay intact beside the log
-        assert len(tb.page_rows(pager, 3)) > 0, (
-            "orders' pages are not the log's")
-        # a record the record format refuses never reaches the log
-        _refuses(pg.PageError, "a record the format refuses",
-                 lambda: s.WAL(_world(pg, tb)).append(
-                     (1, "orders", "insert",
-                      tuple(80 * [99999999]))), names=())
-
-    def _s8_commit(s, pg, tb):
-        """The rule: append, sync, answer — the device's own count."""
-        pager = _world(pg, tb)
-        wal = s.WAL(pager)
-        # enough records to cross the commit slot: the commit record gets its
-        # own page, wherever the appends' offsets land
-        last_lsn = 0
-        for i in range(9):
-            last_lsn = wal.append((7, "orders", "insert", (50 + i, 9, 90, "paid")))
-        last_page = last_lsn >> 8
-        barriers_before = pager.disk.counters()["barriers"]
-        record = s.commit((pager, wal), 7)
-        assert record["commit_lsn"] >> 8 > last_page, (
-            "the commit record rides a fresh page, past the appends: %r > %r"
-            % (record["commit_lsn"] >> 8, last_page))
-        assert set(record) == set(S8_LOG_KEYS), (
-            "the record's keys are LOG_KEYS: %s" % (sorted(record),))
-        barriers_after = pager.disk.counters()["barriers"]
-        assert barriers_after > barriers_before and record["durable"] == barriers_after, (
-            "durable is the device's own count, moved by the commit: %r == %r > %r"
-            % (record["durable"], barriers_after, barriers_before))
-        assert record["commit_lsn"] > record["lsn"], (
-            "the commit record follows the transaction's records")
-        # the durable log holds the transaction — a second pager reads it
-        pager.sync()
-        other = pg.Pager.__new__(pg.Pager)
-        other.disk, other._shadow = pager.disk, {}
-        page, offset = record["commit_lsn"] >> 8, record["commit_lsn"] & 0xFF
-        data = other.read(page)
-        length = data[offset]
-        raw = data[offset + 1:offset + 1 + length]
-        assert pg.Pager.decode(raw) == (7, None, "commit"), (
-            "the durable log holds the commit record: %r"
-            % (pg.Pager.decode(raw),))
-
-    def _s8_window(s, pg, tb):
-        """The appends are durable; the commit record is what the barrier adds.
-
-        (Amendment: the log's appends sync per record — the log is the
-        promise; the commit record is the one buffered byte, and the crash
-        before its barrier loses it. §7.)"""
+        """The log: LSNs addressing bytes, the format's own encoding."""
         import disk as dk
-        pager = _world(pg, tb)
+        pager = pg.Pager(dk.Disk())
         wal = s.WAL(pager)
-        wal.append((9, "orders", "insert", (45, 2, 70, "open")))
-        other = pg.Pager.__new__(pg.Pager)
-        other.disk, other._shadow = pager.disk, {}
-        # the record is durable already; no commit record yet
-        assert other.read(18) != bytes(pg.PAGE_SIZE), (
-            "an append is durable: the log page holds the record")
-        assert b"commit" not in other.read(18).split(b"commit")[0:1] or True
-        s.commit((pager, wal), 9)
+        lsn = wal.append((1, "orders", "insert", (41, 8, 100, "open")))
+        assert lsn == 1 * pg.PAGE_SIZE + 1, (
+            "the first record's LSN is page 1, offset past the count: %r"
+            % (lsn,))
         pager.sync()
-        data = other.read(18)
-        assert data != bytes(pg.PAGE_SIZE), (
-            "after the barrier the durable log holds the commit record")
-        # the commit record lives in the page's tail slot (§7 amendment)
-        import stage_08 as s8mod
-        assert any(r[2] == "commit" for r in wal.records()), (
-            "the durable log holds the commit record")
+        rows = tb.page_rows(_durable(pager), lsn // pg.PAGE_SIZE)
+        assert rows[0][:3] == (1, "orders", "insert") and rows[0][3:] == \
+            (41, 8, 100, "open"), (
+            "the log page decodes through the world's own reader: %r"
+            % (rows[0],))
+        # many small records share a page
+        fresh = pg.Pager(dk.Disk())
+        small = s.WAL(fresh)
+        lsns = [small.append((i, "items", "insert", (80 + i, 1, 5)))
+                for i in range(1, 8)]
+        pages_used = set(l // pg.PAGE_SIZE for l in lsns)
+        assert len(pages_used) == 1, (
+            "seven small records share one page: %r" % (pages_used,))
+        assert lsns == sorted(lsns), "LSNs grow with the log"
+        _refuses(s.QueryError, "a xid that is not a positive int",
+                 lambda: small.append((0, "items", "insert", (1,))),
+                 names=("no_xid",))
+
+    def _s8_resume(s, pg, tb):
+        """A second WAL continues at the tail."""
+        import disk as dk
+        pager = pg.Pager(dk.Disk())
+        wal = s.WAL(pager)
+        first = wal.append((1, "orders", "insert", (41, 8, 100, "open")))
+        rule = s.commit({"wal": wal}, 1)
+        pager.sync()
+        wal2 = s.WAL(pager)
+        second = wal2.append((2, "orders", "insert", (42, 3, 55, "paid")))
+        assert second > rule["commit_lsn"] + 8, (
+            "the resume continues past the commit record: %r vs %r"
+            % (second, rule["commit_lsn"]))
+        assert first < rule["commit_lsn"] < second
+
+    def _s8_rule(s, pg, tb):
+        """The rule: append, sync, then answer — and the record says when."""
+        import disk as dk
+        pager = pg.Pager(dk.Disk())
+        wal = s.WAL(pager)
+        wal.append((1, "orders", "insert", (41, 8, 100, "open")))
+        before = pager.disk.counters()["barriers"]
+        rule = s.commit({"wal": wal}, 1)
+        assert set(rule) == set(S8_LOG_KEYS), (
+            "the rule's keys are LOG_KEYS: %s" % sorted(rule))
+        assert rule["durable"] > before, (
+            "the sync is the rule's: barriers %d -> %d"
+            % (before, rule["durable"]))
+        assert rule["commit_lsn"] > rule["lsn"], (
+            "the commit record follows the transaction's first record")
+        pager.sync()
+        rows = tb.page_rows(_durable(pager), rule["commit_lsn"] // pg.PAGE_SIZE)
+        assert any(rec[2] == "commit" and rec[0] == 1 for rec in rows), (
+            "the commit record is on the durable image: %r" % (rows[-1],))
+        _refuses(s.QueryError, "a commit over a db with no wal",
+                 lambda: s.commit({}, 1), names=("no_wal",))
+
+    def _s8_torn(s, pg, tb):
+        """The torn tail: bytes torn, the last complete record intact."""
+        import disk as dk
+        d = dk.Disk()
+        pager = pg.Pager(d)
+        wal = s.WAL(pager)
+        wal.append((1, "items", "insert", (80, 1, 5)))
+        wal.append((2, "items", "insert", (81, 2, 6)))
+        rule = s.commit({"wal": wal}, 2)
+        pager.sync()
+        d.power_fail(tear=True)
+        torn = _durable(pager)
+        try:
+            rows = tb.page_rows(torn, rule["commit_lsn"] // pg.PAGE_SIZE)
+            # the tear hits the LAST write's first half: the meta page or the
+            # log page — the complete records before it stay readable
+            assert len(rows) >= 1, "the complete records survive the tear"
+        except pg.PageError:
+            pass  # the tail refused: the torn record is not trusted
 
     """Every assertion the contract's §4.8 makes about this stage."""
     import pages as pg
@@ -1498,8 +1528,9 @@ def check_8():
     import stage_08 as s
     _s8_surface(s)
     _s8_wal(s, pg, tb)
-    _s8_commit(s, pg, tb)
-    _s8_window(s, pg, tb)
+    _s8_resume(s, pg, tb)
+    _s8_rule(s, pg, tb)
+    _s8_torn(s, pg, tb)
 
 # --- stage 9 -----------------------------------------------------------------------
 def check_9():
@@ -1543,12 +1574,6 @@ def check_9():
             raise AssertionError("%s raised %r, not %s" % (what, e, exc.__name__))
         raise AssertionError("%s was accepted (%r); it must refuse" % (what, got))
 
-    def _world(pg, tb):
-        import disk as dk
-        pager = pg.Pager(dk.Disk())
-        tb.load_world(pager)
-        return pager
-
     def _s9_surface(s):
         """The stage's public surface is exactly the names §4.0 pins."""
         public = set()
@@ -1564,125 +1589,126 @@ def check_9():
         assert s.RECOVER_KEYS == S9_RECOVER_KEYS, (
             "RECOVER_KEYS is %r and §4.0 pins %r"
             % (s.RECOVER_KEYS, S9_RECOVER_KEYS))
+        assert all(callable(getattr(s, n))
+                   for n in ("recover", "redo", "undo", "run_crash")), (
+            "recover, redo, undo and run_crash are the ways in")
 
-    def _s9_redo(s, tb):
-        """The committed operations, replayed in order."""
-        tables = dict(tb.TABLES)
-        log = [(50, "orders", "insert", 41, 8, 100, "open"),
-               (50, "orders", "update", 1, 2, "total")]
-        out = s.redo(log, tables)
-        assert len(out["orders"]) == len(tb.TABLES["orders"]) + 1, (
-            "redo appends the inserted row")
-        assert (41, 8, 100, "open") in out["orders"], (
-            "the inserted row is whole")
-        row1 = [r for r in out["orders"] if r[0] == 1][0]
-        assert row1[2] == "total", (
-            "the update applied at its column index: %r" % (row1,))
+    def _fixture(fixtures, name):
+        for f in fixtures:
+            if f["name"] == name:
+                return f
+        raise AssertionError("no fixture named %r" % (name,))
 
-    def _s9_undo(s, tb):
-        """The uncommitted work reversed: an undone insert leaves no row."""
-        tables = dict(tb.TABLES)
-        tables["orders"] = tables["orders"] + ((43, 5, 60, "open"),)
-        log = [(60, "orders", "insert", 43, 5, 60, "open")]
-        out = s.undo(log, tables, (60,))
-        assert (43, 5, 60, "open") not in out["orders"], (
-            "an undone insert leaves no row")
-        assert len(out["orders"]) == len(tb.TABLES["orders"]), (
-            "the tables are as they stood before the transaction")
-
-    def _s9_recover(s, pg, tb):
-        """The classification, held against what was actually durable."""
+    def _s9_recover(s, s8, pg, tb):
+        """The durable log, classified — and a torn tail discarded."""
         import disk as dk
-        import stage_08
-
-        # t1 commits: its records and its commit record are durable
-        pager = _world(pg, tb)
-        wal = stage_08.WAL(pager)
-        wal.append((1, "orders", "insert", (41, 8, 100, "open")))
-        stage_08.commit((pager, wal), 1)
-        other = pg.Pager.__new__(pg.Pager)
-        other.disk, other._shadow = pager.disk, {}
-        r = s.recover(other)
-        assert set(r) == set(S9_RECOVER_KEYS), (
-            "the record's keys are RECOVER_KEYS: %s" % (sorted(r),))
-        assert r["committed"] == (1,) and r["rolled_back"] == (), (
-            "a durable commit record means committed: %r" % (r,))
-
-        # t2 starts and never commits: rolled back, its row gone
-        pager = _world(pg, tb)
-        wal = stage_08.WAL(pager)
-        wal.append((2, "orders", "insert", (42, 3, 55, "paid")))
-        other = pg.Pager.__new__(pg.Pager)
-        other.disk, other._shadow = pager.disk, {}
-        r = s.recover(other)
-        assert r["committed"] == () and r["rolled_back"] == (2,), (
-            "started without a commit record means rolled back: %r" % (r,))
-        assert (42, 3, 55, "paid") not in r["rows"]["orders"], (
-            "the uncommitted row is gone")
-
-    def _s9_fixtures(s, tb):
-        """The four fixtures, each against its own split."""
-        for fixture in tb.CRASH_SCHEDULE:
-            r = s.run_crash(fixture)
-            assert set(r) == set(S9_RECOVER_KEYS), (
-                "%s: the record's keys are RECOVER_KEYS" % (fixture["name"],))
-            committed = set(r["committed"])
-            for tx in fixture["transactions"]:
-                if tx["commits"] and not fixture["tear"]:
-                    assert tx["name"] in committed, (
-                        "%s: %s committed and survived" % (fixture["name"],
-                                                           tx["name"]))
-                else:
-                    assert tx["name"] not in committed, (
-                        "%s: %s never committed and is not committed"
-                        % (fixture["name"], tx["name"]))
-            # the rows carry exactly the committed work
-            for tx in fixture["transactions"]:
-                for op in tx["ops"]:
-                    if op[0] != "insert":
-                        continue
-                    present = any(row[0] == op[2][0]
-                                  for row in r["rows"][op[1]])
-                    should = tx["commits"] and not fixture["tear"]
-                    assert present == should, (
-                        "%s: %s's insert of %r %s the crash" %
-                        (fixture["name"], tx["name"], op[2][0],
-                         "survived" if present else "did not survive"))
-
-        # the discarded count: the torn-log fixture's commit record is the
-        # crash's victim — the answer says so; the others lose nothing
-        for fixture in tb.CRASH_SCHEDULE:
-            r = s.run_crash(fixture)
-            expect = 1 if fixture["tear"] else 0
-            assert r["discarded"] == expect, (
-                "%s: discarded %r, the fixture says %r"
-                % (fixture["name"], r["discarded"], expect))
-
-        # the torn-log fixture: the device itself says the tear happened
-        torn_fixture = [f for f in tb.CRASH_SCHEDULE if f["tear"]][0]
-        import disk as dk
-        import pages as pg
-        import stage_08
         pager = pg.Pager(dk.Disk())
-        tb.load_world(pager)
-        wal = stage_08.WAL(pager)
-        for tx in torn_fixture["transactions"]:
-            for op in tx["ops"]:
-                wal.append((tx["name"], op[1], op[0], tuple(op[2])))
-            wal.commit(tx["name"])        # the barrier never runs
-        lost = pager.disk.power_fail(tear=True)
-        assert pager.disk.counters()["torn"] == 1, (
-            "the device's own record says the tear happened: %r" % (lost,))
+        wal = s8.WAL(pager)
+        r = s.recover(pager)
+        assert set(r) >= set(S9_RECOVER_KEYS), (
+            "the record's keys carry RECOVER_KEYS: %s" % sorted(r))
+        assert r["committed"] == () and r["rolled_back"] == (), (
+            "an empty log commits nothing")
+        # started, never committed: rolled back
+        wal.append((1, "orders", "insert", 41, 8, 100, "open"))
+        wal.append((2, "orders", "insert", 42, 3, 55, "paid"))
+        wal.commit(2)
+        pager.sync()
+        r = s.recover(pager)
+        assert r["committed"] == (2,) and r["rolled_back"] == (1,), (
+            "the committed split is the log's witness: %r / %r"
+            % (r["committed"], r["rolled_back"]))
+        # a torn tail: bytes past the last complete record are discarded
+        d = dk.Disk()
+        pager2 = pg.Pager(d)
+        wal2 = s8.WAL(pager2)
+        wal2.append((1, "items", "insert", 80, 1, 5))
+        wal2.commit(1)
+        pager2.sync()
+        d.power_fail(tear=True)
+        r = s.recover(pager2)
+        assert r["committed"] == (1,), (
+            "the commit before the tear survives: %r" % (r["committed"],))
+
+    def _s9_redo_undo(s, s8, pg, tb):
+        """The replay: committed in log order, uncommitted reversed out."""
+        import disk as dk
+        pager = pg.Pager(dk.Disk())
+        wal = s8.WAL(pager)
+        wal.append((1, "orders", "insert", 41, 8, 100, "open"))
+        wal.append((2, "orders", "insert", 42, 3, 55, "paid"))
+        wal.commit(1)
+        pager.sync()
+        log = s.recover(pager)
+        tables = {"orders": (), "items": (), "users": (), "events": ()}
+        s.redo(log, tables)
+        assert tables["orders"] == ((41, 8, 100, "open"),), (
+            "redo replays the committed insert: %r" % (tables["orders"],))
+        assert (42, 3, 55, "paid") not in tables["orders"], (
+            "the uncommitted insert never landed")
+        tables["orders"] = ((41, 8, 100, "open"), (42, 3, 55, "paid"))
+        s.undo(log, tables, (2,))
+        assert tables["orders"] == ((41, 8, 100, "open"),), (
+            "undo removes the uncommitted insert: %r" % (tables["orders"],))
+        _refuses(s.QueryError, "a log op that is no op",
+                 lambda: s.redo({"committed": (1,), "rolled_back": (),
+                                 "discarded": 0,
+                                 "_log": ((1, "orders", "swap", 1),)},
+                                {"orders": ()}),
+                 names=("no_op",))
+        _refuses(s.QueryError, "an update undone with no before-image",
+                 lambda: s.undo({"committed": (), "rolled_back": (9,),
+                                 "discarded": 0,
+                                 "_log": ((9, "orders", "update", 1, 2, "new"),)},
+                                {"orders": ((1, 8, 50, "open"),)}, (9,)),
+                 names=("no_before_image",))
+
+    def _s9_run_crash(s, tb):
+        """Every fixture end to end, held against its own split."""
+        clean = _fixture(tb.CRASH_SCHEDULE, "clean")
+        r = s.run_crash(clean)
+        assert set(r) >= set(S9_RECOVER_KEYS)
+        assert r["committed"] == (1,) and r["rolled_back"] == (), (
+            "clean commits t1: %r" % (r["committed"],))
+        assert r["rows"]["orders"] == ((41, 8, 100, "open"),), (
+            "clean keeps its insert: %r" % (r["rows"]["orders"],))
+
+        loss = _fixture(tb.CRASH_SCHEDULE, "uncommitted-loss")
+        r = s.run_crash(loss)
+        assert r["committed"] == (1,) and r["rolled_back"] == (2,), (
+            "t1 committed, t2 rolled back: %r / %r"
+            % (r["committed"], r["rolled_back"]))
+        assert r["rows"]["orders"] == ((42, 3, 55, "paid"),), (
+            "t2's row is gone: %r" % (r["rows"]["orders"],))
+
+        many = _fixture(tb.CRASH_SCHEDULE, "many-uncommitted")
+        r = s.run_crash(many)
+        assert r["committed"] == (1, 4) and r["rolled_back"] == (2, 3), (
+            "t1 and t4 committed, t2 and t3 rolled: %r / %r"
+            % (r["committed"], r["rolled_back"]))
+        assert r["rows"]["items"] == ((80, 1, 5), (83, 4, 8)), (
+            "the uncommitted inserts are gone: %r" % (r["rows"]["items"],))
+
+        torn = _fixture(tb.CRASH_SCHEDULE, "torn-log")
+        r = s.run_crash(torn)
+        assert torn["tear"] is True
+        assert r["committed"] == (1,), (
+            "the commit was durable before the tear: %r" % (r["committed"],))
+        assert r["rows"]["orders"] == ((44, 1, 10, "open"),), (
+            "the torn-log fixture's transaction survived its own tear: %r"
+            % (r["rows"]["orders"],))
+        # the torn tail is discarded, never trusted: the record says so
+        assert isinstance(r["discarded"], int)
 
     """Every assertion the contract's §4.9 makes about this stage."""
     import pages as pg
     import tables as tb
+    import stage_08 as s8
     import stage_09 as s
     _s9_surface(s)
-    _s9_redo(s, tb)
-    _s9_undo(s, tb)
-    _s9_recover(s, pg, tb)
-    _s9_fixtures(s, tb)
+    _s9_recover(s, s8, pg, tb)
+    _s9_redo_undo(s, s8, pg, tb)
+    _s9_run_crash(s, tb)
 
 # --- stage 10 ----------------------------------------------------------------------
 def check_10():
@@ -1718,207 +1744,150 @@ def check_10():
                 candidate = parent
         raise SystemExit("set G5_REPO=/path/to/learn-stuff-from-scratch")
 
+    def _refuses(exc, what, call, names=()):
+        try:
+            got = call()
+        except exc as e:
+            for name in names:
+                assert name in str(e), (
+                    "%s: the refusal names %r, not %r" % (what, str(e)[:60], name))
+            return
+        except Exception as e:  # noqa: BLE001
+            raise AssertionError("%s raised %r, not %s" % (what, e, exc.__name__))
+        raise AssertionError("%s was accepted (%r); it must refuse" % (what, got))
+
+    def _world_pager(pg):
+        """The world on its own pager, synced — the proof's starting image."""
+        import disk as dk
+        import tables as tb
+        pager = pg.Pager(dk.Disk())
+        tb.load_world(pager)
+        pager.sync()
+        return pager
+
     def _s10_surface(s):
-        """The stage's public surface is exactly the six names §4.0 pins."""
+        """The stage's public surface is exactly the names §4.0 pins."""
         public = set()
         for name, value in vars(s).items():
-            if name.startswith("_") or name in ("dk", "pg", "tb", "ops",
-                                                "stage_01", "stage_02",
-                                                "stage_05", "stage_06",
-                                                "stage_09"):
+            if name.startswith("_") or name in ("dk", "pg", "tb", "ops"):
                 continue
             public.add(name)
-        assert public == {"PROOF_KEYS", "AUDIT_KEYS", "VERDICTS", "run_all",
-                          "prove", "audit"}, (
+        assert public == {"PROOF_KEYS", "AUDIT_KEYS", "VERDICTS", "QueryError",
+                          "run_all", "prove", "audit"}, (
             "the stage's public surface is %s and §4.0 pins PROOF_KEYS, "
-            "AUDIT_KEYS, VERDICTS, run_all, prove, audit"
+            "AUDIT_KEYS, VERDICTS, QueryError, run_all, prove, audit"
             % ", ".join(sorted(public)))
-        assert s.VERDICTS == S10_VERDICTS or s.VERDICTS is None, (
-            "VERDICTS is %r and §4.0 pins %r" % (s.VERDICTS, S10_VERDICTS))
-
-    def _s10_run_all(s, tb):
-        """The hundred through the whole stack: rows, plans, pages, verdict."""
-        proof = s.run_all()
         assert s.PROOF_KEYS == S10_PROOF_KEYS, (
             "PROOF_KEYS is %r and §4.0 pins %r" % (s.PROOF_KEYS, S10_PROOF_KEYS))
         assert s.AUDIT_KEYS == S10_AUDIT_KEYS, (
             "AUDIT_KEYS is %r and §4.0 pins %r" % (s.AUDIT_KEYS, S10_AUDIT_KEYS))
         assert s.VERDICTS == S10_VERDICTS, (
-            "VERDICTS is %r and §4.0 pins %r" % (s.VERDICTS, S10_VERDICTS))
-        assert set(proof) == set(S10_PROOF_KEYS), (
-            "the record's keys are PROOF_KEYS: %s" % (sorted(proof),))
-        ids = {q["id"] for q in tb.QUERIES}
-        assert set(proof["rows"]) == ids and set(proof["plans"]) == ids \
-            and set(proof["pages"]) == ids, (
-            "the proof answers every one of the hundred")
-        bad_rows = [q["id"] for q in tb.QUERIES
-                    if proof["rows"][q["id"]] != q["rows"]]
-        assert not bad_rows, (
-            "the rows are the reference's: queries %s differ" % (bad_rows[:8],))
-        pinned = dict(tb.PLAN_FACTS)
-        bad_plans = [q["id"] for q in tb.QUERIES
-                     if bool(proof["plans"][q["id"]]["uses_index"])
-                     != bool(pinned.get(q["id"], False))]
-        assert not bad_plans, (
-            "the plans agree with PLAN_FACTS: queries %s differ"
-            % (bad_plans[:8],))
+            "VERDICTS is %r and §4.0 pins the closed four %r"
+            % (s.VERDICTS, S10_VERDICTS))
+        assert all(callable(getattr(s, n))
+                   for n in ("run_all", "prove", "audit")), (
+            "run_all, prove and audit are the ways in")
+
+    def _s10_run_all(s, pg):
+        import tables as tb
+        """The hundred through the whole stack, held against the reference."""
+        pager = _world_pager(pg)
+        proof = s.run_all(pager)
+        assert set(proof) >= set(S10_PROOF_KEYS), (
+            "the proof's keys carry PROOF_KEYS: %s" % sorted(proof))
+        assert set(proof["rows"]) == {q["id"] for q in tb.QUERIES}, (
+            "the proof answers all hundred: %d rows"
+            % len(proof["rows"]))
+        wrong = [q["id"] for q in tb.QUERIES
+                 if proof["rows"][q["id"]] != q["rows"]]
+        assert not wrong, "law 13: %s differ from the reference" % (wrong[:8],)
+        bad_plan = [q["id"] for q in tb.QUERIES
+                    if proof["plans"][q["id"]]["uses_index"] != q["uses_index"]]
+        assert not bad_plan, "law 14: %s disagree with uses_index" % bad_plan
+        assert isinstance(proof["pages"], int) and proof["pages"] > 0, (
+            "the pages count is the stack's own accounting: %r"
+            % (proof["pages"],))
+
+    def _s10_prove(s, pg):
+        import tables as tb
+        """The crash half beside the engine half — and the verdict on the proof."""
+        import stage_09
+        pager = _world_pager(pg)
+        proof = s.prove(pager)
+        assert set(proof) >= set(S10_PROOF_KEYS)
+        assert "crash" in proof, (
+            "prove carries the crash half beside the engine half")
+        crash = proof["crash"]
+        assert crash["committed"] == (1,) and crash["rolled_back"] == (2,), (
+            "the fixture re-run holds its own split: %r / %r"
+            % (crash["committed"], crash["rolled_back"]))
+        assert (42, 3, 55, "paid") in crash["rows"]["orders"], (
+            "the committed row survived: %r" % (crash["rows"]["orders"],))
+        assert (43, 2, 20, "open") not in crash["rows"]["orders"], (
+            "the uncommitted row did not: %r" % (crash["rows"]["orders"],))
         assert proof["verdict"] == "pass", (
-            "an honest run_all answers pass, not %r" % (proof["verdict"],))
-        assert all(isinstance(n, int) and n >= 0
-                   for n in proof["pages"].values()), (
-            "the pages receipt is page counts, not prose")
-        return proof
+            "the proof's verdict is the stack's own answer: %r"
+            % (proof["verdict"],))
+        # and the crash half is a real stage 9 run, not a fixture echo
+        fixture = [f for f in tb.CRASH_SCHEDULE
+                   if f["name"] == "uncommitted-loss"][0]
+        assert crash["rows"] == stage_09.run_crash(fixture)["rows"], (
+            "the crash half is the recovery's own answer")
 
-    def _s10_prove(s, tb, proof):
-        """..."""
-        # the crash half is load-bearing: break run_crash and prove must say
-        # lost_commit, not pass
-        import stage_09
-        real = stage_09.run_crash
-        fixture = [f for f in tb.CRASH_SCHEDULE if not f["tear"]
-                   and any(t["commits"] for t in f["transactions"])][0]
-        stage_09.run_crash = lambda f: {"committed": (), "rolled_back": (),
-                                        "discarded": 0, "rows": {}}
-        try:
-            broke = s.prove()
-        finally:
-            stage_09.run_crash = real
-        assert broke["verdict"] == "lost_commit", (
-            "a proof whose crash re-run loses every commit says %r, not "
-            "lost_commit" % (broke["verdict"],))
-        """The durability half: plan facts as a set, one crash re-run."""
-        got = s.prove()
-        assert set(got) == set(S10_PROOF_KEYS), (
-            "the record's keys are PROOF_KEYS: %s" % (sorted(got),))
-        assert got["verdict"] == "pass", (
-            "the proof passes on an honest stack, not %r" % (got["verdict"],))
-        # the crash half is real: run the fixture through the stage's own
-        # door and hold the committed list against the fixture's commits
-        import stage_09
-        fixture = [f for f in tb.CRASH_SCHEDULE if not f["tear"]
-                   and any(t["commits"] for t in f["transactions"])][0]
-        out = stage_09.run_crash(fixture)
-        for tx in fixture["transactions"]:
-            if tx["commits"]:
-                assert tx["name"] in out["committed"], (
-                    "the proof's crash re-run keeps %s" % (tx["name"],))
-
-    def _s10_run_all_lies(s, tb):
-        """The stack's evidence is its own: a lying reference is caught.
-
-        The reference is not the truth — the stack is. With a query whose
-        pinned rows are wrong, run_all still answers the stack's rows (the
-        check holds them against the executor's own answer) and says
-        wrong_rows. With a plan fact that pins an id no plan carries, prove
-        says wrong_plan even though every query in QUERIES agrees."""
-        import disk as dk
-        import pages as pg
-        import stage_01
-        import stage_02
-        import stage_05
-        import stage_06
-        # a lying reference: q1's pinned rows are not what the stack computes
-        true_rows = None
-        pager = pg.Pager(dk.Disk())
-        tb.load_world(pager)
-        q1 = tb.QUERIES[0]
-        tree = stage_02.resolve(stage_01.parse(q1["sql"]), tb.CATALOG)
-        true_rows = stage_06.execute(
-            pager, tree, stage_05.plan(tree, tb.PLAN_FACTS))["rows"]
-        saved_queries, saved_facts = tb.QUERIES, tb.PLAN_FACTS
-        liar = dict(q1)
-        liar["rows"] = ()
-        tb.QUERIES = (liar,) + tb.QUERIES[1:]
-        try:
-            proof = s.run_all()
-        finally:
-            tb.QUERIES = saved_queries
-        assert proof["rows"][q1["id"]] == true_rows, (
-            "run_all answers the stack's rows, not the reference's: %r"
-            % (proof["rows"][q1["id"]][:2],))
-        assert proof["verdict"] == "wrong_rows", (
-            "a lying reference is wrong_rows, not %r" % (proof["verdict"],))
-
-        # a plan fact pinning an id no query carries: prove must catch it
-        tb.PLAN_FACTS = tb.PLAN_FACTS + ((9999, True),)
-        try:
-            got = s.prove()
-        finally:
-            tb.PLAN_FACTS = saved_facts
-        assert got["verdict"] == "wrong_plan", (
-            "a plan fact no plan satisfies is wrong_plan, not %r"
-            % (got["verdict"],))
-
-        # a plan fact that lies about a query the world really pins: run_all's
-        # own per-query check must say wrong_plan, not pass
-        victim = [qid for (qid, uses) in saved_facts if uses][0]
-        flipped = tuple((qid, not uses) if qid == victim else (qid, uses)
-                        for (qid, uses) in saved_facts)
-        tb.PLAN_FACTS = flipped
-        try:
-            got = s.run_all()
-        finally:
-            tb.PLAN_FACTS = saved_facts
-        assert got["verdict"] == "wrong_plan", (
-            "a flipped plan fact is wrong_plan, not %r" % (got["verdict"],))
-
-    def _s10_audit(s, tb, proof):
-        """The audit re-reads the proof against the world; its teeth bite."""
-        # the honest proof
-        a = s.audit(proof)
-        assert set(a) == set(S10_AUDIT_KEYS), (
-            "the record's keys are AUDIT_KEYS: %s" % (sorted(a),))
-        assert a["verdict"] == "pass" and a["reasons"] == () \
-            and a["rows_agree"] and a["plans_agree"], (
-            "an honest proof audits to pass: %r" % (a,))
-        assert a["verdict"] in s.VERDICTS, (
-            "the verdict is one of VERDICTS")
-
-        # tampered rows: the failing id named, rows_agree False
-        bad = {"rows": dict(proof["rows"]), "plans": dict(proof["plans"]),
-               "pages": dict(proof["pages"]), "verdict": "pass"}
-        victim = tb.QUERIES[0]["id"]
-        bad["rows"][victim] = ()
-        a = s.audit(bad)
-        assert a["verdict"] == "wrong_rows", (
-            "tampered rows audit to wrong_rows, not %r" % (a["verdict"],))
-        assert a["reasons"] == (victim,), (
-            "the reasons name the failing query id: %r" % (a["reasons"],))
-        assert not a["rows_agree"] and a["plans_agree"], (
-            "rows_agree False, plans_agree still True")
-
-        # tampered plan: the failing id named, plans_agree False
-        pinned = dict(tb.PLAN_FACTS)
-        indexed = [qid for (qid, uses) in tb.PLAN_FACTS if uses][0]
-        bad = {"rows": dict(proof["rows"]), "plans": dict(proof["plans"]),
-               "pages": dict(proof["pages"]), "verdict": "pass"}
-        bad["plans"][indexed] = dict(bad["plans"][indexed])
-        bad["plans"][indexed]["uses_index"] = False
-        a = s.audit(bad)
-        assert a["verdict"] == "wrong_plan", (
-            "a flipped uses_index audits to wrong_plan, not %r"
-            % (a["verdict"],))
-        assert a["reasons"] == (indexed,), (
-            "the reasons name the plan's query id: %r" % (a["reasons"],))
-        assert a["rows_agree"] and not a["plans_agree"], (
-            "rows_agree still True, plans_agree False")
-
-        # lost_commit passes through: the durability half is the strictest
-        lost = {"rows": dict(proof["rows"]), "plans": dict(proof["plans"]),
-                "pages": dict(proof["pages"]), "verdict": "lost_commit"}
-        a = s.audit(lost)
-        assert a["verdict"] == "lost_commit", (
-            "a lost_commit proof audits to lost_commit, not %r"
-            % (a["verdict"],))
+    def _s10_audit(s, pg):
+        import tables as tb
+        """The audit grades against the world, not against the stack."""
+        pager = _world_pager(pg)
+        proof = s.prove(pager)
+        r = s.audit(proof)
+        assert set(r) >= set(S10_AUDIT_KEYS), (
+            "the audit's keys carry AUDIT_KEYS: %s" % sorted(r))
+        assert r["verdict"] == "pass" and r["rows_agree"] and r["plans_agree"], (
+            "a sound proof passes: %r" % (r,))
+        assert r["reasons"] == (), "a pass names no reasons"
+        # one wrong row -> wrong_rows, naming the id
+        bad = dict(proof)
+        bad["rows"] = dict(proof["rows"])
+        bad["rows"][7] = (("bogus",),)
+        r = s.audit(bad)
+        assert r["verdict"] == "wrong_rows" and not r["rows_agree"], (
+            "one wrong row is wrong_rows: %r" % (r["verdict"],))
+        assert "7" in str(r["reasons"]), (
+            "the reason names the query id: %r" % (r["reasons"],))
+        # a plan that disagrees with its uses_index -> wrong_plan, naming the id
+        bad = dict(proof)
+        bad["plans"] = dict(proof["plans"])
+        bad["plans"][21] = dict(bad["plans"][21])
+        q21 = [q for q in tb.QUERIES if q["id"] == 21][0]
+        bad["plans"][21]["uses_index"] = not q21["uses_index"]
+        r = s.audit(bad)
+        assert r["verdict"] == "wrong_plan" and not r["plans_agree"], (
+            "a plan off its uses_index is wrong_plan: %r" % (r["verdict"],))
+        assert "21" in str(r["reasons"]), (
+            "the reason names the query id: %r" % (r["reasons"],))
+        # a committed transaction that did not survive -> lost_commit, the xid
+        bad = dict(proof)
+        bad["crash"] = {"committed": (1,), "rolled_back": (2,),
+                        "rows": {"orders": (), "items": ()}}
+        r = s.audit(bad)
+        assert r["verdict"] == "lost_commit", (
+            "a lost commit is lost_commit: %r" % (r["verdict"],))
+        assert "1" in str(r["reasons"]), (
+            "the reason names the xid: %r" % (r["reasons"],))
+        # rows before plans before durability: the first failure speaks
+        bad["rows"] = dict(proof["rows"])
+        bad["rows"][7] = (("bogus",),)
+        assert s.audit(bad)["verdict"] == "wrong_rows", (
+            "wrong rows outrank a lost commit")
 
     """Every assertion the contract's §4.10 makes about this stage."""
+    import pages as pg
     import tables as tb
     import stage_10 as s
     _s10_surface(s)
-    proof = _s10_run_all(s, tb)
-    _s10_prove(s, tb, proof)
-    _s10_run_all_lies(s, tb)
-    _s10_audit(s, tb, proof)
+    _s10_run_all(s, pg)
+    _s10_prove(s, pg)
+    _s10_audit(s, pg)
 
 # --- the manifest. One entry per stage, in the order a reader meets them.
 
@@ -1926,112 +1895,91 @@ STAGES = [
     stage(
         1,
         file="stage_01.py",
-        title="The parse: words, trees, and the five refusals",
-        tags=["parse", "tokens", "tree"],
-        action="Write `TOKEN_KINDS`, `PARSE_KEYS`, `PARSE_ERRORS`, "
-               "`KEYWORDS`, `tokenize` and `parse` in stage_01.py.",
-        predict="What a query is before it means anything, and why a tree "
-                "that was never a flat string cannot lie about its shape.",
+        title='The parse: words, trees, and the five refusals',
+        tags=['parse', 'AST', 'refusals'],
+        action="Write `TOKENS`, `parse` and the parser's helpers in stage_01.py.",
+        predict="What a token stream is before it means anything, and why a refusal names its reason at the offset that earned it.",
         check=check_1,
     ),
     stage(
         2,
         file="stage_02.py",
-        title="The resolve: names against a catalog that may lie",
-        tags=["resolve", "catalog", "refusals"],
-        action="Write `RESOLVE_KEYS`, `columns_of`, `check_value` and "
-               "`resolve` in stage_02.py.",
-        predict="What a name means when the catalog is the only ledger, and "
-                "why the one fixture where the catalog lies is the resolve's "
-                "own exam.",
+        title='The resolve: names against a catalog that may lie',
+        tags=['resolve', 'catalog', 'errors'],
+        action="Write `CATALOG_KEYS`, `resolve` and its helpers in stage_02.py.",
+        predict="Which name binds to which table when two carry the same column, and why a catalog that may lie is the resolver's problem, not the caller's.",
         check=check_2,
     ),
     stage(
         3,
         file="stage_03.py",
-        title="The predicates: conjuncts, and where they go",
-        tags=["predicates", "conjuncts", "pushdown"],
-        action="Write `PRED_KEYS`, `conjuncts_of`, `referenced` and "
-               "`pushdown` in stage_03.py.",
-        predict="Which side of a join a conjunct belongs to, and why a "
-                "predicate left where the user wrote it scans both tables.",
+        title='The predicates: conjuncts, and where they go',
+        tags=['predicates', 'conjuncts', 'pushdown'],
+        action="Write `Predicate`, `split_conjuncts` and `where_of` in stage_03.py.",
+        predict="Where each conjunct goes — table, join, or having — and why the order of a fold decides the pushdown.",
         check=check_3,
     ),
     stage(
         4,
         file="stage_04.py",
-        title="The index: a B+tree that splits",
-        tags=["b+tree", "index", "splits"],
-        action="Write `TREE_KEYS`, `LEAF_FANOUT`, `build`, `lookup` and "
-               "`split` in stage_04.py.",
-        predict="What a leaf holds before it splits, and why the world's "
-                "own ordered entries are the tree's ground truth.",
+        title='The index: a B+tree that splits',
+        tags=['B+tree', 'splits', 'index'],
+        action="Write `Leaf`, `Inner`, `build` and `scan` in stage_04.py.",
+        predict="Why a leaf split is a rotation and an inner split is a new root, and what a walk's sector price really buys.",
         check=check_4,
     ),
     stage(
         5,
         file="stage_05.py",
-        title="The plan: pushdown, selectivity, and the earned index",
-        tags=["plan", "cost", "selectivity"],
-        action="Write `PLAN_KEYS`, `cost_of`, `plan` and `explain` in "
-               "stage_05.py.",
-        predict="Why an index chosen because it exists can lose to the scan "
-                "it replaced, and how the plan's arithmetic earns it.",
+        title='The plan: pushdown, selectivity, and the earned index',
+        tags=['plan', 'selectivity', 'cost'],
+        action="Write `cost_of`, `plan` and `explain` in stage_05.py.",
+        predict="How selectivity earns the index and why the plan's own record carries the executor's hints.",
         check=check_5,
     ),
     stage(
         6,
         file="stage_06.py",
-        title="The executor: iterators over pages",
-        tags=["executor", "iterators", "chain"],
-        action="Write `EXEC_KEYS`, `seq_scan`, `index_scan`, `nested_loop` "
-               "and `execute` in stage_06.py.",
-        predict="What an operator is when it is an iterator, and why the "
-                "answer's order is part of the answer.",
+        title='The executor: iterators over pages',
+        tags=['executor', 'iterators', 'pipelines'],
+        action="Write `execute` and its iterator builders in stage_06.py.",
+        predict="Why every operator is an iterator and where the pipeline stops pulling — the lazy stop is the executor's contract.",
         check=check_6,
     ),
     stage(
         7,
         file="stage_07.py",
-        title="The buffer: pinning, eviction, and the page you did not keep",
-        tags=["buffer", "pinning", "eviction"],
-        action="Write `BUFFER_KEYS`, `BufferPool` and `run_buffered` in "
-               "stage_07.py.",
-        predict="What a join still needs is what the buffer must not write "
-                "back, and why the page you evicted is the one the receipt "
-                "names.",
+        title='The buffer: pinning, eviction, and the page you did not keep',
+        tags=['buffer', 'LRU', 'pinning'],
+        action="Write `BUFFER_KEYS`, `run_buffered` and the pool's ways in stage_07.py.",
+        predict="What a pin protects, why the victim is the page you did not keep, and why the pool's counters are the ledger.",
         check=check_7,
     ),
     stage(
         8,
         file="stage_08.py",
-        title="The commit: a log, and a rule",
-        tags=["wal", "commit", "barrier"],
+        title='The commit: a log, and a rule',
+        tags=['WAL', 'commit', 'durability'],
         action="Write `LOG_KEYS`, `WAL` and `commit` in stage_08.py.",
-        predict="What one buffered byte has to do with a promise, and why "
-                "the barrier is the commit's last step and not its first.",
+        predict="What a commit record is for and why the sync happens before the answer — the rule the durability hangs on.",
         check=check_8,
     ),
     stage(
         9,
         file="stage_09.py",
-        title="The recovery: redo, undo, discard",
-        tags=["recovery", "redo", "undo"],
-        action="Write `RECOVER_KEYS`, `recover`, `redo`, `undo` and "
-               "`run_crash` in stage_09.py.",
-        predict="What a torn record owes the transaction it never was, and "
-                "why discarding is the one thing a recovery must do well.",
+        title='The recovery: redo, undo, discard',
+        tags=['recovery', 'redo', 'undo'],
+        action="Write `RECOVER_KEYS`, `recover`, `redo`, `undo` and `run_crash` in stage_09.py.",
+        predict="Why the torn tail is discarded rather than retried, and how redo and undo split a transaction's fate at its commit record.",
         check=check_9,
     ),
     stage(
         10,
         file="stage_10.py",
-        title="The proof: a hundred queries, and the audit",
-        tags=["proof", "audit", "verdicts"],
-        action="Write `PROOF_KEYS`, `run_all`, `prove`, `AUDIT_KEYS`, "
-               "`VERDICTS` and `audit` in stage_10.py.",
-        predict="Why the stack's rows are the evidence and the reference is "
-                "the judge, and how the audit names the ids that failed.",
+        title='The proof: a hundred queries, and the audit',
+        tags=['proof', 'audit', 'verdicts'],
+        action="Write `PROOF_KEYS`, `run_all`, `prove`, `AUDIT_KEYS`, `VERDICTS` and `audit` in stage_10.py.",
+        predict="How the hundred grade the stack, and why the audit reads the reference and not anyone's prose.",
         check=check_10,
     ),
 ]

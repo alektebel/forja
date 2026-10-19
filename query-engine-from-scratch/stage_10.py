@@ -1,6 +1,7 @@
 """Query Engine From Scratch — stage 10: The proof: a hundred queries, and
 the audit.
 
+TODO: implement each function; the docstring is the contract.
 Nine stages built the machinery; the proof is the course's answer to the
 only question that matters: *does the whole stack return the world's rows,
 every time, with the plans the costs chose, and a commit that survives the

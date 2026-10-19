@@ -1,6 +1,7 @@
 """Query Engine From Scratch — stage 7: The buffer: pinning, eviction, and
 the page you did not keep.
 
+TODO: implement each function; the docstring is the contract.
 The executor read every page it needed, every time. The buffer pool is the
 difference between a database and a script: `frames` pages held in memory,
 `fetch` answering a hit from the pool or a miss from the pager — and the
