@@ -61,23 +61,22 @@ def _ts_matches(conjuncts):
 
 def plan(tree, facts):
     """The route the costs choose, with the pin carried for the audit."""
-    pushed = dict()
+    # the pushed tuple keeps the scans in fold order, duplicates and all —
+    # a self join scans its table twice, and a dict would collapse them
     if "pushed" in tree:            # a stage-3 pushdown record
-        for scan, conjuncts in tree["pushed"]:
-            pushed[scan] = conjuncts
+        pushed = tuple((scan, conjuncts) for (scan, conjuncts)
+                       in tree["pushed"])
         both = tree["both"]
     else:                           # a bare resolved tree: nothing pushed yet
         import stage_03
         record = stage_03.pushdown(tree)
-        for scan, conjuncts in record["pushed"]:
-            pushed[scan] = conjuncts
+        pushed = tuple(record["pushed"])
         both = record["both"]
 
     scans = []
     total = 0
     uses_index = False
-    for scan in pushed:
-        conjuncts = pushed[scan]
+    for (scan, conjuncts) in pushed:
         if scan == "events" and conjuncts and all(
                 table == "events" and col == 1
                 for (table, col, _op, _value) in conjuncts):
@@ -98,8 +97,11 @@ def plan(tree, facts):
     if both:
         total += 0                  # the join's own work is stage 6's price
 
-    return {"scans": tuple(scans), "pushed": tuple(pushed.items()),
-            "uses_index": uses_index, "cost": total}
+    return {"scans": tuple(scans), "pushed": tuple(pushed),
+            "uses_index": uses_index, "cost": total,
+            "_on": tuple((j[2], j[3]) for j in tree["joins"]),
+            "_select": tree["select"], "_columns": tree["columns"],
+            "_order": tree["order"], "_limit": tree["limit"]}
 
 
 def explain(record):

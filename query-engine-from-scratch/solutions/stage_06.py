@@ -1,11 +1,11 @@
-"""The stage 6 solution: the pipeline that answers the world's own rows."""
+"""The stage 6 solution: the plan walked, one operator at a time."""
 
 import disk as dk
 import pages as pg
 import tables as tb
 import ops
 
-EXEC_KEYS = ("rows", "pages", "chain")
+EXEC_KEYS = ("rows", "pages", "operators")
 
 
 class QueryError(ValueError):
@@ -17,144 +17,123 @@ def _refuse(reason, what):
     raise QueryError("%s: %r" % (reason, what))
 
 
-def _load_tables():
-    """The world on a fresh pager — every scan starts from the same image."""
-    pager = pg.Pager(dk.Disk())
-    tb.load_world(pager)
-    return pager
-
-
 def seq_scan(pager, table):
-    """A table's records from its pages, in row order."""
+    """A table's records, in row order, off its pinned pages."""
     if table not in tb.TABLE_PAGES:
         _refuse("no_table", table)
     for page in tb.TABLE_PAGES[table]:
-        yield from tb.page_rows(pager, page)
+        for row in tb.page_rows(pager, page):
+            yield row
 
 
-def index_scan(pager, lo, hi):
-    """The rows whose ts falls in [lo, hi], in key order.
-
-    The tree is built on the same pager the world lives on, and synced —
-    the walk's reads are real page reads the receipt counts."""
+def index_scan(tree, lo, hi):
+    """The entries whose keys fall in [lo, hi], in key order, off the chain."""
     import stage_04
-    tree = stage_04.build(pager, tb.EVENTS_INDEX)
-    pager.sync()
-    entries = stage_04.lookup(tree, (lo, hi))
-    by_id = {r[0]: r for r in tb.TABLES["events"]}
-    for (_ts, rid) in entries:
-        yield by_id[rid]
+    yield from stage_04.lookup(tree, (lo, hi))
 
 
-def nested_loop(left, right, left_on, right_on):
-    """The join: left outer, right inner, left order preserved."""
-    right_rows = list(right)
-    for lrow in left:
-        for rrow in right_rows:
-            if ops.compare(lrow[left_on], "=", rrow[right_on]):
-                yield lrow + rrow
+def nested_loop(left, right, on):
+    """Left outer, right inner, left order preserved.
+
+    The inner side is materialized once — an iterator is consumed by its
+    first pass, and the outer loop walks it forty times."""
+    left_index, right_index = on
+    right_rows = tuple(right)
+    for left_row in left:
+        for right_row in right_rows:
+            if ops.compare(left_row[left_index], "=",
+                           right_row[right_index]):
+                yield left_row + right_row
 
 
-def execute(pager, tree, plan_record):
-    """The plan's operators, one pipeline; the world's rows out."""
-    pager.sync()   # the receipt counts real page reads, not shadow hits
-    reads_before = pager.disk.counters()["reads"]
-    chain = []
-    scans = dict((t, (scan, conjuncts)) for (t, scan, conjuncts)
-                 in plan_record["scans"])
-
-    base_table = tree["table"]
-    if tree["joins"]:
-        first = tree["joins"][0][0]
+def _rows_for(pager, table, kind, pushes_here, tree):
+    """One scan's rows: the route the plan named, the conjuncts applied."""
+    if kind == "index":
+        lo, hi = 0, 10 ** 6
+        for (_t, _c, op, v) in pushes_here:
+            if not isinstance(v, int):
+                continue
+            if op == "<":
+                hi = min(hi, v - 1)
+            elif op == "<=":
+                hi = min(hi, v)
+            elif op == ">":
+                lo = max(lo, v + 1)
+            elif op == ">=":
+                lo = max(lo, v)
+            elif op == "=":
+                lo = max(lo, v)
+                hi = min(hi, v)
+        entries = set(rid for (_k, rid) in index_scan(tree, lo, hi))
+        rows = (r for r in seq_scan(pager, table) if r[0] in entries)
     else:
-        first = base_table
-    scan, _conjuncts = scans[first]
-
-    if scan == "index":
-        pushed_conjuncts = dict((t, c) for (t, c) in plan_record["pushed"])
-        lo, hi = _bounds(pushed_conjuncts.get(first, ()))
-        rows = list(index_scan(pager, lo, hi))
-        # the index answers in key order; the world's reference answers in
-        # table order (row id ascending) — restore it, ORDER BY re-sorts
-        rows = sorted(rows, key=lambda r: r[0])
-        chain.append("index_scan")
-    else:
-        rows = list(seq_scan(pager, first))
-        chain.append("seq_scan")
-
-    # joins, in the order the tree folds them
-    left_width = len(tb.CATALOG[first]["columns"])
-    for (left_name, right_name, on_left, on_right) in tree["joins"]:
-        right_scan, _c = scans[right_name]
-        right_rows = seq_scan(pager, right_name)
-        if right_scan == "index":
-            chain.append("index_scan")
-        else:
-            chain.append("seq_scan")
-        chain.append("nested_loop")
-        rows = list(nested_loop(rows, right_rows,
-                                on_left[1], on_right[1]))
-        left_width += len(tb.CATALOG[right_name]["columns"])
-
-    # WHERE: the resolved conjuncts, applied over the full row
-    widths = {name: len(tb.CATALOG[name]["columns"])
-              for name in scans}
-    def offset_of(owner):
-        off = 0
-        seen = []
-        names = [tree["joins"][0][0]] + [j[1] for j in tree["joins"]] \
-            if tree["joins"] else [base_table]
-        for name in names:
-            if name == owner:
-                return off
-            off += len(tb.CATALOG[name]["columns"])
-        return off
-
-    for ((owner, index), op, value) in tree["where"]:
-        off = offset_of(owner)
-        rows = [r for r in rows if ops.compare(r[off + index], op, value)]
-    chain.append("filter")
-
-    # COUNT(*) answers one row, one count; otherwise project, order, limit
-    if tree["select"] == "COUNT(*)":
-        rows = [(len(rows),),]
-        chain.append("count")
-    elif tree["select"] == "columns":
-        offs = [offset_of(owner) + index
-                for (owner, index) in tree["columns"]]
-        rows = [tuple(r[o] for o in offs) for r in rows]
-        chain.append("project")
-    else:
-        # star select of a join repeats both sides' rows whole
-        pass
-
-    if tree["order"]:
-        owner, index = tree["order"][0]
-        off = offset_of(owner)
-        rows = sorted(rows, key=lambda r: (r[off + index], r[0]),
-                      reverse=tree["order"][1])
-        chain.append("sort")
-    if tree["limit"] is not None:
-        rows = rows[:tree["limit"]]
-        chain.append("limit")
-
-    pages = (pager.disk.counters()["reads"] - reads_before) // 2
-    return {"rows": tuple(rows), "pages": pages,
-            "chain": tuple(chain)}
+        rows = seq_scan(pager, table)
+    for (_t, col, op, value) in pushes_here:
+        rows = (lambda rows, col, op, value:
+                (r for r in rows if ops.compare(r[col], op, value)))(
+                    rows, col, op, value)
+    return rows
 
 
-def _bounds(conjuncts):
-    """The [lo, hi] a run of ts conjuncts spans."""
-    lo, hi = 0, 1 << 30
-    for (_table, _index, op, value) in conjuncts:
-        if op == "<=":
-            hi = min(hi, value)
-        elif op == "<":
-            hi = min(hi, value - 1)
-        elif op == ">=":
-            lo = max(lo, value)
-        elif op == ">":
-            lo = max(lo, value + 1)
-        elif op == "=":
-            lo = hi = value
-    return lo, hi
+def execute(plan, pager):
+    """The pipeline the plan named, answering EXEC_KEYS."""
+    import stage_04
+    import stage_05
+    scans = plan["scans"]
+    pushes = dict(plan["pushed"])
+    operators = []
+    pages_read = 0
+    # the index scan runs over the world's own tree, on its own disk: the
+    # tree is the index's structure, not its storage, and the world's pages
+    # are pinned — a tree built on this pager would overwrite them
+    tree = stage_04.build(pg.Pager(dk.Disk()), tb.EVENTS_INDEX) \
+        if any(kind == "index" for (_t, kind) in scans) else None
+    streams = []
+    for (table, kind) in scans:
+        pushes_here = pushes.get(table, ())
+        operators.append("%s_scan" % (kind,))
+        pages_read += stage_05.cost_of(kind, table,
+                                       matches=0 if kind == "table"
+                                       else 10 ** 9)
+        if pushes_here:
+            operators.append("filter")
+        streams.append(_rows_for(pager, table, kind, pushes_here, tree))
+    rows = streams[0]
+    ons = plan.get("_on", ())
+    widths = [len(tb.CATALOG[t]["columns"]) for (t, _k) in scans]
+    joined_widths = widths[0] if widths else 0
+    for i, stream in enumerate(streams[1:]):
+        operators.append("nested_loop")
+        (lt, lcol), (rt, rcol) = ons[i]
+        # the left ref's column sits at the accumulated offset of its table
+        offset = 0
+        for j in range(i + 1):
+            if scans[j][0] == lt:
+                offset += lcol
+                break
+            offset += widths[j]
+        rows = nested_loop(rows, stream, (offset, rcol))
+    out = tuple(rows)
+    # the select's three shapes: whole rows, a projection, the count
+    if plan.get("_select") == "columns":
+        # the resolve turned the projection into (table, index) addresses
+        col_index = [index for (_t, index) in plan.get("_columns", ())]
+        out = tuple(tuple(r[c] for c in col_index) for r in out)
+    elif plan.get("_select") == "COUNT(*)":
+        out = ((len(out),),)
+    order = plan.get("_order")
+    if order:
+        (ot, ocol), desc = order
+        offset = 0
+        for j, (t, _k) in enumerate(scans):
+            if t == ot:
+                offset += ocol
+                break
+            offset += widths[j]
+        out = tuple(sorted(out, key=lambda r: (r[offset], r[0]),
+                           reverse=desc))
+    limit = plan.get("_limit")
+    if limit is not None:
+        out = out[:limit]
+    return {"rows": out, "pages": pages_read,
+            "operators": tuple(operators)}
