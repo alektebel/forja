@@ -901,12 +901,48 @@ nothing was exported). The harness in `.l4-dev/` is complete: `run_all.py`
 bound every mutant's check at 120s — a mutant that hangs is CAUGHT, which is
 also the OOM fix (a hung cycle-walk mutant had been eating RAM unbounded).
 The course README carries the stage table, the measured verification and the
-world's three digests. The next unit in the queue is **H7**.
+world's three digests.
+
+## In flight — H7 `compression-from-scratch`, shipped through stage 10
+
+**H7 is built and pushed.** The world (`corpus.py` — five deterministic
+corpora and `BARS`, the ratio ceilings that are law; `inflate.py`, `lz4ref.py`
+and `zstdref.py` — strict reference decoders, `inflate` verified against zlib
+at three levels plus stored before the first stage was written) froze at four
+modules pinned by digest (`verify_provided.py`: `PROVIDED: 63, PROBLEMS: 0`).
+All ten stages: 1 the LSB-first bit writer, 2 run-length (BINARY 110‰ vs the
+700 bar), 3 canonical Huffman from lengths alone, 4 the package-merge length
+limit with Kraft's sum exactly one, 5 LZ77 — the window is the whole trade
+(TEXT 105→98‰, RANDOM answers all literals at 1000‰), 6 LZ4's block with its
+nibbles and 255-extensions (TEXT 94‰, `lz4ref` judges), 7 DEFLATE's stored /
+fixed / dynamic blocks with the per-block choice (`inflate` judges; RANDOM
+stores), 8 FSE — the table you build and walk backwards, the round-trip the
+judge (TEXT 1874→1017), 9 the frame — header, block kinds, checksum, with the
+flipped-bit law held against `zstdref`, 10 the proof: `prove` runs every
+codec over a corpus and `audit` grades the whole against `corpus.BARS`. The
+harness in `.h7-dev/` is complete: `run_all.py` 10/10 green, `smoke.py` PASS,
+`run_assembled.py` 10/10, `audit_course.py` `PROBLEMS: 0`, `count_tests.py`
+163 asserts (`[15, 32, 11, 14, 21, 11, 10, 19, 20, 10]`), and the mutation
+sweep `mutate_all.py` **121/121, MISSED OR BROKEN: 0**. The contract's §7
+carries seven amendments recorded at authoring: stage 8's power-of-two table
+size, derived state count and all-zero degeneration (and its reuse of stage
+1's `EncodeError`), and stage 9's RLE-kind wording — the reference reads a
+raw block's content verbatim, so the RLE kind is spent only on a whole-block
+run of one byte — plus the compressed block's reach law and the
+incompressible-data escape. Two harness lessons from the assembly, both now
+in the ported shape: a check's `check()` body must import the **ambient**
+tree (the manifest runner puts the drive on `sys.path`; building one's own
+solution-overlaid workspace defeats the template-red test and the planted
+mutants — `_repo()` tries `os.getcwd()` before `H7_REPO` for exactly this),
+and a subprocess probe inside a check inserts the course root **only**, never
+`course/solutions/`, or the solutions shadow a failing mutant. The course
+README carries the stage table, the measured verification and the world's
+four digests. The next unit in the queue is **H6**.
 Twelve *projects* — not slots — are queued in `ENTERPRISE.md`: the enterprise-AI list kept
 on `claude/enterprise-ai-project-guides`, each row naming what this repository
 already has for it and the gap that remains.
 The rows registered in the units before this one queue behind it, one per slot —
-H5, L4, H7, H6, then I13, I14, H8 (G8 is now among the shipped) — each carrying its own thesis in
+H6, then I13, I14, H8 (G8, H5, L4 and H7 are now among the shipped) — each carrying its own thesis in
 `path.py`, each with its place in `cz dag`. After those: G5/G6 (phase G's
 remaining two, which need checkers, not writing), phase K's five, and the rows
 registered from the recovered corpora — **L5 `redis-from-scratch`** (L2 + J3),
@@ -915,7 +951,7 @@ and **L7 `docker-from-scratch`** (G4 + J4), **L8 `emulator-from-scratch`**
 (G3 — CHIP-8, then a second machine) and **L9 `rl-control-from-scratch`**
 (A8 — DP, then MC, then TD/SARSA/Q-learning, then an approximator) from the
 build-your-own-x tutorials in `tutorials-reference/`. The backlog
-is **28 `author`, 6 `legacy`, 2 `salvage`, 34 `ready` — 81 rows** — `./cz path`,
+is **36 `author`, 6 `legacy`, 2 `salvage`, 38 `ready` — 82 rows** — `./cz path`,
 `./cz dag`, `./cz tracks` and the ROADMAP's own tables are authoritative over this
 file.
 

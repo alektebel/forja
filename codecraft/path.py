@@ -433,8 +433,8 @@ PHASES = [
                 "plus a partition schedule on which the wrong implementation splits "
                 "the brain. Author consensus-from-scratch; J3 is durability and I9 "
                 "is the fabric."},
-        {"id": "H7", "title": "Compression From Scratch", "course": None,
-         "kind": "author", "prereq": [],
+        {"id": "H7", "title": "Compression From Scratch",
+         "course": "compression-from-scratch", "kind": "ready", "prereq": [],
          "why": "A compressor is a byte format you can be exactly wrong about, and "
                 "it is judged on a ratio: Huffman with canonical codes and a length "
                 "limit; LZ77's window and why its size is the whole trade; LZ4's "
