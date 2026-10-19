@@ -881,8 +881,8 @@ PHASES = [
                 "whose every number (returns, regret, the policy's own "
                 "actions) the world can recompute. Source: RL-from-zero and "
                 "dennybritz's notebooks, in `tutorials-reference/`."},
-        {"id": "L4", "title": "Git From Scratch", "course": None,
-         "kind": "author", "prereq": ["G4"],
+        {"id": "L4", "title": "Git From Scratch",
+         "course": "git-from-scratch", "kind": "ready", "prereq": ["G4"],
          "why": "The one artefact in this repository that another program "
                 "validates: a `.git` directory that real `git` reads. Blobs "
                 "addressed by their own digest, trees whose entries are sorted and "

@@ -30,6 +30,14 @@ second write of the same body is the same file by definition. Writing it
 again is harmless but meaningless; skipping it is what the store's own
 `written` counter records, and the check holds that counter against the
 law — two writes of one body, one file.
+
+DESIGN DECISION — why does `hash_object` answer the sha rather than the
+path it wrote?
+Because the sha is the store's whole contract: the path is `objects/` +
+the sha's own two-and-thirty-eight, derivable from the answer, while the
+reverse is not true — a caller that got a path would still have to parse
+it to learn the name. The name is the object's identity; everything else
+is where it lives.
 """
 
 import repo as rp

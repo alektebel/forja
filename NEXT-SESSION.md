@@ -874,8 +874,34 @@ across ten stages (`[53, 38, 33, 31, 34, 29, 30, 22, 29, 32]`), and the
 mutation sweep `mutate_all.py` **134/134, MISSED OR BROKEN: 0**. The assembled
 `query-engine-from-scratch/course.py` (1,985 lines) is committed and pushed,
 and the course README carries the stage table, the measured-verification table
-and the world's four digests. The next unit in the queue is **L4** — see the
-rows below.
+and the world's four digests.
+
+## In flight — L4 `git-from-scratch`, shipped through stage 10
+
+**L4 is built and pushed.** The world (`repo.py`, `objects.py`, `worktree.py`
+— including `FIXTURE_PACK`, a pack real git built) froze at ten templates +
+ten solutions; the contract lives in `.l4-dev/CONTRACT.md` (§7 records the
+one amendment: stage 10's solution holds the judge — os/tempfile/subprocess/
+shutil in verify alone, allow-listed in `audit_course.py`). All ten stages:
+1 the layout and HEAD's promise, 2 the blob read, 3 the blob written at its
+digest, 4 the tree read in git's sort, 5 the whole working tree bottom-up,
+6 the commit with its frozen line, 7 the index as a record (git's own
+`ls-files --stage` reads it), 8 the log walked through parents (a cycle is a
+refusal naming the sha where the loop closes), 9 the packfile down to its
+deltas (ofs against the pack's own objects, ref against the store; the nine
+fixture objects answer real git's shas), 10 the proof — `run_all` walks the
+ladder end to end and answers the tree `dc8f37d5…` and the commit
+`1f484a9e…` real git named, `verify` hands the exported store to real
+`git fsck --strict` (pass / git_disagrees with the complaint / refusal when
+nothing was exported). The harness in `.l4-dev/` is complete: `run_all.py`
+10/10 green, `smoke.py` PASS, `run_assembled.py` 10/10, `audit_course.py`
+`PROBLEMS: 0`, `count_tests.py` 142 asserts
+(`[12, 11, 9, 11, 10, 16, 19, 16, 20, 18]`), and the mutation sweep
+`mutate_all.py` **67/67, MISSED OR BROKEN: 0**. The mutation runners now
+bound every mutant's check at 120s — a mutant that hangs is CAUGHT, which is
+also the OOM fix (a hung cycle-walk mutant had been eating RAM unbounded).
+The course README carries the stage table, the measured verification and the
+world's three digests. The next unit in the queue is **H7**.
 Twelve *projects* — not slots — are queued in `ENTERPRISE.md`: the enterprise-AI list kept
 on `claude/enterprise-ai-project-guides`, each row naming what this repository
 already has for it and the gap that remains.

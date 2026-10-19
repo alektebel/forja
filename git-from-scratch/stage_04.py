@@ -22,6 +22,15 @@ Because the mode is the entry's type claim: `40000` promises a tree, a
 the claim. A reader that passed unknown modes through would answer a tree
 whose entries it cannot vouch for — the one thing an object store may
 never do.
+
+DESIGN DECISION — why do both doors read one object and answer twice?
+Because the two questions a tree answers — what does it hold, and in what
+order does it hold it — are asked by different callers: `ls_tree` serves
+the reader who wants the entries as the file stores them, and
+`ls_tree_names` serves the comparer who wants git's own display order. A
+door that reordered for both would make one caller parse what the other
+already paid for; reading once and answering twice is the whole
+economy.
 """
 
 import repo as rp
