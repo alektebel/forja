@@ -1,4 +1,4 @@
-"""The stage 8 solution: the log, and the rule that makes it a promise."""
+"""The stage 8 solution: the log first, the barrier, then the answer."""
 
 import disk as dk
 import pages as pg
@@ -6,13 +6,6 @@ import tables as tb
 import ops
 
 LOG_KEYS = ("lsn", "commit_lsn", "durable")
-
-#: the log's first page: the first one after the world's own.
-_COMMIT_AT = 186
-_LOG_FIRST = 18
-
-#: the commit record's op word.
-_COMMIT = "commit"
 
 
 class QueryError(ValueError):
@@ -24,111 +17,109 @@ def _refuse(reason, what):
     raise QueryError("%s: %r" % (reason, what))
 
 
+#: one log record's frame: a length byte, then the record's own bytes — the
+#: same law the table pages keep (tables.page_rows reads this shape).
+_LOG_META = 0
+
+
 class WAL:
-    """The log on its own pages: append records, commit, answer LSNs."""
+    """The log: one record per op, one commit record per transaction."""
 
     def __init__(self, pager):
+        """The log over its own pager; page 0 is the log's meta page."""
         self._pager = pager
-        self._page = pager.allocate()
-        while self._page < _LOG_FIRST:
-            # the world's pages are written, not allocated — the freelist
-            # does not know them; the log starts past the world
-            self._page = pager.allocate()
-        self._at = 0
-        self._first = {}      # xid -> the first record's LSN
+        self._page = _LOG_META + 1    # the log's first data page
+        self._offset = 1              # past the count byte
+        self._lsn = {}                # xid -> first record's LSN
+        try:
+            meta = self._pager.read(_LOG_META)
+            first, at = self._read_varint(meta, 0)
+            if first:
+                self._page = first
+                self._offset = self._tail(first)
+            else:
+                self._persist()
+        except pg.PageError:
+            self._persist()
 
-    def _encode(self, record):
-        """(xid, table, op, row) as the record format's bytes."""
-        xid, table, op, row = record
-        if not isinstance(row, tuple):
-            row = tuple(row)
-        return pg.Pager.encode((xid, table, op) + tuple(row))
+    # --- the record format: length byte + record bytes, per page a count ---
+    @staticmethod
+    def _read_varint(data, at):
+        value = 0
+        while True:
+            byte = data[at]
+            value = (value << 7) | (byte & 0x7F)
+            at += 1
+            if not byte & 0x80:
+                return value, at
 
-    def append(self, record, sync=True):
-        """One log record in, its LSN out — (page << 8) | offset, packed.
+    @staticmethod
+    def _write_varint(value, out):
+        while value >= 0x80:
+            out.insert(0, 0x80 | (value & 0x7F))
+            value >>= 7
+        out.insert(0, value)
 
-        The append syncs: the log's promise is durable per record. The
-        commit record is the one exception — it stays buffered until the
-        commit's own barrier (§7 amendment)."""
-        xid = record[0]
-        data = self._encode(record)
-        if 1 + len(data) > pg.PAGE_SIZE:
-            _refuse("too_long", record)
-        if self._at + 1 + len(data) > pg.PAGE_SIZE:
-            self._page = self._pager.allocate()
-            self._at = 0
-        page_data = bytearray(self._pager.read(self._page))
-        page_data[self._at] = len(data)
-        page_data[self._at + 1:self._at + 1 + len(data)] = data
-        self._pager.write(self._page, bytes(page_data))
-        lsn = (self._page << 8) | self._at
-        self._at += 1 + len(data)
-        self._first.setdefault(xid, lsn)
-        if sync:
-            self._pager.sync()   # an append is the log's promise: durable
+    def _tail(self, page):
+        """Where the write cursor sits: past the last complete record."""
+        raw = self._pager.read(page)
+        at = 1
+        for _ in range(raw[0]):
+            rec_len = raw[at]
+            at += 1 + rec_len
+        return at
+
+    def _persist(self):
+        """The log's meta page: the first data page, packed.
+
+        A page number is at most 127 — one varint byte, placed, not
+        inserted."""
+        meta = bytearray(pg.PAGE_SIZE)
+        meta[0] = self._page
+        self._pager.write(_LOG_META, bytes(meta))
+
+    def append(self, record):
+        """One log record in, its LSN out."""
+        xid, table, op, payload = record
+        if not isinstance(xid, int) or xid < 1:
+            _refuse("no_xid", xid)
+        body = pg.Pager.encode((xid, table, op) + tuple(payload or ()))
+        if 1 + len(body) > pg.PAGE_SIZE - self._offset - 1 and self._offset:
+            self._rotate()
+        raw = bytearray(self._pager.read(self._page))
+        raw[0] += 1
+        raw[self._offset] = len(body)
+        for i, byte in enumerate(body):
+            raw[self._offset + 1 + i] = byte
+        lsn = self._page * pg.PAGE_SIZE + self._offset
+        if xid not in self._lsn:
+            self._lsn[xid] = lsn
+        self._offset += 1 + len(body)
+        self._pager.write(self._page, bytes(raw))
         return lsn
+
+    def _rotate(self):
+        """A fresh page when the cursor's page cannot hold the record."""
+        self._page = self._pager.allocate()
+        self._offset = 1
+        self._persist()
 
     def commit(self, xid):
-        """The commit record in, its LSN out.
-
-        The commit record rides the sector's edge: a fresh page, the
-        record starting at byte 186 with its length at both ends. The
-        barrier is the commit's last step — a crash before it leaves the
-        record buffered, and the tear takes exactly its far half
-        (§7 amendment)."""
-        self._page = self._pager.allocate()
-        while self._page < _LOG_FIRST:
-            self._page = self._pager.allocate()
-        self._at = 0
-        record = (xid, None, _COMMIT, ())
-        data = self._encode(record)
-        page_data = bytearray(self._pager.read(self._page))
-        page_data[186] = len(data)
-        page_data[187:187 + len(data)] = data
-        page_data[187 + len(data)] = len(data)
-        self._pager.write(self._page, bytes(page_data))
-        lsn = (self._page << 8) | 186
-        self._first.setdefault(xid, lsn)
+        """The commit record in, its LSN out."""
+        lsn = self.append((xid, "-", "commit", ()))
         return lsn
-
-    def records(self):
-        """Every record so far: sequential from each page's start, then
-        each page's tail slot — where the commit records live."""
-        out = []
-        page = _LOG_FIRST
-        while page <= self._page:
-            data = self._pager.read(page)
-            at = 0
-            limit = self._at if page == self._page else pg.PAGE_SIZE
-            while at < limit and data[at] != 0:
-                length = data[at]
-                raw = data[at + 1:at + 1 + length]
-                try:
-                    out.append(pg.Pager.decode(raw))
-                except pg.PageError:
-                    break
-                at += 1 + length
-                if at >= _COMMIT_AT:
-                    break
-            # the commit slot: the record's length at both ends; the
-            # reader trusts a record whose two ends agree
-            if data[_COMMIT_AT]:
-                length = data[_COMMIT_AT]
-                end = _COMMIT_AT + 1 + length
-                if end < pg.PAGE_SIZE and data[end] == length:
-                    raw = data[_COMMIT_AT + 1:end]
-                    try:
-                        out.append(pg.Pager.decode(raw))
-                    except pg.PageError:
-                        pass
-            page += 1
-        return out
 
 
 def commit(db, xid):
-    """The rule: append the commit record, sync the log, answer."""
-    pager, wal = db
+    """The rule: append the commit record, sync the log, then answer."""
+    wal = db.get("wal") if isinstance(db, dict) else getattr(db, "wal", None)
+    if not isinstance(wal, WAL):
+        _refuse("no_wal", db)
+    barriers = wal._pager.disk.counters()["barriers"]
+    lsn = wal._lsn.get(xid)
     commit_lsn = wal.commit(xid)
-    pager.sync()
-    return {"lsn": wal._first.get(xid), "commit_lsn": commit_lsn,
-            "durable": pager.disk.counters()["barriers"]}
+    wal._pager.sync()
+    durable = wal._pager.disk.counters()["barriers"]
+    if durable <= barriers:
+        _refuse("no_sync", xid)
+    return {"lsn": lsn, "commit_lsn": commit_lsn, "durable": durable}
