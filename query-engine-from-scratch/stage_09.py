@@ -1,46 +1,46 @@
 """Query Engine From Scratch — stage 9: The recovery: redo, undo, discard.
 
+The commit made a promise; the recovery is how the promise survives the
+power cut. `recover` reads the durable log after a crash and answers
+RECOVER_KEYS: the committed transactions — those with a durable commit
+record —, the rolled-back ones (started, never committed), and the discarded
+bytes: the torn tail, whose records are *never trusted*. `redo` replays the
+committed transactions' operations against the tables; `undo` reverses the
+uncommitted ones' — a transaction that wrote rows but never committed wrote
+rows that must vanish. The record's `rows` is the recovered state, and the
+world's `CRASH_SCHEDULE` pins what that must be: `clean` keeps everything,
+`uncommitted-loss` loses t2's row, `many-uncommitted` keeps t1 and t4 and
+loses t2 and t3.
 
-TODO: implement each function; the docstring is the contract.
-The commit stage made the log a promise; the recovery is where the promise is
-kept. `recover` reads the durable log after a crash and answers three lists:
-the committed transactions (those whose commit record is durable), the
-rolled-back ones (started, never committed — their work is undone), and the
-discarded bytes (the torn tail — a record half-written by the power fail is
-discarded, never trusted). `redo` replays the committed transactions'
-operations against the tables; `undo` reverses the uncommitted ones'. The
-record's `rows` is the recovered state, and the world's `CRASH_SCHEDULE` pins
-what that must be — four fixtures, one with a torn log, each with its own
-committed/uncommitted split.
+`run_crash` runs one fixture end to end — the workload through a real WAL
+(stage 8's), the crash through a real `power_fail` with or without a tear,
+the recovery over the durable image — and the check holds each fixture's
+answer against the fixture's own committed/uncommitted split. The torn-log
+fixture is the one that separates a recovery from a replay: the torn record
+is discarded, and a recovery that trusts bytes past the last complete record
+resurrects a transaction that never was.
 
-`run_crash` runs one fixture end to end: the workload appended to the log,
-the crash (`power_fail(tear=fixture["tear"])`), the recovery, the recovered
-rows — and the check holds each fixture's answer against the fixture's own
-split. The discipline is law 15: nothing uncommitted survives a crash, and
-nothing committed is lost to one.
+DESIGN DECISION — Why does `recover` classify *transactions* rather than
+operations?
+Because the unit of durability is the transaction: a commit record makes
+every record before it durable, and its absence makes none of them count.
+A recovery that classified operations would redo half of an uncommitted
+write — worse than losing it, because the caller believed it.
 
-DESIGN DECISION — Why does `recover` answer lists rather than replaying
-itself?
-Because the decision and the mechanics are different failures: a recovery
-that misclassifies a transaction (committed vs rolled-back) is wrong even if
-its replay is flawless, and a check that cannot see the classification can
-only test the aggregate. The lists are the diagnosis; `redo`/`undo` are the
-mechanics; the check holds both.
+DESIGN DECISION — Why does `undo` reverse operations rather than restore a
+snapshot?
+Because the log is the only witness: there is no snapshot to restore, and
+the uncommitted operations are precisely enumerated — each insert undone by
+removal, each update undone by its before-image. The record format's
+update carries the old value for exactly this reason; the reversal is
+arithmetic over the log, not a second copy of the world.
 
-DESIGN DECISION — Why is a torn record discarded rather than reconstructed?
-Because reconstruction is guessing: a half-record's first bytes are real, but
-the tail is whatever the power fail left, and a recovery that trusts a torn
-tail resurrects a transaction that never was. The discarded count is the
-answer's honesty — the `torn-log` fixture's record says one record lost, and
-trusting it fails the check by design.
-
-DESIGN DECISION — Why does `run_crash` take the fixture rather than a
-fixture index?
-Because the fixture is data — the world's own record of a crash — and an
-index would make the recovery consult the world's order instead of its
-content. The fixture carries its workload, its tear flag, its split; the
-recovery reads the log, not the fixture, and the check holds the two
-against each other.
+DESIGN DECISION — Why is a torn tail *discarded* rather than retried?
+Because the torn bytes are the crash's own signature: a record whose length
+byte says one thing and whose bytes say another is not a record the disk
+owes anyone. Retrying would mean trusting bytes the barrier never made
+durable — the exact lie law 15 exists to catch. The recovery keeps what the
+log can prove and throws the rest away.
 """
 
 import disk as dk
@@ -56,29 +56,31 @@ class QueryError(ValueError):
 
 
 def recover(pager):
-    """The durable log after a crash, classified.
+    """The durable log, classified: committed, rolled back, discarded.
 
-    Answers RECOVER_KEYS: `committed` (xids with a durable commit record),
-    `rolled_back` (started, never committed), `discarded` (the torn
-    records' count), and `rows` — the tables as the log recovers them."""
+    Reads every complete record off the log's pages; a transaction is
+    committed when its durable commit record is present, rolled back when
+    it started and never committed, and the torn tail — bytes the format
+    refuses — is discarded, never trusted."""
 
     raise NotImplementedError("stage 9: implement recover()")
 
 
 def redo(log, tables):
-    """The committed transactions' operations, replayed in order.
+    """The committed operations, replayed against the tables.
 
-    `log` is the decoded record list; `tables` is the name -> rows dict
-    replayed against. Answers the tables after the replay."""
+    `log` is recover's classification; `tables` is the recovered state
+    being built. Answers the tables the redo touched, with the committed
+    operations' effects in log order."""
 
     raise NotImplementedError("stage 9: implement redo()")
 
 
 def undo(log, tables, xids):
-    """The uncommitted transactions' operations, reversed.
+    """The uncommitted operations, reversed out of the tables.
 
-    Answers the tables after the reversal — the work those xids did is
-    gone."""
+    `xids` are the rolled-back transactions; answers the tables without
+    their effects."""
 
     raise NotImplementedError("stage 9: implement undo()")
 
@@ -86,8 +88,9 @@ def undo(log, tables, xids):
 def run_crash(fixture):
     """One fixture end to end: workload, crash, recovery, rows.
 
-    Runs the fixture's transactions through a WAL, crashes the disk
-    (`power_fail(tear=fixture["tear"])`), recovers, and answers
-    RECOVER_KEYS for the fixture."""
+    `fixture` is a `CRASH_SCHEDULE` entry. Runs the fixture's transactions
+    through a real WAL (stage 8's), crashes the disk the way the fixture
+    says (`power_fail(tear=fixture["tear"])`), recovers over the durable
+    image, and answers RECOVER_KEYS."""
 
     raise NotImplementedError("stage 9: implement run_crash()")

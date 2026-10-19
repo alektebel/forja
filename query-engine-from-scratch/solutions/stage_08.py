@@ -80,10 +80,17 @@ class WAL:
 
     def append(self, record):
         """One log record in, its LSN out."""
-        xid, table, op, payload = record
+        xid, table, op, *rest = record
+        # a record's payload is its row's columns: either one tuple (the
+        # row) or the columns already spread
+        if len(rest) == 1 and isinstance(rest[0], tuple):
+            payload = tuple(rest[0]) if rest[0] else ()
+        else:
+            payload = tuple(rest)
         if not isinstance(xid, int) or xid < 1:
             _refuse("no_xid", xid)
-        body = pg.Pager.encode((xid, table, op) + tuple(payload or ()))
+        cols = (xid, table, op) + payload
+        body = pg.Pager.encode(cols)
         if 1 + len(body) > pg.PAGE_SIZE - self._offset - 1 and self._offset:
             self._rotate()
         raw = bytearray(self._pager.read(self._page))
