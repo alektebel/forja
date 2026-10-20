@@ -937,12 +937,58 @@ mutants — `_repo()` tries `os.getcwd()` before `H7_REPO` for exactly this),
 and a subprocess probe inside a check inserts the course root **only**, never
 `course/solutions/`, or the solutions shadow a failing mutant. The course
 README carries the stage table, the measured verification and the world's
-four digests. The next unit in the queue is **H6**.
+four digests.
+
+## In flight — H6 `consensus-from-scratch`, shipped through stage 10
+
+**H6 is built and pushed.** The world (`wire.py` — the six-message grammar,
+the role builders, `majority(n) = n // 2 + 1`; `disk.py` — the byte log whose
+`crash` loses the last write; `sim.py` — five nodes on integer ticks with
+cut/heal schedules, the clock owned as `elapsed` and `TIMEOUTS` 11/7/9/5/13
+against heartbeat 5; `scenarios.py` — the seven fixed schedules with both
+`PINS` columns; `history.py` — the linearizability judge; `naive.py` — the
+foil that treats a vote request as a compliment) froze at six modules pinned
+by digest (`verify_provided.py`: `PROVIDED: 84, PROBLEMS: 0`; the probe node
+`.h6-dev/probe_node.py` was calibrated against every PINS row before stage 1
+was written). All ten stages: 1 one vote per term with the up-to-date law,
+2 the election whose leader is a majority tally of DISTINCT grants, 3 the
+heartbeat that exercises leadership and the reply ledger, 4 replication where
+entries match term by term and a divergent suffix is overwritten, 5 the
+commit rule that moves only over own-term entries a majority holds, 6 the
+stale leader refused, downgraded and deposed by its own term's truncation,
+7 the v1 image and the heal that IS stage 4's prev check, 8 compaction that
+cannot eat a committed entry, 9 the joint membership window — one at a time,
+quorum summing both majorities, 10 the proof: `init`/`recv`/`tick`/`client`
+composing 1–9 into the node the fabric drives, `prove` pinning all seven
+scenarios against the probe column, `audit` RUNNING the foil through
+`sim.Cluster` and refusing its own pass unless ASYMMETRIC comes back with
+the double-committed slot `(25, 0, x=1, y=2)`. The composed node holds three
+laws no earlier stage owned: a same-term REQUEST_VOTE denial keeps the role
+— `grant_vote` rebuilds the follower shape unconditionally and would forfeit
+an election in flight, which is how JOINT elects `a2` mid-change at 35 — the
+fabric fans ONE election request per beat (per-peer emission delivers the
+grid twice), and membership is applied at the commit line, not at append.
+The harness in `.h6-dev/` is complete: `run_all.py` 10/10 green,
+`smoke.py` PASS, `run_assembled.py` 10/10, `audit_course.py` `PROBLEMS: 0`,
+`count_tests.py` 125 asserts (`[10, 11, 14, 12, 8, 13, 16, 18, 15, 8]`,
+370 facts across the ten checks), and the mutation sweep `mutate_all.py`
+**148/148, MISSED OR BROKEN: 0** (stage 10's fifteen: no-persist,
+no-commit-membership, no-stage-05, read-uncommitted, deny-loses-candidacy,
+fan-every-request, heartbeat-slips, empty-appends, no-stale-standdown,
+prove-reads-naive, foil-read-from-PINS, foil-believed-dirty,
+audit-drops-foil, stepdown-keeps-maps, snapshot-unacked). The contract's §4
+harness law — checks import the AMBIENT tree, tempdir overlay as fallback —
+was REQUIRED from the first H6 check and held; the new lesson from stage 10
+is that the ambient probe must run the check from OUTSIDE the course root
+(`cd /home/diego/Desarrollo`), or ambient matches the root and imports the
+template, and the green run is actually the stub. The course README carries
+the stage table, the measured verification and the world's six digests. The
+next unit in the queue is **I13**.
 Twelve *projects* — not slots — are queued in `ENTERPRISE.md`: the enterprise-AI list kept
 on `claude/enterprise-ai-project-guides`, each row naming what this repository
 already has for it and the gap that remains.
 The rows registered in the units before this one queue behind it, one per slot —
-H6, then I13, I14, H8 (G8, H5, L4 and H7 are now among the shipped) — each carrying its own thesis in
+I13, I14, H8 (G8, H5, L4, H7 and H6 are now among the shipped) — each carrying its own thesis in
 `path.py`, each with its place in `cz dag`. After those: G5/G6 (phase G's
 remaining two, which need checkers, not writing), phase K's five, and the rows
 registered from the recovered corpora — **L5 `redis-from-scratch`** (L2 + J3),
@@ -951,7 +997,7 @@ and **L7 `docker-from-scratch`** (G4 + J4), **L8 `emulator-from-scratch`**
 (G3 — CHIP-8, then a second machine) and **L9 `rl-control-from-scratch`**
 (A8 — DP, then MC, then TD/SARSA/Q-learning, then an approximator) from the
 build-your-own-x tutorials in `tutorials-reference/`. The backlog
-is **36 `author`, 6 `legacy`, 2 `salvage`, 38 `ready` — 82 rows** — `./cz path`,
+is **35 `author`, 6 `legacy`, 2 `salvage`, 39 `ready` — 82 rows** — `./cz path`,
 `./cz dag`, `./cz tracks` and the ROADMAP's own tables are authoritative over this
 file.
 

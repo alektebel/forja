@@ -418,21 +418,24 @@ PHASES = [
                 "crash schedule where the log decides which tuples exist. Author "
                 "query-engine-from-scratch; G4 is the format and the barrier, and A6 "
                 "is the distributed half this repo already has."},
-        {"id": "H6", "title": "Consensus From Scratch", "course": None,
-         "kind": "author", "prereq": ["J3", "I9"],
-         "why": "Consensus is the one thing a replicated system cannot fake: a "
-                "leader is a number a majority agreed on, and a log entry is "
-                "committed when a majority holds it. Five nodes, a deterministic "
-                "network with partitions and delays, a clock, and durable storage "
-                "that can lose its last write are provided. Elect a leader with "
-                "terms and votes; replicate a log whose entries match term by term; "
-                "commit only what a majority holds and refuse a stale leader; keep a "
-                "membership change safe; snapshot a log without losing a committed "
-                "entry; and recover a node whose disk lied. The acceptance is a "
-                "linearizability check over the history the world itself recorded, "
-                "plus a partition schedule on which the wrong implementation splits "
-                "the brain. Author consensus-from-scratch; J3 is durability and I9 "
-                "is the fabric."},
+        {"id": "H6", "title": "Consensus From Scratch",
+         "course": "consensus-from-scratch", "kind": "ready", "prereq": ["J3", "I9"],
+         "why": "Ten stages, all graded: one vote per term with the up-to-date "
+                "law; an election where leadership is a majority tally; "
+                "heartbeats that exercise the leadership and a reply ledger; "
+                "replication where entries match term by term and a divergent "
+                "suffix is overwritten; a commit rule that moves only over "
+                "current-term entries a majority holds; a stale leader refused, "
+                "downgraded, deposed by its own term's truncation; an image that "
+                "persists and a heal from the boundary the disk kept; compaction "
+                "that cannot eat a committed entry; a joint membership window "
+                "with a quorum that sums two majorities; and the proof — the "
+                "composed node driven through seven fixed schedules, pinned "
+                "against the probe column, judged by the linearizer, with the "
+                "naive foil demonstrably double-committing under the asymmetric "
+                "partition. The clock, the fabric, the torn disk and the history "
+                "checker are provided; `time`, `random`, `os` and floats are "
+                "landmines. J3 is durability and I9 is the fabric."},
         {"id": "H7", "title": "Compression From Scratch",
          "course": "compression-from-scratch", "kind": "ready", "prereq": [],
          "why": "A compressor is a byte format you can be exactly wrong about, and "
