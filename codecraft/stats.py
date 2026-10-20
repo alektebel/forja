@@ -122,6 +122,12 @@ STAGES = {
     "transformer-inference-physics": [
         (17, 15), (13, 12), (17, 14), (18, 16), (12, 11),
         (12, 11), (12, 13), (12, 13), (14, 14), (13, 16)],
+    # Measured 2026-10-20 from the assembled `course.py` with the same recipe, and
+    # the mutants are the `.h8-dev` harness's sweep, `mutate_all.py <stage>`,
+    # re-measured from the harness itself after the last check edit.
+    "failover-from-scratch": [
+        (15, 13), (17, 13), (18, 12), (13, 13), (14, 13),
+        (14, 13), (11, 13), (13, 13), (21, 13), (11, 13)],
 }
 
 

@@ -451,20 +451,21 @@ PHASES = [
                 "flips one bit to see whether the checksum you wrote notices. Author "
                 "compression-from-scratch; nothing to read first — it is bytes and "
                 "integers the whole way."},
-        {"id": "H8", "title": "Multi-Region Failover", "course": None,
-         "kind": "author", "prereq": ["A6", "H6"],
-         "why": "A replica is not a strategy until you have failed it over: the "
-                "region that answers has to be a decision with a rule, the write "
-                "that arrived late has to be reconciled rather than guessed at, "
-                "and the RTO you claim has to be a number your own drill "
-                "produced. Two simulated regions with independent clocks, a link "
-                "that drops for a chosen window, and clients with pinned sessions "
-                "are provided. Write the health signal that is not a heartbeat, "
-                "the promotion rule with both of its halves — H6's quorum and "
-                "A6's hinted handoff and Merkle anti-entropy — the redirect that "
-                "does not apply a write twice, and the report that states RTO and "
-                "RPO as measured, with the writes it lost named. Author "
-                "failover-from-scratch; A6 and H6 are the two halves it joins."},
+        {"id": "H8", "title": "Multi-Region Failover",
+         "course": "failover-from-scratch", "kind": "ready", "prereq": ["A6", "H6"],
+         "why": "Built: ten graded stages on two simulated regions with "
+                "independent clocks and a drop-able link — the vector clock "
+                "that orders siblings the values cannot; the R/W/N promise "
+                "that refuses instead of lying; hinted handoff that parks "
+                "and never serves; Merkle anti-entropy whose repair picks "
+                "nothing; health folded from notices, silence not death; "
+                "pinned sessions answered by a table; promotion with H6's "
+                "quorum vote and A6's fence; the redirect whose retried rid "
+                "applies once; late writes reconciled into a named RPO; and "
+                "the drill that measures its own RTO and runs the naive "
+                "foil through the fabric before the audit passes. 129 "
+                "mutation tests planted, 129 caught; the world's seven "
+                "PINS schedules replayed from real runs."},
     ]),
     ("I", "Inference engineering: from silicon to serving", [
         {"id": "I1", "title": "Systems & GPU Foundations", "course": "compiler-and-vgpu",

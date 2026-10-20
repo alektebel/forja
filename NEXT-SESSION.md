@@ -34,8 +34,8 @@ fixed-point discipline. Everything in *Done* is committed and pushed; the sectio
 it is the commit that carries this file.
 
 **Asked for next, by the user, and not started**: nothing outstanding. What remains is
-the queue this file has been carrying — **H8 `failover-from-scratch`** first, then
-I3 → {I6, I7, I8, I10, I12, I14} → I13, and phase K's remaining
+the queue this file has been carrying — **I3 (Modern Serving Engines & Batching)**
+first, then {I6, I7, I8, I10, I12, I14} → I13, and phase K's remaining
 four (K2, K3, K4, K5), one unit per commit, in the order its own section records.
 
 ## Done, pushed, on `origin/main`
@@ -293,9 +293,8 @@ session can pick up cold, and they are listed here in the order the graph sugges
 | K5 | `privacy-from-scratch` | C2, D1 and J2 are built |
 
 The other ten author rows are **blocked on unbuilt rows**, and the chain is worth
-writing down because it decides the order: the I2 and H6 heads of those chains are now
-built, so it reads I3 → {I6, I7, I8, I10, I12, I14} → I13 and H8 stands
-alone — but H8 goes first, it was queued before I2. And **I11 is blocked on I5**, which is a `kind: "salvage"` row
+writing down because it decides the order: the I2, H6 and H8 heads of those chains
+are now built, so it reads I3 → {I6, I7, I8, I10, I12, I14} → I13. And **I11 is blocked on I5**, which is a `kind: "salvage"` row
 (the quantization and compression reading, salvaged into a course) rather than an
 authoring job: a session that wants I11 has to do I5 first, and I5 is a different
 kind of work — turning what other branches already did into a course.
@@ -732,8 +731,8 @@ looking for it, and the plan rows that came out of the same review.
   catch`; the eighteen built courses totalled **9,323 assertions** and **4,079
   caught mutations** at the time (nineteen and 10,452/4,633 after L1; twenty-four
   and 15,538/8,106 before G7; twenty-five and 16,403/8,612 after it; twenty-six and
-  16,543/8,747 after I2 — the sweep re-measured, the earlier readings left as they
-  were taken).
+  16,543/8,747 after I2; twenty-seven and 16,690/8,876 after H8 — the sweep
+  re-measured, the earlier readings left as they were taken).
 - **The hardcoded repo root is gone.** 128 lines across 14 assembled `course.py`
   files carried `DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"`,
   and five more carried the same path as a `COURSE_REPO` default; all of them now
@@ -1027,12 +1026,92 @@ an equivalent mutant gets REPLACED, never a weakened check: stage 8 shed
 three mutants that flipped the crossover law itself rather than admit the
 model missed them. The course README carries the stage table, the measured
 verification, the crossover pins, the two VRAM walls and the world's three
-digests. The next unit in the queue is **H8**.
+digests.
+
+## In flight — H8 `failover-from-scratch`, shipped through stage 10
+
+**H8 is built and pushed.** The world (`kv.py` — the version grammar,
+`("v", value, clock)` over per-node counters with `KvError` refusing an
+unsorted clock, a duplicate node or a negative counter by naming it, and
+`dominates` the ONE ordering the world ships; `topology.py` — six nodes,
+three per region, `PRIMARY = "east"`, `INITIAL_EPOCH = 1`, `TICK_RATE = 2`
+so west's stamps never line up with east's, `LAG_BOUND = 2` making the
+health signal servability and not presence; `fabric.py` — the deterministic
+driver: scheduled `kill`/`revive`/`cut`/`heal`/`client` events, a watch
+channel that delivers `("dead", victim)` to every live same-region peer and
+ONLY across a live link, so a cut is silence and never a notice, one-hop
+redirects that re-inject the SAME `(client, rid)` on purpose, and messages
+built only with `message(kind, target, ...)` so every shape is pinned;
+`naive.py` — the foil, whose three flaws are the negative image of three
+laws: silence-is-death, local-best, no-ledger; `scenarios.py` — the seven
+schedules and the `PINS` table, each row a `probe` column and a `naive`
+column replayed from real runs, never asserted) froze at five modules
+pinned by digest (`verify_provided.py`: `PASS — the world is frozen`). All
+ten stages: 1 `compare`/`coalesce`/`dominance_table` — siblings a clock
+cannot order survive TOGETHER, and an equal-clock pair survives in both
+directions because neither dominates, 2 the R/W/N promise that refuses
+instead of lying, presence counted against `majority` and lag bounded, 3
+hints parked for a peer and `served` never widened by them, re-delivery
+costing nothing, 4 Merkle anti-entropy — a fingerprint over the versions,
+an empty range that still has a hash, `repair` a union that picks nothing,
+5 `health` folded from notices with `alive` retracting `dead` and
+`primary_gone` needing a MAJORITY of the old region on the record, 6
+`answer_region` the session table: a suspect region still serves its own
+pinned clients, and an epoch below the fence is refused forever after, 7
+`propose` and `tally` — the gate (not promoted, at `INITIAL_EPOCH`, not the
+primary's region, the majority dead, this region able to answer) and the
+quorum vote that moves the epoch ONLY when adopted, 8 `apply_once` and
+`seen` — the ledger first, then the fence, then the apply: a committed
+`(client, rid)` re-answers the recorded verdict and moves nothing, and a
+`get` never touches the ledger, 9 `merged`/`lost`/`rpo`/`rto` — the union
+over BOTH key sets, an acked row nobody holds priced as a debt, `rpo` a
+length of WRITE rows not of keys, `rto` served-minus-refused and `None`
+when either side is missing, 10 `init`/`recv`/`tick`/`client` composing
+seven of the nine protocols into one node — stage 7's `propose` wholesale on
+the tick, `adopt` tallied only above the node's own epoch, sync and relay
+absorbed through stage 1's `coalesce` and recorded through stage 8's law,
+the write fanned to the live peers plus ONE relay to the other region's
+entry node, the session redirected ACROSS when home is below quorum — plus
+`drill`, which runs each schedule through `Fabric` at its pinned 24 ticks
+and reports the `rto`/`rpo` the RUN measured, and `audit`, which grades the
+seven rows on promotes/answers/dups/lost and the measured numbers AND drives
+the foil itself through `Fabric(naive)`, refusing a proof that reports
+FAKE_DEATH silent, FLAP deduplicated or DUAL narrowed. Measured:
+`run_all.py` 10/10, `smoke.py` PASS, `run_assembled.py` ASSEMBLED 10/10
+(80 facts), `audit_course.py` `PROBLEMS: 0`, `count_tests.py` 147 asserts
+(`[15, 17, 18, 13, 14, 14, 11, 13, 21, 11]`), and the mutation sweep
+`mutate_all.py` **129/129, MISSED OR BROKEN: 0** (`[13, 13, 12, 13, 13, 13,
+13, 13, 13, 13]`; stage 10's thirteen include the outage's LAST refusal
+taken as its first, the served window forgetting the refusal, a client
+replay re-counting a held row, the relay aimed at the other region's LAST
+node, the link that never speaks, an adopt replying at the OLD epoch, a
+redirect sent home, the quorum gate counting corpses as alive, a
+re-delivered sync double-counted, off-table pins guessing a name, the grade
+skipping the `dups` column, the grade trusting the report's own rto/rpo, and
+an audit that never drives the FAKE_DEATH foil). Two harness lessons: a
+stage's law the draft guessed must be re-derived from a LIVE run of the
+world, not from prose — the equal-clock sibling pair survives `coalesce`
+in BOTH directions, so the absorb fact pins `{v1, v0}` and the draft's
+`(v1,)` was a wrong expectation the check carried until the probe
+corrected it — and composition is not free: `apply_once` appends its
+`(client, rid, key)` row unconditionally, so the arrival the fabric
+re-injects after a redirect double-counted `applied` and lit the `dups`
+column live at REGION_DIE tick 7, and the fix belongs in stage 10's
+`client` (revert `applied`/`applied_count` from the pre-apply state when
+the row is already held), never in stage 8, whose check and thirteen
+mutants were already green. A third, from the battery: a mutant whose `old`
+text is not unique in the file is not a mutation but a rewrite, so three of
+stage 10's anchors are THREE lines (`_record` shares `if entry in
+state["applied"]:` with the client's replay guard, and `_grade`'s column
+loop header is also `audit`'s validation loop) — the anchor grows until it
+names one place. The course README carries the stage table, the measured
+verification, the FLAP/LAG/DUAL/FAKE_DEATH/ALL_DIE pins and the world's
+five digests. The next unit in the queue is **I3**.
 Twelve *projects* — not slots — are queued in `ENTERPRISE.md`: the enterprise-AI list kept
 on `claude/enterprise-ai-project-guides`, each row naming what this repository
 already has for it and the gap that remains.
 The rows registered in the units before this one queue behind it, one per slot —
-H8, then the serving chain I3 → {I6, I7, I8, I10, I12, I14} → I13 (G8, H5, L4, H7, H6 and I2 are now among the shipped) — each carrying its own thesis in
+the serving chain I3 → {I6, I7, I8, I10, I12, I14} → I13 (G8, H5, L4, H7, H6, I2 and H8 are now among the shipped) — each carrying its own thesis in
 `path.py`, each with its place in `cz dag`. After those: G5/G6 (phase G's
 remaining two, which need checkers, not writing), phase K's five, and the rows
 registered from the recovered corpora — **L5 `redis-from-scratch`** (L2 + J3),
@@ -1041,7 +1120,7 @@ and **L7 `docker-from-scratch`** (G4 + J4), **L8 `emulator-from-scratch`**
 (G3 — CHIP-8, then a second machine) and **L9 `rl-control-from-scratch`**
 (A8 — DP, then MC, then TD/SARSA/Q-learning, then an approximator) from the
 build-your-own-x tutorials in `tutorials-reference/`. The backlog
-is **34 `author`, 6 `legacy`, 2 `salvage`, 52 `ready` — 94 rows** (the twelve-row jump over this file's last count is Phase O `2fae2fa`, whose ready registrations never reached it) — `./cz path`,
+is **33 `author`, 6 `legacy`, 2 `salvage`, 53 `ready` — 94 rows** (the twelve-row jump over this file's last count is Phase O `2fae2fa`, whose ready registrations never reached it) — `./cz path`,
 `./cz dag`, `./cz tracks` and the ROADMAP's own tables are authoritative over this
 file.
 
