@@ -128,6 +128,32 @@ STAGES = {
     "failover-from-scratch": [
         (15, 13), (17, 13), (18, 12), (13, 13), (14, 13),
         (14, 13), (11, 13), (13, 13), (21, 13), (11, 13)],
+    # Measured 2026-10-21 with the same recipe (check_N bodies over the
+    # course's own solutions), mutants from each course's own battery:
+    # mutate_irb 21/21, mutate_cws 23/23, mutate.py (distressed) 21/21,
+    # mutate.py (lbo) 33/33, mutation_battery 37/37, all MISSED: 0. The two
+    # unmeasured ones carry None rather than a zero.
+    "credit-origination-from-scratch": [
+        (78, None), (62, None), (76, None), (66, None), (97, None),
+        (63, None), (94, None), (40, None), (34, None), (37, None)],
+    "irb-capital-from-scratch": [
+        (15, 2), (13, 2), (10, 2), (7, 2), (7, 3),
+        (6, 2), (6, 2), (7, 2), (6, 2), (4, 2)],
+    "collections-workout-from-scratch": [
+        (19, 3), (11, 2), (12, 2), (12, 3), (11, 0),
+        (16, 2), (10, 2), (13, 3), (12, 3), (14, 3)],
+    "distressed-debt-from-scratch": [
+        (42, 3), (24, 2), (22, 2), (22, 2), (20, 2),
+        (32, 2), (29, 2), (26, 2), (31, 2), (46, 2)],
+    "lbo-model-from-scratch": [
+        (25, 4), (22, 4), (17, 4), (18, 3), (23, 3),
+        (14, 3), (26, 3), (16, 3), (15, 2), (21, 4)],
+    "blockchain-from-scratch": [
+        (31, 5), (16, 4), (10, 2), (12, 3), (11, 3),
+        (11, 4), (8, 3), (10, 3), (11, 5), (16, 5)],
+    "linux-device-driver-from-scratch": [
+        (10, None), (11, None), (7, None), (6, None), (7, None), (6, None),
+        (5, None), (7, None), (6, None), (6, None), (9, None), (11, None)],
 }
 
 

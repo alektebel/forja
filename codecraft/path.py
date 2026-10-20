@@ -36,10 +36,18 @@ PHASES = [
          "kind": "ready", "prereq": ["A2"],
          "why": "Which context caused the answer — ablation and a LASSO surrogate. "
                 "The eval-flavoured course, and the bridge into RAG. 14 checks."},
-        {"id": "A5", "title": "System Design", "course": "system-design",
+        {"id": "A5", "title": "System Design", "course": "infrastructure-from-scratch",
          "kind": "legacy", "prereq": [],
          "why": "Optional but cheap: caching, queues, idempotency, rate limiting. "
-                "Makes sqs/dynamodb in A1 click and underpins the agent half."},
+                "Makes sqs/dynamodb in A1 click and underpins the agent half. "
+                "The live material is now `infrastructure-from-scratch/` — "
+                "eighteen graded topic modules, twenty check and mutate "
+                "batteries — superseding the 6,000-line `system-design/` pile; "
+                "it stays legacy until `course.py` speaks the api (it is a "
+                "raw-dict catalog `manifests.load` refuses), check_01/check_17 "
+                "test the module their title names, and mutate_05 stops "
+                "hanging. `run_all.py`'s unpack and fifteen placeholder "
+                "title↔file mismatches are the rest of the graduation list."},
         {"id": "A6", "title": "Dynamo From Scratch", "course": "dynamo-paper",
          "kind": "ready", "prereq": ["A1"],
          "why": "The paper behind DynamoDB, in depth: quorums, hinted handoff, "
@@ -937,7 +945,7 @@ PHASES = [
                 "facts: the bank's records are the answer key every stage is "
                 "graded against."},
         {"id": "M0", "title": "Credit Origination",
-         "course": None, "kind": "author", "prereq": [],
+         "course": "credit-origination-from-scratch", "kind": "ready", "prereq": [],
          "why": "Before a loan exists it is an application, and the bank's "
                 "first arithmetic is a decision: the applicant as facts "
                 "(income, obligations, collateral, history) on a provided "
@@ -953,12 +961,12 @@ PHASES = [
                 "promise written before the drawdown, the approval as a "
                 "record with who decided and why, and the offer letter the "
                 "contract then becomes. Ends where M1 begins: a booked "
-                "facility with its schedule. Author "
-                "credit-origination-from-scratch; nothing must come first "
-                "\u2014 the decision is integer arithmetic and a policy, not "
-                "a model."},
+                "facility with its schedule. Built: ten graded stages over "
+                "a provided estate, integer arithmetic and a policy table, "
+                "nothing must come first \u2014 the decision is arithmetic, "
+                "not a model."},
         {"id": "M3", "title": "Collections, Workout and Recovery",
-         "course": None, "kind": "author", "prereq": ["M1"],
+         "course": "collections-workout-from-scratch", "kind": "ready", "prereq": ["M1"],
          "why": "The loan after it goes wrong, as actions and their "
                 "consequences over M1's own book and ledger: the delinquency "
                 "strategy as a state machine (dunning at day X, call at day "
@@ -1002,7 +1010,7 @@ PHASES = [
                 "contract's risk ate it. Author bank-pl-from-scratch; M1 "
                 "is the book, M3 the cash that actually arrives."},
         {"id": "M2", "title": "IRB and Regulatory Capital",
-         "course": None, "kind": "author", "prereq": ["M1"],
+         "course": "irb-capital-from-scratch", "kind": "ready", "prereq": ["M1"],
          "why": "The bank's own estimates, and the ones the regulator does "
                 "not let it trust alone: the PIT/TTC split and where each is "
                 "legal, the IRB risk-weight formula as integer arithmetic "
@@ -1022,7 +1030,7 @@ PHASES = [
                 "with the policy extended rather than replaced and every "
                 "number still basis points."},
         {"id": "M5", "title": "Distressed Debt Investing",
-         "course": None, "kind": "author", "prereq": ["M1", "M3"],
+         "course": "distressed-debt-from-scratch", "kind": "ready", "prereq": ["M1", "M3"],
          "why": "The same default seen from the buy side, where it is an "
                 "opportunity with a price: the capital structure as a "
                 "waterfall of claims over M1's borrower \u2014 who is owed "
@@ -1046,7 +1054,7 @@ PHASES = [
                 "collections log; the bank's provisioning and the fund's "
                 "thesis are two readings of one default."},
         {"id": "M6", "title": "LBO Model From Scratch",
-         "course": None, "kind": "author", "prereq": ["M1", "M3"],
+         "course": "lbo-model-from-scratch", "kind": "ready", "prereq": ["M1", "M3"],
          "why": "The leveraged buyout as arithmetic that either holds or does "
                 "not, built over M1's amortisation machinery and M3's "
                 "workout realism: the target as facts \u2014 EBITDA, "
@@ -1126,9 +1134,47 @@ PHASES = [
          "why": "Built: audit log analysis, anomaly detection, and NIST-aligned "
                 "incident response plans. J5 provides the log infrastructure, A7 provides SLO patterns."},
     ]),
+    ("P", "Linux device drivers", [
+        {"id": "P1", "title": "Kernel Module Lifecycle",
+         "course": "linux-device-driver-from-scratch", "kind": "ready", "prereq": ["C1"],
+         "why": "module_init/exit, module_param, init_module/delete_module — the boundaries of every driver's life"},
+        {"id": "P2", "title": "Character Device Driver",
+         "course": "linux-device-driver-from-scratch", "kind": "ready", "prereq": ["P1"],
+         "why": "cdev, file_operations, open/read/write/release — the simplest device interface"},
+        {"id": "P3", "title": "Kernel Memory Management",
+         "course": "linux-device-driver-from-scratch", "kind": "ready", "prereq": ["P2"],
+         "why": "kmalloc/kfree, mmap, memory lifecycle — every device needs memory"},
+        {"id": "P4", "title": "ioctl Commands",
+         "course": "linux-device-driver-from-scratch", "kind": "ready", "prereq": ["P3"],
+         "why": "_IO/_IOW/_IOR/_IOWR encoding — device-specific userspace commands"},
+        {"id": "P5", "title": "Interrupt Handling",
+         "course": "linux-device-driver-from-scratch", "kind": "ready", "prereq": ["P4"],
+         "why": "request_irq/free_irq/ISR — how hardware talks to the driver"},
+        {"id": "P6", "title": "Platform Driver Model",
+         "course": "linux-device-driver-from-scratch", "kind": "ready", "prereq": ["P5"],
+         "why": "platform_driver/platform_device, probe/remove — kernel hardware discovery"},
+        {"id": "P7", "title": "Device Resources",
+         "course": "linux-device-driver-from-scratch", "kind": "ready", "prereq": ["P6"],
+         "why": "platform_get_resource, memory and IRQ resources — hardware description"},
+        {"id": "P8", "title": "sysfs and Device Attributes",
+         "course": "linux-device-driver-from-scratch", "kind": "ready", "prereq": ["P7"],
+         "why": "kobject hierarchy, /sys/class — driver state exposed to userspace"},
+        {"id": "P9", "title": "Wait Queues and Polling",
+         "course": "linux-device-driver-from-scratch", "kind": "ready", "prereq": ["P8"],
+         "why": "wait_event/wake_up/poll — blocking without busy-waiting"},
+        {"id": "P10", "title": "Workqueues and Kernel Threading",
+         "course": "linux-device-driver-from-scratch", "kind": "ready", "prereq": ["P9"],
+         "why": "queue_work/work_struct/kthread_create — deferred work in the kernel"},
+        {"id": "P11", "title": "Network Device Driver",
+         "course": "linux-device-driver-from-scratch", "kind": "ready", "prereq": ["P10"],
+         "why": "alloc_netdev/ndo_open/ndo_start_xmit — the most complex device type"},
+        {"id": "P12", "title": "Synchronization Primitives",
+         "course": "linux-device-driver-from-scratch", "kind": "ready", "prereq": ["P11"],
+         "why": "spinlock/mutex/semaphore/RCU — concurrency is the hardest part"},
+    ]),
     ("N", "Web3 and simulation", [
         {"id": "N1", "title": "Blockchain From Scratch",
-         "course": None, "kind": "author", "prereq": [],
+         "course": "blockchain-from-scratch", "kind": "ready", "prereq": [],
          "why": "A ledger is a hash chain plus a rule for who appends: the "
                 "block header and the digest that seals it, Merkle trees and "
                 "the inclusion proof that is the point of them, addresses and "

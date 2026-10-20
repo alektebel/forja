@@ -56,7 +56,7 @@ just as well as a Python one — its check functions may shell out to `make`.
 
 | Project | Notes |
 |---|---|
-| `system-design` | 6,000 lines, pure Python, 528 TODO markers. The big one. |
+| `system-design` | 6,000 lines, pure Python, 528 TODO markers. The big one — **superseded by the built topic modules of `infrastructure-from-scratch/`**, registered at A5 as legacy until its `course.py` speaks the api |
 | `quantitative-trading` | 5,400 lines; numpy / pandas / scipy / sklearn |
 | `world-models` | 10,500 lines of PyTorch across five papers |
 | `lean-proofs` | 6,400 lines, 658 `sorry`s — the deepest single project here |
@@ -245,8 +245,8 @@ on it. Start there.
 
 Three adjacent courses deepen it later, and none block it:
 
-- `system-design` — queues, idempotency, caching. Makes `sqs.py` and
-  `dynamodb.py` click.
+- `infrastructure-from-scratch` — queues, idempotency, caching
+  (`system-design`'s built successor). Makes `sqs.py` and `dynamodb.py` click.
 - `dynamo-paper` — the paper behind DynamoDB: quorums and partitioning in depth.
 - `deploy-and-debug` — capacity and failure, the operational half.
 
@@ -716,15 +716,15 @@ not a stylistic one: accounting is a fixed-point discipline, an ECL is a product
 rates and exposures, and the arithmetic a reviewer has to be able to recompute by
 hand is exactly the arithmetic a float would hide.
 
-**Three more rows registered (to author) so phase M covers the loan from the
-first application to its final effect on the bank — the lifecycle end to end:**
+**The four rows of this table are now all built — so phase M covers the loan from
+the first application to its final effect on the bank — the lifecycle end to end:**
 
-| Slot | Course to author | The mechanism | After |
+| Slot | Course | The mechanism | After |
 |---|---|---|---|
-| M0 | `credit-origination-from-scratch` | The loan before it exists: the applicant as facts, the affordability and debt-service arithmetic, the application scorecard as an auditable table (weight, points, cutoff) rather than a model, the rating assigned and the price set from it — rate covering expected loss, funding and capital charge — the limit structure, collateral with its haircuts and lien, the covenant as a promise written before the drawdown, and the approval record; ends where M1 begins, at a booked facility with its schedule | — |
-| M3 | `collections-workout-from-scratch` | The loan after it goes wrong: the delinquency strategy as a state machine (dunning, call, referral, each a record the customer's history answers), forbearance as the bank's decision with its probation and cure, cure rate and re-default as the strategy's measurement, the collections waterfall over the cash that arrives, the workout — collateral sale with its costs, settlement, the deficiency that survives — the write-off as an accounting act distinct from the cash that follows, and one loan followed from first missed payment to final recovery, every action and movement on its own line | M1 |
-| M5 | `distressed-debt-from-scratch` | The same default from the buy side, where it is an opportunity with a price: the capital structure as a waterfall of claims over M1's borrower, the distressed claim bought below par and the question every price asks — recovery, reorganisation, or death; the distressed exchange and maturity extension as negotiated outcomes, the restructuring waterfall against the absolute-priority rule and the violations that settle it in practice, the claim valued three ways — expected recovery from M3's actual cash flows, Merton distance-to-default on the borrower's assets, comparables — where the three disagree is the trade; entry price, implied return and the IRR in basis points that survives the recovery's timing, the hold decision against the carry, and the thesis report checked against what actually happened | M1, M3 |
-| M6 | `lbo-model-from-scratch` | The buyout as arithmetic that either holds or does not, over M1's amortisation and M3's workout realism: the target as facts on a provided estate whose five-year path is the ground truth, sources and uses balancing to the cent, the debt schedule as a waterfall of tranches with covenants the model cannot quietly violate (revolver drawn when cash falls short, mandatory prepayment, the incurrence test every period), the operating build from revenue to free cash flow in integer arithmetic, exit on the multiple the estate actually realises, and the returns decomposition the sponsor's memo contains — leverage vs EBITDA growth vs multiple expansion, each named, each checked; the sensitivity grid where the downside case breaches the covenant and the checker demands the breach be visible, not amortised away | M1, M3 |
+| M0 | **ready** — `credit-origination-from-scratch` (10 checks) | The loan before it exists: the applicant as facts, the affordability and debt-service arithmetic, the application scorecard as an auditable table (weight, points, cutoff) rather than a model, the rating assigned and the price set from it — rate covering expected loss, funding and capital charge — the limit structure, collateral with its haircuts and lien, the covenant as a promise written before the drawdown, and the approval record; ends where M1 begins, at a booked facility with its schedule | — |
+| M3 | **ready** — `collections-workout-from-scratch` (10 checks, 23/23 mutations) | The loan after it goes wrong: the delinquency strategy as a state machine (dunning, call, referral, each a record the customer's history answers), forbearance as the bank's decision with its probation and cure, cure rate and re-default as the strategy's measurement, the collections waterfall over the cash that arrives, the workout — collateral sale with its costs, settlement, the deficiency that survives — the write-off as an accounting act distinct from the cash that follows, and one loan followed from first missed payment to final recovery, every action and movement on its own line | M1 |
+| M5 | **ready** — `distressed-debt-from-scratch` (10 checks, 21/21 mutations) | The same default from the buy side, where it is an opportunity with a price: the capital structure as a waterfall of claims over M1's borrower, the distressed claim bought below par and the question every price asks — recovery, reorganisation, or death; the distressed exchange and maturity extension as negotiated outcomes, the restructuring waterfall against the absolute-priority rule and the violations that settle it in practice, the claim valued three ways — expected recovery from M3's actual cash flows, Merton distance-to-default on the borrower's assets, comparables — where the three disagree is the trade; entry price, implied return and the IRR in basis points that survives the recovery's timing, the hold decision against the carry, and the thesis report checked against what actually happened | M1, M3 |
+| M6 | **ready** — `lbo-model-from-scratch` (10 checks, 33/33 mutations) | The buyout as arithmetic that either holds or does not, over M1's amortisation and M3's workout realism: the target as facts on a provided estate whose five-year path is the ground truth, sources and uses balancing to the cent, the debt schedule as a waterfall of tranches with covenants the model cannot quietly violate (revolver drawn when cash falls short, mandatory prepayment, the incurrence test every period), the operating build from revenue to free cash flow in integer arithmetic, exit on the multiple the estate actually realises, and the returns decomposition the sponsor's memo contains — leverage vs EBITDA growth vs multiple expansion, each named, each checked; the sensitivity grid where the downside case breaches the covenant and the checker demands the breach be visible, not amortised away | M1, M3 |
 
 With M1 (built) and M2 (below), phase M is then seven rows:
 origination → the lifecycle arithmetic → collections/workout → capital →
@@ -759,7 +759,7 @@ recompute by hand is exactly the arithmetic a float would hide. The contract is
 frozen in `.m1-dev/CONTRACT.md` with twenty-two amendments recorded, each one a
 reading that a stage found in the middle of the work and the plan had got wrong.
 
-**M2, `irb-capital-from-scratch`**, registered (to author, after M1): the row
+**M2, `irb-capital-from-scratch`**, built (10 checks, 21/21 mutations): the row
 the first M list implied and M1 did not cover — the bank's *own* parameter
 estimates and the regulator's version of them. PIT vs TTC and where each is
 legal; the IRB risk-weight formula in integer arithmetic (correlation R per
@@ -806,11 +806,11 @@ you got wrong.
 
 ## Web3 and simulation (phase N) — the ledger, the contract, the engine
 
-Three rows registered (all to author):
+The first row built, two still to author:
 
-| Slot | Course to author | The mechanism | After |
+| Slot | Course | The mechanism | After |
 |---|---|---|---|
-| N1 | `blockchain-from-scratch` | A ledger as a hash chain plus a rule for who appends: block headers and the digest that seals them, Merkle trees and inclusion proofs, addresses and signatures, the UTXO set and the spend that names what it consumes, the mempool and the double-spend the ordering kills, proof-of-work's target and difficulty adjustment, then proof-of-stake's slots and attestations, fork choice recomputable from any node's view — accepted when every simulated peer converges and a planted fork with less honest weight loses | — |
+| N1 | **ready** — `blockchain-from-scratch` (10 checks, 37/37 mutations) | A ledger as a hash chain plus a rule for who appends: block headers and the digest that seals them, Merkle trees and inclusion proofs, addresses and signatures, the UTXO set and the spend that names what it consumes, the mempool and the double-spend the ordering kills, proof-of-work's target and difficulty adjustment, then proof-of-stake's slots and attestations, fork choice recomputable from any node's view — accepted when every simulated peer converges and a planted fork with less honest weight loses | — |
 | N2 | `dapp-from-scratch` | A contract as a program the ledger runs exactly once, priced: the account model over N1's UTXO world, a bytecode VM (stack, memory, storage with cold-slot charges) and the gas schedule that makes the meter real, a toy contract language compiled to it with its ABI, escrow/token/voting contracts each carrying the reentrancy or overflow bug the tester plants, then the dApp: signed transactions, receipts, an event scanner you wrote, and a front-end state machine that reads the chain and never trusts it | N1 |
 | N3 | `physics-engine-from-scratch` | A constraint solver wearing a scene graph: rigid bodies and inertia tensors, narrowphase contacts, the contact Jacobian and the LCP a projected solver iterates, warm starts, integrator order and energy drift, actuators and PD control, an MJCF subset parsed into that world — and the capstone that justifies the exercise: MuJoCo exists for differentiable simulation, so A8's exact reverse mode runs over the solver's unrolled steps, checked against the finite-difference oracle at every parameter | A8 |
 
@@ -818,6 +818,36 @@ Nothing else in the registry duplicates them: N1's agreement half is H6's
 subject but its ledger half is new; N2's VM shares G8's heap questions but
 the gas meter and the ABI are its own; N3 is the repo's first continuous
 dynamics, and A8 is the only engine here that can grade its gradients.
+---
+
+## Linux device drivers (phase P) — the kernel's other half, in C
+
+Twelve rows, one course, all built — `linux-device-driver-from-scratch`, twelve
+staged modules (`l_01.py` … `l_12.py`) over a provided `kernel.py` that stands in
+for the kernel's own promises: 12 checks (91 asserts); no mutation battery was
+run, so the stats row says `None` rather than a zero. The chain is strictly
+linear — each stage is the boundary the next one crosses:
+
+| Slot | Course | The mechanism | After |
+|---|---|---|---|
+| P1 | **ready** — `l_01` Kernel Module Lifecycle | `module_init`/`module_exit`, `module_param`, `init_module`/`delete_module` — the boundaries of every driver's life | C1 |
+| P2 | **ready** — `l_02` Character Device Driver | `cdev`, `file_operations`, open/read/write/release — the simplest device interface | P1 |
+| P3 | **ready** — `l_03` Kernel Memory Management | `kmalloc`/`kfree`, `mmap`, memory lifecycle — every device needs memory | P2 |
+| P4 | **ready** — `l_04` ioctl Commands | `_IO`/`_IOW`/`_IOR`/`_IOWR` encoding — device-specific userspace commands | P3 |
+| P5 | **ready** — `l_05` Interrupt Handling | `request_irq`/`free_irq`/ISR — how hardware talks to the driver | P4 |
+| P6 | **ready** — `l_06` Platform Driver Model | `platform_driver`/`platform_device`, probe/remove — kernel hardware discovery | P5 |
+| P7 | **ready** — `l_07` Device Resources | `platform_get_resource`, memory and IRQ resources — hardware description | P6 |
+| P8 | **ready** — `l_08` sysfs and Device Attributes | kobject hierarchy, `/sys/class` — driver state exposed to userspace | P7 |
+| P9 | **ready** — `l_09` Wait Queues and Polling | `wait_event`/`wake_up`/`poll` — blocking without busy-waiting | P8 |
+| P10 | **ready** — `l_10` Workqueues and Kernel Threading | `queue_work`/`work_struct`/`kthread_create` — deferred work in the kernel | P9 |
+| P11 | **ready** — `l_11` Network Device Driver | `alloc_netdev`/`ndo_open`/`ndo_start_xmit` — the most complex device type | P10 |
+| P12 | **ready** — `l_12` Synchronization Primitives | spinlock/mutex/semaphore/RCU — concurrency is the hardest part | P11 |
+
+P1 gates on C1 (`evals-from-scratch`) by the user's registration choice — the
+only edge in the whole phase that is not inside the chain. Its semantics are a
+stretch (a scored harness before a module's `init`); the dependency audit flagged
+it and kept it, because it is buildable and it is the user's row.
+
 ---
 
 ## Interconnects and distributed training (I9, H1) — the plan in two courses
