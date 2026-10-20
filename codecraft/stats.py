@@ -116,6 +116,12 @@ STAGES = {
     "shell-from-scratch": [
         (102, 75), (73, 45), (116, 75), (83, 55), (87, 68),
         (72, 22), (152, 32), (72, 45), (59, 52), (49, 37)],
+    # Measured 2026-10-20 from the assembled `course.py` with the same recipe, and
+    # the mutants are the `.i2-dev` harness's sweep, `mutate_all.py <stage>`,
+    # re-measured from the harness itself after the last check edit.
+    "transformer-inference-physics": [
+        (17, 15), (13, 12), (17, 14), (18, 16), (12, 11),
+        (12, 11), (12, 13), (12, 13), (14, 14), (13, 16)],
 }
 
 

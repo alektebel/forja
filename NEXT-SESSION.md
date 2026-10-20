@@ -34,8 +34,8 @@ fixed-point discipline. Everything in *Done* is committed and pushed; the sectio
 it is the commit that carries this file.
 
 **Asked for next, by the user, and not started**: nothing outstanding. What remains is
-the queue this file has been carrying — **L4 `git-from-scratch`** first, then H7,
-H6, H8, I2 → I3 → {I6, I7, I8, I10, I12, I14} → I13, and phase K's remaining
+the queue this file has been carrying — **H8 `failover-from-scratch`** first, then
+I3 → {I6, I7, I8, I10, I12, I14} → I13, and phase K's remaining
 four (K2, K3, K4, K5), one unit per commit, in the order its own section records.
 
 ## Done, pushed, on `origin/main`
@@ -287,15 +287,15 @@ session can pick up cold, and they are listed here in the order the graph sugges
 | L4 | `git-from-scratch` | G4 is built; the one row with a *provided* `git` as a tie-breaker |
 | H7 | `compression-from-scratch` | no prerequisites at all |
 | H6 | `consensus-from-scratch` | J3 and I9 are built; **H8 is blocked on it** |
-| I2 | `transformer-inference-physics` | A2 and I1 are built; **four rows are blocked on it** |
 | K2 | `prompt-ops-from-scratch` | E1, F2 and J1 are built |
 | K3 | `memory-engine-from-scratch` | E1 and B2 are built |
 | K4 | `fine-tuning-from-scratch` | A8 and C1 are built |
 | K5 | `privacy-from-scratch` | C2, D1 and J2 are built |
 
 The other ten author rows are **blocked on unbuilt rows**, and the chain is worth
-writing down because it decides the order: I2 → I3 → {I6, I7, I8, I10, I12, I14} →
-I13, plus H6 → H8. And **I11 is blocked on I5**, which is a `kind: "salvage"` row
+writing down because it decides the order: the I2 and H6 heads of those chains are now
+built, so it reads I3 → {I6, I7, I8, I10, I12, I14} → I13 and H8 stands
+alone — but H8 goes first, it was queued before I2. And **I11 is blocked on I5**, which is a `kind: "salvage"` row
 (the quantization and compression reading, salvaged into a course) rather than an
 authoring job: a session that wants I11 has to do I5 first, and I5 is a different
 kind of work — turning what other branches already did into a course.
@@ -731,8 +731,9 @@ looking for it, and the plan rows that came out of the same review.
   `cz stage os-from-scratch 5` → `93 asserts · 69 planted mutations the check must
   catch`; the eighteen built courses totalled **9,323 assertions** and **4,079
   caught mutations** at the time (nineteen and 10,452/4,633 after L1; twenty-four
-  and 15,538/8,106 before G7; twenty-five and 16,403/8,612 after it — the sweep
-  re-measured, the earlier readings left as they were taken).
+  and 15,538/8,106 before G7; twenty-five and 16,403/8,612 after it; twenty-six and
+  16,543/8,747 after I2 — the sweep re-measured, the earlier readings left as they
+  were taken).
 - **The hardcoded repo root is gone.** 128 lines across 14 assembled `course.py`
   files carried `DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"`,
   and five more carried the same path as a `COURSE_REPO` default; all of them now
@@ -982,13 +983,56 @@ was REQUIRED from the first H6 check and held; the new lesson from stage 10
 is that the ambient probe must run the check from OUTSIDE the course root
 (`cd /home/diego/Desarrollo`), or ambient matches the root and imports the
 template, and the green run is actually the stub. The course README carries
-the stage table, the measured verification and the world's six digests. The
-next unit in the queue is **I13**.
+the stage table, the measured verification and the world's six digests.
+
+## In flight — I2 `transformer-inference-physics`, shipped through stage 10
+
+**I2 is built and pushed.** The world (`configs.py` — five transformer shapes as
+`Config` namedtuples with the `dtype` byte table and the int4 pack rule;
+`devices.py` — three accelerators as measured constants, `Device` with
+`peak_flop_fp16`, `bw_bytes_per_ns`, `eff_compute`, `eff_bandwidth`,
+`launch_ns`, `vram_bytes`, and `FLOP_MULT` {fp16 1000, fp8/int8/int4 2000};
+`trace.py` — the world's own reference implementation: six named workloads,
+the 16-row `TRACKS` servable grid, `measure`/`bound` per event, every number
+model + `PROBE_NS` 1500) froze at three modules pinned by digest
+(`verify_provided.py`: 53 facts, all hold). All ten stages: 1 parameter
+counts and weight bytes with the `(params + 1) // 2` int4 pack applied per
+matrix, 2 the flop budgets — attention rides `n_heads`, never `n_kv_heads`,
+GQA shrinks the read not the compute, 3 the byte budgets — the KV cache is
+fp16 under every weight dtype and immune to the pack, 4 the roofline race,
+`op_time` a per-op max plus `launch_ns`, `classify` answering `"memory"` on
+a tie because the bytes are read into SRAM regardless, 5 prefill as one
+parallel sweep with no probe tax, 6 decode as `4 x layers + 1` sequential
+steps whose weight read does not shrink with the batch, 7 the cache's life:
+bytes per token per layer, the resident rent, and the VRAM wall the audit
+refuses (`D_CLASS` names 34688991232 against its 25769803776 and shows the
+math), 8 the decode crossover — the batch where the resident KV rent
+outgrows the shared weight read, config-invariant at 259 on `H_CLASS` fp16,
+67 on `A_CLASS` int4, 55 on `D_CLASS` int4, 9 the quantization gain floor —
+`gain_per_mille` measured against the int8 rows, the fp16 cache as the
+lesson quantizing weights never shrinks the KV read, 10 `predict` and the
+audit: the model meeting `trace.measure`/`trace.bound` row by row through
+the world itself, never through the stages' own arithmetic. Measured:
+`run_all.py` 10/10, `smoke.py` PASS, `run_assembled.py` ASSEMBLED 10/10
+(129 facts), `audit_course.py` `PROBLEMS: 0`, `count_tests.py` 140 asserts
+(`[17, 13, 17, 18, 12, 12, 12, 12, 14, 13]`), and the mutation sweep
+`mutate_all.py` **135/135, MISSED OR BROKEN: 0** (`[15, 12, 14, 16, 11, 11,
+13, 13, 14, 16]`; stage 10's sixteen include no-probe-tax in `predict`,
+wrong-mean-divisor, `tokens_per_second` rounding up, a quantized-cache
+mutant, swapped-sums in `bound`, and an audit that ignores the caller's
+grid). Two harness lessons: the ambient probe must run the check from
+OUTSIDE the course root (`cd /home/diego/Desarrollo`) — H6's rule restated,
+from inside the root ambient matches the root and green is the stub — and
+an equivalent mutant gets REPLACED, never a weakened check: stage 8 shed
+three mutants that flipped the crossover law itself rather than admit the
+model missed them. The course README carries the stage table, the measured
+verification, the crossover pins, the two VRAM walls and the world's three
+digests. The next unit in the queue is **H8**.
 Twelve *projects* — not slots — are queued in `ENTERPRISE.md`: the enterprise-AI list kept
 on `claude/enterprise-ai-project-guides`, each row naming what this repository
 already has for it and the gap that remains.
 The rows registered in the units before this one queue behind it, one per slot —
-I13, I14, H8 (G8, H5, L4, H7 and H6 are now among the shipped) — each carrying its own thesis in
+H8, then the serving chain I3 → {I6, I7, I8, I10, I12, I14} → I13 (G8, H5, L4, H7, H6 and I2 are now among the shipped) — each carrying its own thesis in
 `path.py`, each with its place in `cz dag`. After those: G5/G6 (phase G's
 remaining two, which need checkers, not writing), phase K's five, and the rows
 registered from the recovered corpora — **L5 `redis-from-scratch`** (L2 + J3),
@@ -997,7 +1041,7 @@ and **L7 `docker-from-scratch`** (G4 + J4), **L8 `emulator-from-scratch`**
 (G3 — CHIP-8, then a second machine) and **L9 `rl-control-from-scratch`**
 (A8 — DP, then MC, then TD/SARSA/Q-learning, then an approximator) from the
 build-your-own-x tutorials in `tutorials-reference/`. The backlog
-is **35 `author`, 6 `legacy`, 2 `salvage`, 39 `ready` — 82 rows** — `./cz path`,
+is **34 `author`, 6 `legacy`, 2 `salvage`, 52 `ready` — 94 rows** (the twelve-row jump over this file's last count is Phase O `2fae2fa`, whose ready registrations never reached it) — `./cz path`,
 `./cz dag`, `./cz tracks` and the ROADMAP's own tables are authoritative over this
 file.
 

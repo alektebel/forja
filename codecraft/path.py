@@ -475,13 +475,21 @@ PHASES = [
                 "kernel, as a simulator plus a roofline, with the CUDA/cuBLAS profile "
                 "as the runbook. C++ and Rust belong here too: one kernel each, "
                 "compiled, so the toolchain is not a mystery."},
-        {"id": "I2", "title": "Transformer Inference Physics", "course": None,
-         "kind": "author", "prereq": ["A2", "I1"],
-         "why": "Prefill vs decode as two different machines, arithmetic intensity, "
-                "the KV-cache equation, and where tokens/second actually comes from. "
-                "Author inference-physics-from-scratch: a cost model that predicts "
-                "TTFT and ITL from config alone, checked against measured traces — "
-                "the offline stand-in for Nsight Systems."},
+        {"id": "I2", "title": "Transformer Inference Physics",
+         "course": "transformer-inference-physics", "kind": "ready", "prereq": ["A2", "I1"],
+         "why": "Ten stages, all graded: parameters and weight bytes with int4's "
+                "per-matrix packing; the flops a token and a prompt cost, matmuls "
+                "only, the head once per sequence; the bytes — weights' read, cache's "
+                "rent, intensity per kilobyte; the roofline where wall time is a max "
+                "and a tie serves memory; prefill as TTFT's model and decode as ITL's; "
+                "the KV cache's life against a device's VRAM; the crossover batch "
+                "where the mlp flips — 259 for every fp16 config on H, config-"
+                "invariant; quantization's gain with the cache refusing to shrink; "
+                "and the audit — sixteen predicted rows against the world's own "
+                "trace, the model's answer pinned to the nanosecond, with the walls "
+                "the device cannot serve refusing before the arithmetic starts. "
+                "Nsight Systems is the runbook; the provided trace is the judge. "
+                "Integers the whole way: no float, no math, no clock."},
         {"id": "I3", "title": "Modern Serving Engines & Batching", "course": None,
          "kind": "author", "prereq": ["I2", "A3"],
          "why": "vLLM, SGLang, PagedAttention, continuous batching, chunked prefill. "
