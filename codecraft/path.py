@@ -1063,6 +1063,60 @@ PHASES = [
                 "on the way down, M6 buys the whole company on the way in \u2014 "
                 "two prices, one discipline: the cash flows decide."},
     ]),
+    ("O", "AI Security Engineering", [
+        {"id": "O1", "title": "Threat Modeling & Foundations",
+         "course": "llm-security-from-scratch", "kind": "ready", "prereq": ["C2", "B1", "J4"],
+         "why": "Built: OWASP Top 10 for LLMs, MITRE ATLAS, STRIDE, trust boundaries. "
+                "Threat model a RAG chatbot end-to-end as structured data — components, "
+                "data flows, trust boundaries, and a catalogue of STRIDE attack vectors. "
+                "C2 is the agent model, B1 is the RAG pipeline, J4 is the sandbox."},
+        {"id": "O2", "title": "Prompt Injection & Jailbreaks",
+         "course": "llm-security-from-scratch", "kind": "ready", "prereq": ["O1"],
+         "why": "Built: direct vs indirect injection, instruction hierarchy violations, "
+                "multi-turn attacks, suffix jailbreaks, and system prompt exfiltration. "
+                "A prompt boundary checker that validates input against system prompt "
+                "authority and detects encoded injection attempts."},
+        {"id": "O3", "title": "Insecure Output Handling",
+         "course": "llm-security-from-scratch", "kind": "ready", "prereq": ["O2"],
+         "why": "Built: LLM-driven XSS, SQLi, SSRF, command injection, and excessive "
+                "agency detected per sink type (HTML, SQL, shell, URL, filesystem)."},
+        {"id": "O4", "title": "RAG & Vector DB Security",
+         "course": "llm-security-from-scratch", "kind": "ready", "prereq": ["B1"],
+         "why": "Built: embedding poisoning detection, tenant isolation leakage, "
+                "and ACL-aware retrieval filtering over B1's vector index."},
+        {"id": "O5", "title": "Agent & Tool Security",
+         "course": "llm-security-from-scratch", "kind": "ready", "prereq": ["C2", "D1", "J4"],
+         "why": "Built: capability intersection (declared ∩ granted ∩ policy), "
+                "confused deputy chain detection, and role-tool capability matrices."},
+        {"id": "O6", "title": "MCP Security",
+         "course": "llm-security-from-scratch", "kind": "ready", "prereq": ["D1"],
+         "why": "Built: MCP server scanning for tool poisoning, schema validation, "
+                "and tool shadowing detection over D1's protocol engine."},
+        {"id": "O7", "title": "Data Leakage & Privacy",
+         "course": "llm-security-from-scratch", "kind": "ready", "prereq": ["A2", "A8"],
+         "why": "Built: PII scanning, memorization detection, and leakage rate "
+                "measurement across many queries. A2 gives the model internals."},
+        {"id": "O8", "title": "Model Supply Chain",
+         "course": "llm-security-from-scratch", "kind": "ready", "prereq": ["A2"],
+         "why": "Built: pickle deserialization blocking, safetensors header validation, "
+                "and AI-BOM building for supply chain integrity tracking."},
+        {"id": "O9", "title": "Adversarial ML",
+         "course": "llm-security-from-scratch", "kind": "ready", "prereq": ["A2", "A8"],
+         "why": "Built: statistical poisoning detection, backdoor trigger detection, "
+                "and model extraction feasibility measurement. A8 provides the autograd engine."},
+        {"id": "O10", "title": "Guardrails & Runtime Enforcement",
+         "course": "llm-security-from-scratch", "kind": "ready", "prereq": ["O5", "J4"],
+         "why": "Built: policy gateway for action evaluation, input risk classifier, "
+                "and action validator against approved action lists."},
+        {"id": "O11", "title": "Red Teaming & Evals",
+         "course": "llm-security-from-scratch", "kind": "ready", "prereq": ["F1", "F2", "C1"],
+         "why": "Built: automated attack suite, success rate measurement, and "
+                "regression test suite generation. F1/F2 own the measurement machinery."},
+        {"id": "O12", "title": "Detection, IR & Governance",
+         "course": "llm-security-from-scratch", "kind": "ready", "prereq": ["J5", "A7", "O1"],
+         "why": "Built: audit log analysis, anomaly detection, and NIST-aligned "
+                "incident response plans. J5 provides the log infrastructure, A7 provides SLO patterns."},
+    ]),
     ("N", "Web3 and simulation", [
         {"id": "N1", "title": "Blockchain From Scratch",
          "course": None, "kind": "author", "prereq": [],
