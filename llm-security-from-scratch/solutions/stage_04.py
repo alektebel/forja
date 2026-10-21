@@ -4,7 +4,6 @@ Reference implementation. Compare against stage_04.py.
 """
 
 import re
-import hashlib
 
 
 def sanitize_doc(document: dict) -> dict:

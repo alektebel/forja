@@ -8,12 +8,18 @@
 4. No module-level mutable state.
 5. The estate (test data) is read-only.
 6. A refused call raises naming the offender.
-7. `check.py` must fail on the template and pass on the solution.
-8. `mutate.py` must plant ≥34 mutations, each anchored to exact once-occurring solution text, every one caught.
+7. The grader — `course.check_N`, reached by `check_NN.py` — must report TODO on the template stub and PASS on the solution.
+8. Each `mutate_NN.py` holds anchored mutations — exact, once-occurring solution lines replaced with wrong-behaviour variants — and every one must be caught by the shipped grader. `mutate_all.py` prints the measured caught/total per battery; nothing is claimed that was not run.
+
+> **Honesty note.** Laws 2–3 are the house ideal; this course's material was
+> imported from `system-design/` and does not conform to them — the topic
+> modules use `time`, floats, and threads because TTLs and rate windows are
+> wall-clock phenomena. The conformance debt is recorded, not hidden, and
+> rewriting the material to the laws is a separate unit of work.
 
 ## Course: Infrastructure From Scratch
 
-A graded course covering the 20 core building blocks of distributed systems.
+A graded course covering the 18 core building blocks of distributed systems.
 Each component is a stage. Each stage has a template (stub with `raise NotImplementedError`) and a solution (working implementation).
 
 ## World (the estate)

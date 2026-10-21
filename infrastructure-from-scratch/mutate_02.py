@@ -1,60 +1,123 @@
-"""mutate_02 — CDN: EdgeCache, OriginShield, normalize_cache_key."""
-import sys, os, tempfile, shutil, importlib.util, time, threading
+"""mutate_02 — consistent_hash: 26 anchored mutations, each caught by check_02.
+
+Every mutation replaces one exact, once-occurring line of
+`solutions/consistent_hash.py` with a wrong-behaviour variant. The verifier is the
+shipped grader itself: `course.check_2()` (surface + probe + the module's
+own `_test()`) run against a copy of the solution with the mutation planted
+in `templates/consistent_hash.py`. If a line ever loses its uniqueness or its
+behaviour stops mattering, the file reports SKIP/MISSED — never a silent 100%%.
+"""
+
+import contextlib
+import importlib.util
+import io
+import os
+import shutil
+import signal
+import sys
+import tempfile
+
 HERE = os.path.dirname(os.path.abspath(__file__))
-def _load(p):
-    s = importlib.util.spec_from_file_location("m", p); m = importlib.util.module_from_spec(s); s.loader.exec_module(m); return m
-def _v(s):
-    c = s.EdgeCache()
-    assert c.put("/api/p", {"items":[]}, "max-age=60") is True
-    assert c.get("/api/p") == {"items":[]}
-    assert c.put("/api/user", {"id":1}, "private, max-age=60") is False
-    assert c.get("/api/user") is None
-    c.put("/api/a", {"a":1}, "max-age=3600", surrogate_keys={"k1"})
-    c.put("/api/b", {"b":2}, "max-age=3600", surrogate_keys={"k1"})
-    assert c.purge_by_key("k1") == 2
-    assert c.get("/api/a") is None
-def _m(t,r,l=""): return (t,r,l)
-def _c(p):
-    try: _v(_load(p)); return False
-    except: return True
-def main():
-    p = os.path.join(HERE,"solutions","cdn_caching.py")
-    with open(p) as f: c = f.read()
-    ms = [
-        _m('self._store: Dict[str, CacheEntry] = {}', 'self._store: Dict[str, CacheEntry] = {}', 'store init ok'),
-        _m('def get(self, key: str) -> Optional[Any]:', 'def get(self, key: str) -> Optional[Any]:\n        return None', 'get always null'),
-        _m('return entry.body', 'return None  # broken body', 'body null'),
-        _m('return (time.time() - entry.stored_at) < entry.max_age', 'return False  # never fresh', 'fresh always false'),
-        _m('self._store[key] = entry', 'pass  # broken set', 'set broken'),
-        _m('return True', 'return False  # always false', 'put always false'),
-        _m('if "no-store" in directives or "private" in directives:', 'if False:  # broken no-store', 'no-store check broken'),
-        _m('max_age = float(directives["max-age"])', 'max_age = 0.0  # zeroed', 'max-age zeroed'),
-        _m('max_age = float(directives["s-maxage"])', 'max_age = 0.0  # zeroed s-maxage', 's-maxage zeroed'),
-        _m('max_age = 60.0', 'max_age = 999999  # huge ttl', 'huge ttl'),
-        _m('entry = CacheEntry(body, max_age, surrogate_keys or set(), swr)',
-           'entry = CacheEntry(body, 0, set(), 0)  # zero ttl', 'entry zero ttl'),
-        _m('def purge_by_key(self, surrogate_key: str) -> int:', 'def purge_by_key(self, surrogate_key: str) -> int:\n        return 0', 'purge always 0'),
-        _m('to_delete = [k for k, e in self._store.items()\n                         if surrogate_key in e.surrogate_keys]',
-           'to_delete = []  # no deletion', 'purge no-delete'),
-        _m('del self._store[k]', 'pass  # broken del', 'del broken'),
-        _m('def purge(self, key: str) -> bool:', 'def purge(self, key: str) -> bool:\n        return False', 'purge always false'),
-        _m('if key in self._store:', 'if False:  # broken check', 'in check broken'),
-        _m('return self._cache.get(key)', 'return None  # always miss', 'cache get broken'),
-        _m('if cached is not None:', 'if False:  # broken check', 'cached check broken'),
-        _m('result = self._origin(key)', 'result = None  # origin null', 'origin null'),
-        _m('self._cache.put(key, result, f"max-age={int(self._ttl)}")', 'pass  # broken cache put', 'cache put broken'),
-        _m('self._inflight[key] = event', 'pass  # broken inflight set', 'inflight set broken'),
-        _m('self._inflight_result[key] = result', 'pass  # broken result set', 'result set broken'),
-    ]
-    caught=0; missed=0
-    for i,(t,r,l) in enumerate(ms):
-        if t not in c: missed+=1; print(f"  M{i+1:03d}: SKIP  {l}"); continue
-        td=tempfile.mkdtemp(prefix=f"m02-{i}-")
+sys.path.insert(0, os.path.dirname(HERE))  # repo root, for codecraft.api
+
+MODULE = "consistent_hash.py"
+STAGE = 2
+BUDGET = 12  # seconds per mutant; a hang is a MISSED, not a free pass
+
+
+def _m(t, r, l):
+    return (t, r, l)
+
+
+MUTATIONS = [
+    _m('    return int(hashlib.md5(key.encode()).hexdigest(), 16) % (2**32)', '    return None', 'L11: return -> None'),
+    _m('        self.virtual_nodes = virtual_nodes', '        pass  # mutated', 'L16: statement removed'),
+    _m('        self._ring = [(pos, n) for pos, n in self._ring if n != node]', '        pass  # mutated', 'L27: statement removed'),
+    _m('        self._nodes.discard(node)', '        pass  # mutated', 'L28: statement removed'),
+    _m('        pos = _hash(key)', '        pass  # mutated', 'L33: statement removed'),
+    _m('        positions = [p for p, _ in self._ring]', '        pass  # mutated', 'L34: statement removed'),
+    _m('        idx = bisect.bisect_left(positions, pos)', '        pass  # mutated', 'L35: statement removed'),
+    _m('        return self._ring[idx][1]', '        return None', 'L38: return -> None'),
+    _m('        return set(self._nodes)', '        return None', 'L42: return -> None'),
+    _m('        return counts', '        return None', 'L50: return -> None'),
+    _m('        count = 0', '        pass  # mutated', 'L53: statement removed'),
+    _m('        self._nodes.append(node)', '        pass  # mutated', 'L65: statement removed'),
+    _m('        return max(self._nodes, key=lambda n: _hash(f"{n}:{key}"))', '        return None', 'L73: return -> None'),
+    _m('            pos = _hash(f"{node}#vnode{i}")', '            pass  # mutated', 'L22: statement removed'),
+    _m('            bisect.insort(self._ring, (pos, node))', '            pass  # mutated', 'L23: statement removed'),
+    _m('            idx = 0', '            pass  # mutated', 'L37: statement removed'),
+    _m('            node = self.get_node(f"key:{i}")', '            pass  # mutated', 'L47: statement removed'),
+    _m('                counts[node] = counts.get(node, 0) + 1', '                pass  # mutated', 'L49: statement removed'),
+    _m('                count += 1', '                pass  # mutated', 'L56: statement removed'),
+    _m('        if idx == len(self._ring):', '        if idx != len(self._ring):', 'L36: == -> !='),
+    _m('        return self._ring[idx][1]', '        return self._ring[idx][2]', 'L38: 1 -> 2'),
+    _m('            if self.get_node(key) != old_ring.get_node(key):', '            if self.get_node(key) == old_ring.get_node(key):', 'L55: != -> =='),
+    _m('                count += 1', '                count -= 1', 'L56: aug-assign flipped'),
+    _m('        self._ring = [(pos, n) for pos, n in self._ring if n != node]', '        self._ring = [(pos, n) for pos, n in self._ring if n == node]', 'L27: != -> =='),
+    _m('                count += 1', '                count += 2', 'L56: 1 -> 2'),
+    _m('                counts[node] = counts.get(node, 0) + 1', '                counts[node] = counts.get(node, 0) + 2', 'L49: 1 -> 2')
+]
+
+
+def _verify(course_dir):
+    spec = importlib.util.spec_from_file_location(
+        "infra_course_mutate", os.path.join(course_dir, "course.py"))
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    getattr(mod, f"check_{STAGE}")()
+
+
+def _grade(source, prefix):
+    tmp = tempfile.mkdtemp(prefix=prefix)
+    try:
+        shutil.copy(os.path.join(HERE, "course.py"),
+                    os.path.join(tmp, "course.py"))
+        os.makedirs(os.path.join(tmp, "templates"))
+        with open(os.path.join(tmp, "templates", MODULE), "w") as f:
+            f.write(source)
+        signal.signal(signal.SIGALRM, lambda *a: (_ for _ in ()).throw(
+            TimeoutError("mutant too slow")))
+        signal.setitimer(signal.ITIMER_REAL, BUDGET)
         try:
-            mt=c.replace(t,r,1); tp=os.path.join(td,"cdn_caching.py")
-            with open(tp,"w") as f: f.write(mt)
-            if _c(tp): caught+=1; print(f"  M{i+1:03d}: CAUGHT  {l}")
-            else: missed+=1; print(f"  M{i+1:03d}: MISSED  {l}")
-        finally: shutil.rmtree(td,ignore_errors=True)
-    print(f"\nMUTATE: CAUGHT {caught} / {caught+missed}  MISSED {missed}")
-main()
+            with contextlib.redirect_stdout(io.StringIO()):
+                _verify(tmp)
+        finally:
+            signal.setitimer(signal.ITIMER_REAL, 0)
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+
+
+def main():
+    with open(os.path.join(HERE, "solutions", MODULE)) as f:
+        content = f.read()
+    try:
+        _grade(content, "mut02-base-")
+    except Exception as e:
+        print(f"mutate_02: BASELINE BROKEN — check fails on the "
+              f"unmutated solution: {e}")
+        return 1
+
+    caught = 0
+    missed = 0
+    for i, (t, r, l) in enumerate(MUTATIONS):
+        if content.count(t) != 1:
+            missed += 1
+            print(f"  M{i + 1:03d}: SKIP  (anchor not unique)  {l}")
+            continue
+        try:
+            _grade(content.replace(t, r, 1), f"mut02-{i}-")
+        except TimeoutError:
+            missed += 1
+            print(f"  M{i + 1:03d}: MISSED (hang)  {l}")
+        except Exception:
+            caught += 1
+            print(f"  M{i + 1:03d}: CAUGHT  {l}")
+        else:
+            missed += 1
+            print(f"  M{i + 1:03d}: MISSED  {l}")
+    print(f"\nMUTATE: CAUGHT {caught} / {caught + missed}  MISSED {missed}")
+    return 0 if missed == 0 else 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())

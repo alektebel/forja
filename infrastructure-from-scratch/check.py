@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
-"""Infrastructure From Scratch — check harness.
+"""Infrastructure From Scratch — solution harness.
 
-For each stage:
-  1. Import the template, run its _test(): must raise NotImplementedError
-  2. Copy the solution over the template, run _test(): must pass
-  3. Verify stage file compiles
+For each of the eighteen stages, load `solutions/<module>.py` and run its
+`_test()`: the shipped answers must pass. Stubs are graded by
+`check_NN.py` / `course.py` (TODO there is expected, not a failure here).
 
 Usage: python3 check.py [N]...  # check specific stages, or all
 """
@@ -19,27 +18,26 @@ COURSE_DIR = os.path.dirname(os.path.abspath(__file__))
 TEMPLATES_DIR = os.path.join(COURSE_DIR, "templates")
 SOLUTIONS_DIR = os.path.join(COURSE_DIR, "solutions")
 
+# One stage per topic module, in the order course.py grades them.
 STAGES = [
-    (1, "load_balancer.py"),
-    (2, "cdn_caching.py"),
+    (1, "url_shortener.py"),
+    (2, "consistent_hash.py"),
     (3, "cache.py"),
-    (4, "url_shortener.py"),
-    (5, "request_batching.py"),
-    (6, "cache.py"),
-    (7, "message_queue.py"),
-    (8, "rate_limiter.py"),
-    (9, "leaderboard.py"),
-    (10, "consistent_hash.py"),
-    (11, "hot_partition_mitigation.py"),
-    (12, "eventual_consistency.py"),
-    (13, "data_locality.py"),
-    (14, "edge_computing.py"),
-    (15, "capacity_planner.py"),
-    (16, "connection_pooling.py"),
-    (17, "session_stickiness.py"),
-    (18, "idempotency_keys.py"),
-    (19, "throttling.py"),
-    (20, "cdn_caching.py"),
+    (4, "cdn_caching.py"),
+    (5, "rate_limiter.py"),
+    (6, "throttling.py"),
+    (7, "request_batching.py"),
+    (8, "connection_pooling.py"),
+    (9, "session_stickiness.py"),
+    (10, "circuit_breaker.py"),
+    (11, "message_queue.py"),
+    (12, "leaderboard.py"),
+    (13, "hot_partition_mitigation.py"),
+    (14, "data_locality.py"),
+    (15, "eventual_consistency.py"),
+    (16, "idempotency_keys.py"),
+    (17, "edge_computing.py"),
+    (18, "capacity_planner.py"),
 ]
 
 

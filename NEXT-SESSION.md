@@ -724,9 +724,12 @@ looking for it, and the plan rows that came out of the same review.
   recorded *in* the repo because half of it is unrecoverable: `tests` counts the
   `assert`/`raise` sites in a stage's check (recomputable from `course.py` at any
   time), while `mutants` is what that check was *proven* to catch by the
-  development harness — which lives outside this repository and is cleaned up once
-  a course ships. Twenty-two courses carry both numbers; the other twelve say `None`
-  rather than a zero, and the page says "not measured" rather than lying.
+  development harness — for most courses built outside this repository and
+  cleaned up once the course ships. Twenty-three courses carry both numbers;
+  the other twelve say `None` rather than a zero, and the page says "not
+  measured" rather than lying. `infrastructure-from-scratch` is the exception:
+  its batteries ship in the course dir and re-measure at any time with its own
+  `python3 mutate_all.py`.
   `cz stage os-from-scratch 5` → `93 asserts · 69 planted mutations the check must
   catch`; the eighteen built courses totalled **9,323 assertions** and **4,079
   caught mutations** at the time (nineteen and 10,452/4,633 after L1; twenty-four
@@ -734,7 +737,9 @@ looking for it, and the plan rows that came out of the same review.
   16,543/8,747 after I2; twenty-seven and 16,690/8,876 after H8; thirty-four and
   18,266/9,011 after the M/N/P registrations (the seven rows added there bring 1,576
   asserts and 135 proven mutants; `credit-origination-from-scratch` and
-  `linux-device-driver-from-scratch` ship no battery and say `None`) — the sweep
+  `linux-device-driver-from-scratch` ship no battery and say `None`); thirty-five
+  and **18,342/9,486** after A5's graduation (`infrastructure-from-scratch`:
+  76 asserts, 475/475 mutants from the in-dir batteries) — the sweep
   re-measured, the earlier readings left as they were taken).
 - **The hardcoded repo root is gone.** 128 lines across 14 assembled `course.py`
   files carried `DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"`,
@@ -1123,7 +1128,7 @@ and **L7 `docker-from-scratch`** (G4 + J4), **L8 `emulator-from-scratch`**
 (G3 — CHIP-8, then a second machine) and **L9 `rl-control-from-scratch`**
 (A8 — DP, then MC, then TD/SARSA/Q-learning, then an approximator) from the
 build-your-own-x tutorials in `tutorials-reference/`. The backlog
-is **27 `author`, 6 `legacy`, 2 `salvage`, 71 `ready` — 106 rows** (the twelve-row jump over the last count is Phase P `linux-device-driver-from-scratch`, registered whole, and six rows flipped author→ready: M0, M2, M3, M5, M6, N1) — `./cz path`,
+is **27 `author`, 5 `legacy`, 2 `salvage`, 72 `ready` — 106 rows** (the twelve-row jump over the last count is Phase P `linux-device-driver-from-scratch`, registered whole, six rows flipped author→ready: M0, M2, M3, M5, M6, N1, and A5 `infrastructure-from-scratch` flipped legacy→ready in the graduation that follows) — `./cz path`,
 `./cz dag`, `./cz tracks` and the ROADMAP's own tables are authoritative over this
 file.
 
@@ -1151,27 +1156,42 @@ what deliberately did not:
   **P1 ← C1** (`evals-from-scratch`) is semantically odd for a kernel-module
   lifecycle and is buildable, so it stays the user's call; **M4** (NPL ratios,
   author) is now unblocked — it gates on M1 and M3, and M3 shipped.
-- **`infrastructure-from-scratch` registered at A5, kind `legacy`.** It is not
-  graduating yet and the registry says so: `course.py`'s STAGES are raw dicts,
-  so `manifests.load` raises `AttributeError` (the `(skipping …)` line `cz`
-  prints is expected, not a bug to hush). The legacy harness itself is green
-  (`python3 infrastructure-from-scratch/check.py` → 20/20) but the modern
-  battery has four defects to fix on the way up: `check_01` imports
-  `templates/consistent_hash.py` yet asserts LoadBalancer/ConsistentHash → FAIL;
-  `check_17` asserts RaftNode on the session-stickiness module → FAIL;
-  `mutate_05` times out past 60s; `run_all.py:55` raises a ValueError unpacking
-  the dict STAGES. Plus fifteen placeholder title↔file mismatches in `course.py`
-  — that list *is* the graduation checklist.
+- **`infrastructure-from-scratch` graduated at A5, kind `ready`** (this commit's
+  main unit). What shipped: `course.py` rewritten to speak the api (18
+  `stage()` entries — one per real topic module, replacing the 20-row fiction
+  where fifteen titles pointed at the wrong file); `check_01.py`–`check_18.py`
+  rewritten as thin wrappers delegating to `course.check_N` (surface assert +
+  behaviour probe + the module's own `_test()`, probe first so a stub fails
+  fast and classifies TODO instead of burning a wall-clock sleep);
+  `check_19`/`check_20` deleted with their phantom stages; `run_all.py` fixed
+  (it unpacked a `Stage` object as a tuple — the ValueError at its old line 55);
+  `check.py`'s 20-row fiction list replaced with the 18 real filenames;
+  `mutate_all.py` rewritten to import the stage list from `course.py` and
+  parse each battery's measured line. The 18 mutation batteries were rebuilt
+  anchored: the pre-state had generic patterns (`'= []'`, `'.append('`,
+  `'class '`) that violate law 8 and three files (`mutate_05`/`15`/`20`) that
+  hung past 60s; the rework plants only exact once-occurring solution lines,
+  proves the baseline solution passes, gives every mutant a 12s budget, and
+  exits non-zero on any SKIP/MISSED. Verified end to end: stubs → 18/18 TODO,
+  solutions → 18/18 PASS (surface + probe + `_test()`), every battery catches
+  100% of its mutants (`mutate_all.py` prints the per-stage counts),
+  `./cz stage/run/path/dag/tracks` render A5 with no `(skipping …)` line. What
+  is NOT claimed: the material still violates contract laws 2–3 (`time`,
+  floats, threads — TTLs and rate windows are wall-clock phenomena); the debt
+  is recorded in `contract.md`'s honesty note and path.py's `why`, not papered
+  over. The 20 docs under `docs/` keep their pre-renumbering tier titles.
 - **`longharness-from-scratch` deliberately NOT registered**: a skeleton —
   `agent.py`/`search.py`/`corpus.py` and three check files, no `solutions/`, no
   `course.py`, no README. A row for it would promise a course that doesn't exist.
-- **`README.md` stays the user's** (uncommitted at session start). Its gaps for
-  the report, not for my hunks: the root dir list has no entries for
-  `credit-origination`, the five M siblings' dirs, `blockchain`, `linux-device-
-  driver` or `infrastructure`, and its phase-M/N tables still say "to author".
-- Census after all of it: **27 author · 6 legacy · 2 salvage · 71 ready = 106
+- **`README.md` was the user's** (uncommitted at session start: the M/N flips
+  and the five sibling dirs). The graduation commit adds the two missing
+  entries — `linux-device-driver-from-scratch` (track P) and
+  `infrastructure-from-scratch` (A5, replacing the old `system-design/`
+  needs-checker row) — and keeps every user line intact.
+- Census after all of it: **27 author · 5 legacy · 2 salvage · 72 ready = 106
   rows**; `./cz tracks` reads 149 hard edges, 47 tracks, 15 waves; stats totals
-  34 courses at **18,266 asserts / 9,011 proven mutants**.
+  35 courses at **18,342 asserts / 9,486 proven mutants** (the infrastructure
+  row adds 76 / 475, the sweep green at 475/475).
 
 ## The workflow that produced G3, F2, J1, I9, H1, A8, J2, J3, J4, J5, G4, L1, L2 and L3 — keep it
 

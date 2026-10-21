@@ -1,50 +1,37 @@
-"""check_cdn — CDN: caching, cache policies, origin shield, purge.
+"""check_02 — consistent_hash: graded against templates/consistent_hash.py.
 
-Catches:
-- Cache-Control parsing (max-age, private, no-store)
-- Cache key normalization (lowercase host, sorted query params)
-- Origin shield (single fetch on miss)
-- Purge by tag (bulk purge by content relationship)
+Delegates to `course.py`'s `check_2` so `python3 check_02.py`,
+`run_all.py` and `codecraft run infrastructure-from-scratch` grade the
+identical assertions: the module's surface, its probe, and its own `_test()`.
+
+Exit codes: 0 pass, 2 stub (NotImplementedError), 1 failure.
 """
 
-import sys
+import importlib.util
 import os
+import sys
 
+HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.dirname(HERE))  # repo root, for codecraft.api
 
-def _check_cdn(s):
-    """Test that CDN caches correctly and respects policies."""
-    assert hasattr(s, "CDN") or hasattr(s, "Cache"), \
-        "CDN cache class not found"
-
-
-def _check_purge(s):
-    """Test that purge works correctly."""
-    assert hasattr(s, "purge") or hasattr(s, "Purge"), \
-        "Purge functionality not found"
+_spec = importlib.util.spec_from_file_location(
+    "infra_course", os.path.join(HERE, "course.py"))
+course = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(course)
 
 
 def check():
-    import importlib.util
-    course_dir = os.environ.get("INFRA_COURSE_DIR", os.path.dirname(__file__))
-    template_path = os.path.join(course_dir, "templates", "cdn_caching.py")
-    if not os.path.exists(template_path):
-        template_path = os.path.join(os.path.dirname(__file__), "cdn_caching.py")
+    course.check_2()
 
-    spec = importlib.util.spec_from_file_location("cdn_module", template_path)
-    mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)
-
-    _check_cdn(mod)
-    _check_purge(mod)
 
 if __name__ == "__main__":
     try:
         check()
-        print("check_cdn: PASS")
+        print("check_consistent_hash: PASS")
         sys.exit(0)
     except NotImplementedError:
-        print(f"cdn: not implemented yet")
+        print("consistent_hash: not implemented yet")
         sys.exit(2)
     except Exception as e:
-        print(f"cdn: FAIL — {e}")
+        print(f"consistent_hash: FAIL — {e}")
         sys.exit(1)

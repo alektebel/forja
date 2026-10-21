@@ -118,7 +118,7 @@ def check_chained_actions(
     - read:database + write:email -> data leakage
     """
     known_dangerous_chains = [
-        ({"exec:"}, {"write:", "send:", "read:"},
+        ({"read:"}, {"exec:", "write:", "send:"},
          "data exfiltration"),
         ({"exec:"}, {"exec:", "write:", "send:"},
          "automated destructive action"),

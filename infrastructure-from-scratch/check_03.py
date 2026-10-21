@@ -1,64 +1,37 @@
-"""check_03 — object storage: blob store, CRUD, metadata, versioning.
+"""check_03 — cache: graded against templates/cache.py.
 
-Catches:
-- Store that doesn't persist (in-memory only, no on-disk)
-- Get that doesn't check existence (returns None instead of error)
-- Delete that doesn't remove entry
-- Metadata that isn't stored
-- Versioning that doesn't track history
+Delegates to `course.py`'s `check_3` so `python3 check_03.py`,
+`run_all.py` and `codecraft run infrastructure-from-scratch` grade the
+identical assertions: the module's surface, its probe, and its own `_test()`.
+
+Exit codes: 0 pass, 2 stub (NotImplementedError), 1 failure.
 """
 
-import sys
+import importlib.util
 import os
-import tempfile
-import shutil
+import sys
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.dirname(HERE))  # repo root, for codecraft.api
+
+_spec = importlib.util.spec_from_file_location(
+    "infra_course", os.path.join(HERE, "course.py"))
+course = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(course)
 
 
 def check():
-    import importlib.util
-    course_dir = os.environ.get("INFRA_COURSE_DIR", os.path.dirname(__file__))
-    template_path = os.path.join(course_dir, "templates", "cache.py")
-    if not os.path.exists(template_path):
-        template_path = os.path.join(os.path.dirname(__file__), "cache.py")
-
-    spec = importlib.util.spec_from_file_location("objstore_module", template_path)
-    mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)
-
-    # Test that ObjectStore class exists
-    assert hasattr(mod, "ObjectStore") or hasattr(mod, "Store"), \
-        "ObjectStore class not found"
-
-    # Test basic CRUD operations if available
-    if hasattr(mod, "ObjectStore"):
-        store = mod.ObjectStore("/tmp/test-store")
-        store.put("test-key", b"test-value", metadata={"content-type": "text/plain"})
-        value = store.get("test-key")
-        assert value == b"test-value", f"Expected b'test-value', got {value}"
-
-        meta = store.get_metadata("test-key")
-        assert meta == {"content-type": "text/plain"}, f"Expected metadata, got {meta}"
-
-        store.delete("test-key")
-        try:
-            store.get("test-key")
-            assert False, "Should have raised error for deleted key"
-        except (KeyError, ValueError):
-            pass  # expected
-
-    print("  check_03: basic assertions passed")
+    course.check_3()
 
 
 if __name__ == "__main__":
     try:
         check()
-        print("check_03: PASS")
+        print("check_cache: PASS")
         sys.exit(0)
     except NotImplementedError:
-        print(f"check_03: not implemented yet")
+        print("cache: not implemented yet")
         sys.exit(2)
     except Exception as e:
-        print(f"check_03: FAIL — {e}")
-        import traceback
-        traceback.print_exc()
+        print(f"cache: FAIL — {e}")
         sys.exit(1)

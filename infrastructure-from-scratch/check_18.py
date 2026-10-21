@@ -1,61 +1,37 @@
-"""check_17 — consensus: Raft leader election, log replication, safety.
+"""check_18 — capacity_planner: graded against templates/capacity_planner.py.
 
-Catches:
-- Leader election that doesn't work (no majority)
-- Log replication that doesn't match
-- Safety that isn't enforced (no two leaders)
-- Catch-up that doesn't work for lagging nodes
+Delegates to `course.py`'s `check_18` so `python3 check_18.py`,
+`run_all.py` and `codecraft run infrastructure-from-scratch` grade the
+identical assertions: the module's surface, its probe, and its own `_test()`.
+
+Exit codes: 0 pass, 2 stub (NotImplementedError), 1 failure.
 """
 
-import sys
+import importlib.util
 import os
+import sys
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.dirname(HERE))  # repo root, for codecraft.api
+
+_spec = importlib.util.spec_from_file_location(
+    "infra_course", os.path.join(HERE, "course.py"))
+course = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(course)
 
 
 def check():
-    import importlib.util
-    course_dir = os.environ.get("INFRA_COURSE_DIR", os.path.dirname(__file__))
-    template_path = os.path.join(course_dir, "templates", "session_stickiness.py")
-    if not os.path.exists(template_path):
-        template_path = os.path.join(os.path.dirname(__file__), "session_stickiness.py")
-
-    spec = importlib.util.spec_from_file_location("consensus_module", template_path)
-    mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)
-
-    # Test that RaftNode class exists
-    assert hasattr(mod, "RaftNode") or hasattr(mod, "Consensus"), \
-        "RaftNode class not found"
-
-    # Test basic consensus if available
-    if hasattr(mod, "RaftNode"):
-        nodes = []
-        for i in range(3):
-            node = mod.RaftNode(f"node-{i}")
-            nodes.append(node)
-
-        # Form cluster
-        for node in nodes:
-            for other in nodes:
-                if other is not node:
-                    node.connect(other)
-
-        node1 = nodes[0]
-        leader_id = node1.elect_leader()
-        assert leader_id is not None, "No leader elected"
-
-    print("  check_17: basic assertions passed")
+    course.check_18()
 
 
 if __name__ == "__main__":
     try:
         check()
-        print("check_17: PASS")
+        print("check_capacity_planner: PASS")
         sys.exit(0)
     except NotImplementedError:
-        print(f"check_17: not implemented yet")
+        print("capacity_planner: not implemented yet")
         sys.exit(2)
     except Exception as e:
-        print(f"check_17: FAIL — {e}")
-        import traceback
-        traceback.print_exc()
+        print(f"capacity_planner: FAIL — {e}")
         sys.exit(1)

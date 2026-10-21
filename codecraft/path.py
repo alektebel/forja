@@ -37,17 +37,18 @@ PHASES = [
          "why": "Which context caused the answer — ablation and a LASSO surrogate. "
                 "The eval-flavoured course, and the bridge into RAG. 14 checks."},
         {"id": "A5", "title": "System Design", "course": "infrastructure-from-scratch",
-         "kind": "legacy", "prereq": [],
+         "kind": "ready", "prereq": [],
          "why": "Optional but cheap: caching, queues, idempotency, rate limiting. "
                 "Makes sqs/dynamodb in A1 click and underpins the agent half. "
-                "The live material is now `infrastructure-from-scratch/` — "
-                "eighteen graded topic modules, twenty check and mutate "
-                "batteries — superseding the 6,000-line `system-design/` pile; "
-                "it stays legacy until `course.py` speaks the api (it is a "
-                "raw-dict catalog `manifests.load` refuses), check_01/check_17 "
-                "test the module their title names, and mutate_05 stops "
-                "hanging. `run_all.py`'s unpack and fifteen placeholder "
-                "title↔file mismatches are the rest of the graduation list."},
+                "The graded course is `infrastructure-from-scratch/`: eighteen "
+                "topic modules, each a stub whose own `_test()` describes the "
+                "job, graded by `course.py` (surface + behaviour probe + the "
+                "module's `_test()`), with anchored mutation batteries proving "
+                "the grader catches planted mistakes — superseding the "
+                "6,000-line `system-design/` pile. The material still uses "
+                "`time` and floats (TTLs and rate windows are wall-clock), so "
+                "it does not conform to laws 2–3 of its contract; that debt "
+                "is recorded there, not hidden."},
         {"id": "A6", "title": "Dynamo From Scratch", "course": "dynamo-paper",
          "kind": "ready", "prereq": ["A1"],
          "why": "The paper behind DynamoDB, in depth: quorums, hinted handoff, "

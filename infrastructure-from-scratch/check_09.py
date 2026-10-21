@@ -1,59 +1,37 @@
-"""check_09 — read replicas: primary, replica, failover, lag.
+"""check_09 — session_stickiness: graded against templates/session_stickiness.py.
 
-Catches:
-- Replicas that don't replicate data
-- Failover that doesn't promote a replica
-- Lag that isn't measured or handled
-- Read-only that isn't enforced on replicas
+Delegates to `course.py`'s `check_9` so `python3 check_09.py`,
+`run_all.py` and `codecraft run infrastructure-from-scratch` grade the
+identical assertions: the module's surface, its probe, and its own `_test()`.
+
+Exit codes: 0 pass, 2 stub (NotImplementedError), 1 failure.
 """
 
-import sys
+import importlib.util
 import os
-import tempfile
-import shutil
+import sys
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.dirname(HERE))  # repo root, for codecraft.api
+
+_spec = importlib.util.spec_from_file_location(
+    "infra_course", os.path.join(HERE, "course.py"))
+course = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(course)
 
 
 def check():
-    import importlib.util
-    course_dir = os.environ.get("INFRA_COURSE_DIR", os.path.dirname(__file__))
-    template_path = os.path.join(course_dir, "templates", "leaderboard.py")
-    if not os.path.exists(template_path):
-        template_path = os.path.join(os.path.dirname(__file__), "leaderboard.py")
-
-    spec = importlib.util.spec_from_file_location("readreplicas_module", template_path)
-    mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)
-
-    # Test that ReplicationManager class exists
-    assert hasattr(mod, "ReplicationManager") or hasattr(mod, "ReadReplica"), \
-        "ReplicationManager class not found"
-
-    # Test basic replication if available
-    if hasattr(mod, "ReplicationManager"):
-        manager = mod.ReplicationManager()
-        manager.add_primary("primary-1", "http://primary:5432")
-        manager.add_replica("replica-1", "http://replica-1:5432")
-        manager.add_replica("replica-2", "http://replica-2:5432")
-
-        primary = manager.get_primary()
-        assert primary is not None, "Primary not found"
-
-        replicas = manager.get_replicas()
-        assert len(replicas) == 2, f"Expected 2 replicas, got {len(replicas)}"
-
-    print("  check_09: basic assertions passed")
+    course.check_9()
 
 
 if __name__ == "__main__":
     try:
         check()
-        print("check_09: PASS")
+        print("check_session_stickiness: PASS")
         sys.exit(0)
     except NotImplementedError:
-        print(f"check_09: not implemented yet")
+        print("session_stickiness: not implemented yet")
         sys.exit(2)
     except Exception as e:
-        print(f"check_09: FAIL — {e}")
-        import traceback
-        traceback.print_exc()
+        print(f"session_stickiness: FAIL — {e}")
         sys.exit(1)

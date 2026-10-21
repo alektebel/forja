@@ -1,146 +1,124 @@
-"""mutate_01 — load balancer: consistent hash ring, rendezvous hash.
+"""mutate_01 — url_shortener: 30 anchored mutations, each caught by check_01.
 
-Plants mutations in the solution. Each mutation is a text replacement
-that breaks behavior. Uses check functions to verify each is caught.
+Every mutation replaces one exact, once-occurring line of
+`solutions/url_shortener.py` with a wrong-behaviour variant. The verifier is the
+shipped grader itself: `course.check_1()` (surface + probe + the module's
+own `_test()`) run against a copy of the solution with the mutation planted
+in `templates/url_shortener.py`. If a line ever loses its uniqueness or its
+behaviour stops mattering, the file reports SKIP/MISSED — never a silent 100%%.
 """
 
-import sys
-import os
-import tempfile
-import shutil
+import contextlib
 import importlib.util
+import io
+import os
+import shutil
+import signal
+import sys
+import tempfile
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.dirname(HERE))  # repo root, for codecraft.api
+
+MODULE = "url_shortener.py"
+STAGE = 1
+BUDGET = 12  # seconds per mutant; a hang is a MISSED, not a free pass
 
 
-def _load(path):
-    spec = importlib.util.spec_from_file_location("mod", path)
+def _m(t, r, l):
+    return (t, r, l)
+
+
+MUTATIONS = [
+    _m('BASE62_ALPHABET = string.digits + string.ascii_lowercase + string.ascii_uppercase', 'pass  # mutated', 'L9: statement removed'),
+    _m('    result = []', '    pass  # mutated', 'L15: statement removed'),
+    _m('    return "".join(reversed(result))', '    return None', 'L19: return -> None'),
+    _m('    idx = {c: i for i, c in enumerate(BASE62_ALPHABET)}', '    pass  # mutated', 'L23: statement removed'),
+    _m('    result = 0', '    pass  # mutated', 'L24: statement removed'),
+    _m('    return result', '    return None', 'L27: return -> None'),
+    _m('        return BASE62_ALPHABET[0]', '        return None', 'L14: return -> None'),
+    _m('        result.append(BASE62_ALPHABET[num % 62])', '        pass  # mutated', 'L17: statement removed'),
+    _m('        result = result * 62 + idx[c]', '        pass  # mutated', 'L26: statement removed'),
+    _m('        now = time.time()', '        pass  # mutated', 'L35: statement removed'),
+    _m('        entry = self._data.get(code)', '        pass  # mutated', 'L44: statement removed'),
+    _m('        return entry["long_url"]', '        return None', 'L50: return -> None'),
+    _m('        return self._data.get(code)', '        return None', 'L57: return -> None'),
+    _m('        self.base_url = base_url', '        pass  # mutated', 'L62: statement removed'),
+    _m('        self._counter = 1000', '        pass  # mutated', 'L63: statement removed'),
+    _m('        self._store = URLStore()', '        pass  # mutated', 'L64: statement removed'),
+    _m('        self._cache_max = 1000', '        pass  # mutated', 'L67: statement removed'),
+    _m('        self._store.save(code, long_url, ttl_seconds)', '        pass  # mutated', 'L78: statement removed'),
+    _m('        return f"{self.base_url}/{code}"', '        return None', 'L79: return -> None'),
+    _m('        long_url = self._store.get(code)', '        pass  # mutated', 'L85: statement removed'),
+    _m('        return long_url', '        return None', 'L92: return -> None'),
+    _m('            self._data[code]["hits"] += 1', '            pass  # mutated', 'L54: statement removed'),
+    _m('            code = base62_encode(self._counter)', '            pass  # mutated', 'L77: statement removed'),
+    _m('    if num == 0:', '    if num != 0:', 'L13: == -> !='),
+    _m('    result = 0', '    result = 1', 'L24: 0 -> 1'),
+    _m('    if num == 0:', '    if num == 1:', 'L13: 0 -> 1'),
+    _m('            self._data[code]["hits"] += 1', '            self._data[code]["hits"] -= 1', 'L54: aug-assign flipped'),
+    _m('        return BASE62_ALPHABET[0]', '        return BASE62_ALPHABET[1]', 'L14: 0 -> 1'),
+    _m('            "hits": 0,', '            "hits": 1,', 'L40: 0 -> 1'),
+    _m('            self._data[code]["hits"] += 1', '            self._data[code]["hits"] += 2', 'L54: 1 -> 2')
+]
+
+
+def _verify(course_dir):
+    spec = importlib.util.spec_from_file_location(
+        "infra_course_mutate", os.path.join(course_dir, "course.py"))
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
-    return mod
+    getattr(mod, f"check_{STAGE}")()
 
 
-def _verify(s):
-    """Run checks that should fail on broken code."""
-    # HashRing basic operations
-    ring = s.HashRing(virtual_nodes=50)
-    ring.add_node("A")
-    ring.add_node("B")
-    ring.add_node("C")
-    assert len(ring.nodes) == 3, f"Expected 3 nodes, got {len(ring.nodes)}"
-
-    # Routing consistency
-    node1 = ring.get_node("key:1")
-    node2 = ring.get_node("key:1")
-    assert node1 == node2, "Same key must route to same node"
-
-    # All keys must route to existing nodes
-    for i in range(20):
-        n = ring.get_node(f"key:{i}")
-        assert n in ("A", "B", "C"), f"key:{i} routed to {n}"
-
-    # Distribution should be roughly even
-    dist = ring.distribution(2000)
-    for node, count in dist.items():
-        assert 200 < count < 1500, f"distribution off for {node}: {count}"
-
-    # RendezvousHash basic operations
-    rh = s.RendezvousHash()
-    rh.add_node("X")
-    rh.add_node("Y")
-    rh.add_node("Z")
-    assert len(rh.nodes) == 3, f"Expected 3 nodes, got {len(rh.nodes)}"
-    n = rh.get_node("key:1")
-    assert n in ("X", "Y", "Z"), f"Rendezvous routed to {n}"
-
-    # Remove node
-    ring.remove_node("A")
-    assert len(ring.nodes) == 2, f"Expected 2 nodes after remove, got {len(ring.nodes)}"
-
-
-def _m(template_text, replacement_text, label=""):
-    return (template_text, replacement_text, label)
-
-
-def _is_caught(tmp_path):
-    """Check if a mutation is caught by running checks."""
+def _grade(source, prefix):
+    tmp = tempfile.mkdtemp(prefix=prefix)
     try:
-        mod = _load(tmp_path)
-        _verify(mod)
-        return False  # NOT caught (checks passed on broken code)
-    except Exception:
-        return True  # CAUGHT (checks failed on broken code)
+        shutil.copy(os.path.join(HERE, "course.py"),
+                    os.path.join(tmp, "course.py"))
+        os.makedirs(os.path.join(tmp, "templates"))
+        with open(os.path.join(tmp, "templates", MODULE), "w") as f:
+            f.write(source)
+        signal.signal(signal.SIGALRM, lambda *a: (_ for _ in ()).throw(
+            TimeoutError("mutant too slow")))
+        signal.setitimer(signal.ITIMER_REAL, BUDGET)
+        try:
+            with contextlib.redirect_stdout(io.StringIO()):
+                _verify(tmp)
+        finally:
+            signal.setitimer(signal.ITIMER_REAL, 0)
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
 
 
 def main():
-    solution_path = os.path.join(HERE, "solutions", "consistent_hash.py")
-
-    with open(solution_path) as f:
-        solution_content = f.read()
-
-    mutations = [
-        # HashRing mutations
-        _m("self._nodes.add(node)", "pass  # no add", "add_node no-op"),
-        _m("self._nodes.discard(node)", "pass  # no discard", "remove_node no-op"),
-        _m("return self._ring[idx][1]", "return None", "get_node always None"),
-        _m("return set(self._nodes)", "return set()", "nodes always empty"),
-        _m("counts: Dict[str, int] = {n: 0 for n in self._nodes}", "counts = {}", "Distribution empty"),
-        _m("counts[node] = counts.get(node, 0) + 1", "pass  # broken", "Distribution count broken"),
-        _m("return self._ring", "return []", "Ring always empty"),
-        _m("bisect.insort(self._ring, (pos, node))", "pass  # broken", "insort broken"),
-        _m("self._ring = [(pos, n) for pos, n in self._ring if n != node]", "pass  # broken", "remove filter broken"),
-        _m("if not self._ring:", "if False:", "Empty ring check broken"),
-        _m("if idx == len(self._ring):", "if False:", "Ring wrap broken"),
-        _m("pos = _hash(f'{node}#vnode{i}')", "pos = 0", "Vnode hash broken"),
-
-        # RendezvousHash mutations
-        _m("self._nodes.append(node)", "pass  # broken", "RH add_node no-op"),
-        _m("self._nodes.remove(node)", "pass  # broken", "RH remove_node no-op"),
-        _m("return max(self._nodes, key=lambda n: _hash(f'{n}:{key}'))", "return self._nodes[0] if self._nodes else None", "RH always returns first"),
-        _m("return list(self._nodes)", "return []", "RH nodes always empty"),
-        _m("if not self._nodes:", "if False:", "RH empty check broken"),
-
-        # Common mutations
-        _m("virtual_nodes: int = 150", "virtual_nodes: int = 0", "Vnodes zeroed"),
-        _m("self._ring: List[Tuple[int, str]] = []", "pass  # broken init", "Ring init broken"),
-        _m("self._nodes: set = set()", "pass  # broken init", "Nodes init broken"),
-        _m("self._nodes: List[str] = []", "pass  # broken init", "RH nodes init broken"),
-        _m("return int(hashlib.md5(key.encode()).hexdigest(), 16) % (2**32)", "return 0", "Hash always 0"),
-        _m("for i in range(self.virtual_nodes):", "pass  # broken loop", "Vnode loop no-op"),
-        _m("for i in range(self.virtual_nodes):", "i = 0  # no loop", "Vnode loop broken"),
-        _m("positions = [p for p, _ in self._ring]", "positions = []", "Positions empty"),
-        _m("idx = bisect.bisect_left(positions, pos)", "idx = 0  # always first", "Index always 0"),
-        _m("for i in range(num_keys):", "i = 0  # single iter", "Distribution single iter"),
-        _m("self._nodes.remove(node)", "pass  # RH no-op", "RH remove no-op"),
-        _m("return len(self._ring) == 0", "return True", "is_empty always True"),
-        _m("if self.get_node(key) != old_ring.get_node(key):", "if False:  # broken", "Migration check broken"),
-    ]
+    with open(os.path.join(HERE, "solutions", MODULE)) as f:
+        content = f.read()
+    try:
+        _grade(content, "mut01-base-")
+    except Exception as e:
+        print(f"mutate_01: BASELINE BROKEN — check fails on the "
+              f"unmutated solution: {e}")
+        return 1
 
     caught = 0
     missed = 0
-
-    for i, (template, replacement, label) in enumerate(mutations):
-        if template not in solution_content:
+    for i, (t, r, l) in enumerate(MUTATIONS):
+        if content.count(t) != 1:
             missed += 1
-            print(f"  MUTATE {i+1:03d}: SKIP  (not found)  {label}")
+            print(f"  M{i + 1:03d}: SKIP  (anchor not unique)  {l}")
             continue
-
-        tmpdir = tempfile.mkdtemp(prefix=f"mutate01-{i}-")
         try:
-            mutated_content = solution_content.replace(template, replacement, 1)
-            tmp_path = os.path.join(tmpdir, "consistent_hash.py")
-            with open(tmp_path, "w") as f:
-                f.write(mutated_content)
-
-            if _is_caught(tmp_path):
-                caught += 1
-                print(f"  MUTATE {i+1:03d}: CAUGHT  {label}")
-            else:
-                missed += 1
-                print(f"  MUTATE {i+1:03d}: MISSED  {label}")
-        finally:
-            shutil.rmtree(tmpdir, ignore_errors=True)
-
+            _grade(content.replace(t, r, 1), f"mut01-{i}-")
+        except TimeoutError:
+            missed += 1
+            print(f"  M{i + 1:03d}: MISSED (hang)  {l}")
+        except Exception:
+            caught += 1
+            print(f"  M{i + 1:03d}: CAUGHT  {l}")
+        else:
+            missed += 1
+            print(f"  M{i + 1:03d}: MISSED  {l}")
     print(f"\nMUTATE: CAUGHT {caught} / {caught + missed}  MISSED {missed}")
     return 0 if missed == 0 else 1
 

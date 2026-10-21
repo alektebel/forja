@@ -13,7 +13,7 @@ the rest.**
 
 ### Ready now — checker-driven, pure Python, `codecraft` runs them as-is
 
-Twenty-nine courses, 323 graded checks between them, no dependencies.
+Thirty courses, 341 graded checks between them, no dependencies.
 
 | Course | Checks | What it teaches |
 |---|---|---|
@@ -47,6 +47,7 @@ Twenty-nine courses, 323 graded checks between them, no dependencies.
 
 | `agent-metrics-from-scratch` | 10 | A trace is not a metric: the fleet's twelve-field event and the fields its kind carries, a half-open window that makes a tumbling set a partition and refuses an inclusive end, queue depth as a gauge derived from a state machine over the five kinds and never summed, a percentile as a nearest-rank index over exact integers (no float, no interpolation), latency split into the wait, the service and the retry gap with the identity asserted, tokens and micros summed before they are divided and priced by the pool that ran the task, failure and retry rates that name their own denominators and answer floored basis points, windows whose step may not leave a hole, a report recomputed from the events and cross-checked key by key against the fleet's own count of its own run, and a capstone whose budget is spent by the size of an overshoot and whose alert names the window that spent the last of it |
 | `sandbox-capabilities-from-scratch` | 10 | An agent's power as the intersection of declared, granted and affordable, on a world made of data: a capability vocabulary and a per-tool demand that must be a set, a principal's grant whose answer is the missing difference and never a boolean, a path jail that resolves `..` before anything is judged and refuses the sibling root a prefix test would hand over, a network policy of exact `host:port` specs where the port is part of the host's identity, cpu/memory/ticks limits charged all or nothing before the work, secrets that reach the model as a handle, a length and a digest while the leak test knows base64 (padded and stripped), hex (both cases) and the reversed value, an audit line of seven fields always written with a closed reason vocabulary, the six questions — catalogue, grant, jail, host, limit, secret — decided in one order with the line written *before* the act and a denial that reaches the filesystem, the wire, the vault and the meter not at all, a report recomputed from the lines and cross-checked against `VFS.log()`, `Wire.dialled()` and `Vault.reads()` with no denied call allowed in any of them, and a capstone whose answer to "what did it touch" is its audit and not its plan |
+| `infrastructure-from-scratch` | 18 | The building blocks, one module each: URL shortener, consistent hashing, caching (LRU/TTL/aside/stampede), CDN, the four rate limiters, throttling, batching, pooling, stickiness, circuit breaking, queues with DLQ, leaderboards, hot partitions, locality, eventual consistency, idempotency keys, edge computing, capacity math — slot A5, superseding the `system-design/` pile (the 6,000 lines stay as prose material) |
 
 ### Legacy — templates and solutions, but no checker (needs a `course.py`)
 
@@ -56,7 +57,6 @@ just as well as a Python one — its check functions may shell out to `make`.
 
 | Project | Notes |
 |---|---|
-| `system-design` | 6,000 lines, pure Python, 528 TODO markers. The big one — **superseded by the built topic modules of `infrastructure-from-scratch/`**, registered at A5 as legacy until its `course.py` speaks the api |
 | `quantitative-trading` | 5,400 lines; numpy / pandas / scipy / sklearn |
 | `world-models` | 10,500 lines of PyTorch across five papers |
 | `lean-proofs` | 6,400 lines, 658 `sorry`s — the deepest single project here |

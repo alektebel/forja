@@ -1,55 +1,37 @@
-"""check_message_queue — the message queue: delivery semantics, acks, retries, DLQ.
+"""check_07 — request_batching: graded against templates/request_batching.py.
 
-Catches:
-- At-least-once: doesn't redeliver unacked messages
-- Idempotency: doesn't deduplicate by message ID
-- DLQ: doesn't move failed messages after N retries
-- Acknowledgements: auto-ack on receive (should be manual)
+Delegates to `course.py`'s `check_7` so `python3 check_07.py`,
+`run_all.py` and `codecraft run infrastructure-from-scratch` grade the
+identical assertions: the module's surface, its probe, and its own `_test()`.
+
+Exit codes: 0 pass, 2 stub (NotImplementedError), 1 failure.
 """
 
-import sys
+import importlib.util
 import os
+import sys
 
-def _check_delivery_semantics(s):
-    """Test that delivery semantics match the expected behavior."""
-    # Check that the implementation has the right methods
-    assert hasattr(s, "MessageQueue") or hasattr(s, "Queue"), \
-        "MessageQueue class not found"
+HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.dirname(HERE))  # repo root, for codecraft.api
 
-
-def _check_acks(s):
-    """Test that acknowledgements work correctly."""
-    # Check that the implementation has ack methods
-    assert hasattr(s, "ack") or hasattr(s, "acknowledge"), \
-        "ack() or acknowledge() method not found"
+_spec = importlib.util.spec_from_file_location(
+    "infra_course", os.path.join(HERE, "course.py"))
+course = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(course)
 
 
 def check():
-    import importlib.util
+    course.check_7()
 
-    # Load the module from templates or solutions
-    course_dir = os.environ.get("INFRA_COURSE_DIR", os.path.dirname(__file__))
-    template_path = os.path.join(course_dir, "templates", "message_queue.py")
-    if not os.path.exists(template_path):
-        template_path = os.path.join(os.path.dirname(__file__), "message_queue.py")
-
-    spec = importlib.util.spec_from_file_location("message_queue_module", template_path)
-    mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)
-
-    _check_delivery_semantics(mod)
-    _check_acks(mod)
 
 if __name__ == "__main__":
     try:
         check()
-        print("check_message_queue: PASS")
+        print("check_request_batching: PASS")
         sys.exit(0)
     except NotImplementedError:
-        print(f"message_queue: not implemented yet ({sys.exc_info()})")
+        print("request_batching: not implemented yet")
         sys.exit(2)
     except Exception as e:
-        print(f"message_queue: FAIL — {e}")
-        import traceback
-        traceback.print_exc()
+        print(f"request_batching: FAIL — {e}")
         sys.exit(1)

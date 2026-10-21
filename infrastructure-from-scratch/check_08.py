@@ -1,63 +1,37 @@
-"""check_rate_limiter — the rate limiter: token bucket, sliding window.
+"""check_08 — connection_pooling: graded against templates/connection_pooling.py.
 
-Catches:
-- Token bucket: wrong refill rate, wrong bucket size, wrong consume logic
-- Sliding window: doesn't track timestamps, counts wrong window
-- Distributed: no atomicity, no Redis-like INCR pattern
+Delegates to `course.py`'s `check_8` so `python3 check_08.py`,
+`run_all.py` and `codecraft run infrastructure-from-scratch` grade the
+identical assertions: the module's surface, its probe, and its own `_test()`.
+
+Exit codes: 0 pass, 2 stub (NotImplementedError), 1 failure.
 """
 
-import sys
+import importlib.util
 import os
+import sys
 
-def _check_token_bucket(s):
-    """Token bucket: burst then refill."""
-    # Test the RateLimiter implementation
-    # This assumes the template/solution has a RateLimiter class
+HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.dirname(HERE))  # repo root, for codecraft.api
 
-    # Test that basic operations exist
-    assert hasattr(s, "RateLimiter"), "RateLimiter class not found"
-
-    # Test capacity validation
-    try:
-        rl = s.RateLimiter(capacity=0)
-        assert False, "Should reject capacity=0"
-    except (ValueError, AssertionError):
-        pass  # expected
-
-
-def _check_sliding_window(s):
-    """Sliding window: count requests in time window."""
-    # Test that the implementation exists
-    assert hasattr(s, "SlidingWindowRateLimiter") or hasattr(s, "SlidingWindow"), \
-        "Sliding window rate limiter not found"
+_spec = importlib.util.spec_from_file_location(
+    "infra_course", os.path.join(HERE, "course.py"))
+course = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(course)
 
 
 def check():
-    import importlib.util
+    course.check_8()
 
-    # Load the module from templates or solutions
-    course_dir = os.environ.get("INFRA_COURSE_DIR", os.path.dirname(__file__))
-    template_path = os.path.join(course_dir, "templates", "rate_limiter.py")
-    if not os.path.exists(template_path):
-        template_path = os.path.join(os.path.dirname(__file__), "rate_limiter.py")
-
-    spec = importlib.util.spec_from_file_location("rate_limiter_module", template_path)
-    mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)
-
-    _check_token_bucket(mod)
-    _check_sliding_window(mod)
 
 if __name__ == "__main__":
     try:
         check()
-        print("check_rate_limiter: PASS")
+        print("check_connection_pooling: PASS")
         sys.exit(0)
     except NotImplementedError:
-        print(f"rate_limiter: not implemented yet ({sys.exc_info()})")
+        print("connection_pooling: not implemented yet")
         sys.exit(2)
     except Exception as e:
-        print(f"rate_limiter: FAIL — {e}")
-        import traceback
-        traceback.print_exc()
+        print(f"connection_pooling: FAIL — {e}")
         sys.exit(1)

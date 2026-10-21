@@ -11,8 +11,9 @@ import importlib.util
 
 COURSE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# Import stages from course.py
+# Import stages from course.py (course.py imports codecraft.api)
 sys.path.insert(0, COURSE_DIR)
+sys.path.insert(0, os.path.dirname(COURSE_DIR))
 import course
 
 STAGES = course.STAGES
@@ -20,42 +21,38 @@ STAGES = course.STAGES
 
 def check_stage(stage_num, filename):
     """Run check_NN.py for a stage."""
-    check_file = os.path.join(COURSE_DIR, f"check_{stage_num}.py")
+    check_file = os.path.join(COURSE_DIR, f"check_{stage_num:02d}.py")
     if not os.path.exists(check_file):
-        print(f"  {stage_num:2d}: SKIP — check_{stage_num}.py not found")
+        print(f"  {stage_num}: SKIP — check_{stage_num:02d}.py not found")
         return True
-
-    env = os.environ.copy()
-    env["INFRA_COURSE_DIR"] = COURSE_DIR
-    env["INFRA_TEMPLATE_DIR"] = os.path.join(COURSE_DIR, "templates")
 
     result = subprocess.run(
         [sys.executable, check_file],
-        env=env,
+        cwd=COURSE_DIR,
         capture_output=True,
         text=True,
         timeout=30,
     )
 
     if result.returncode == 0:
-        print(f"  {stage_num:2d}: PASS")
+        print(f"  {stage_num}: PASS")
         return True
     elif result.returncode == 2:
-        print(f"  {stage_num:2d}: TEMPLATE FAIL (stub not implemented)")
+        print(f"  {stage_num}: TEMPLATE FAIL (stub not implemented) — {filename}")
         return False
     else:
-        print(f"  {stage_num:2d}: FAIL — {result.stdout.strip()}")
+        print(f"  {stage_num}: FAIL — {result.stdout.strip()}")
         return False
 
 
 def main(argv):
-    stages_to_check = [int(a) for a in argv] if argv else range(1, 21)
+    stages_to_check = [int(a) for a in argv] if argv else None
     results = []
 
-    for stage_num, filename in STAGES:
-        if stage_num in stages_to_check or not argv:
-            ok = check_stage(stage_num, filename)
-            results.append((stage_num, ok))
+    for st in course.STAGES:
+        if stages_to_check is None or st.id in stages_to_check:
+            ok = check_stage(st.id, st.file)
+            results.append((st.id, ok))
 
     passed = sum(1 for _, ok in results if ok)
     total = len(results)
