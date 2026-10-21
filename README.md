@@ -125,6 +125,9 @@ of the above, check the branch table in [codecraft/ROADMAP.md](codecraft/ROADMAP
 - **[math/](math/)** - Graded modules for the skill-tree nodes in the repo's template + `check.py` + `solutions/` format, mutation-tested by planted bugs
   <sub>✅ **ready** — 37 graded modules with checkers</sub>
 
+### Systems & Networked Programming (Go)
+- **[go-projects/](go-projects/)** - Projects to learn Go: calculator, HTTP server, concurrent crawler, key-value store
+
 ### Machine Learning & MLOps
 - **[distributed-training/](distributed-training/)** - Distributed training systems (data parallelism, model parallelism, multi-node training)
   <sub>🔄 **needs checker** — partial code (~0.6k lines) · superseded by H1 (ready): port leftovers only</sub>
