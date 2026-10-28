@@ -1,0 +1,46 @@
+name: Bake forja
+
+# Every push to main re-bakes the /forja page's data from this repo's plan,
+# manifests and checkers, and commits it to the site repo that serves
+# diegoatencia.dev. FORJA_DEPLOY_KEY is a write deploy key on that repo.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: forja-bake
+  cancel-in-progress: true
+
+jobs:
+  bake:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Bake data.json
+        run: python3 scripts/forja_data.py "$RUNNER_TEMP/data.json"
+      - name: Check out the site
+        uses: actions/checkout@v4
+        with:
+          repository: alektebel/alektebel.github.io
+          ssh-key: ${{ secrets.FORJA_DEPLOY_KEY }}
+          path: site
+      - name: Commit if changed
+        working-directory: site
+        run: |
+          # `generated` is a timestamp; ignore it so a no-op push stays a no-op.
+          strip() { python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); d.pop("generated",None); print(json.dumps(d,sort_keys=True))' "$1"; }
+          if [ -f forja/data.json ] && [ "$(strip forja/data.json)" = "$(strip "$RUNNER_TEMP/data.json")" ]; then
+            echo "forja data unchanged"; exit 0
+          fi
+          cp "$RUNNER_TEMP/data.json" forja/data.json
+          git config user.name "forja-bake"
+          git config user.email "forja-bake@users.noreply.github.com"
+          git add forja/data.json
+          git commit -m "forja: rebake from learn-stuff-from-scratch@${GITHUB_SHA::7}"
+          git push
