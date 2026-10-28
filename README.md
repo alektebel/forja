@@ -1,4 +1,4 @@
-# learn-stuff-from-scratch
+# forja
 
 A collection of from-scratch implementations of various systems and projects for learning purposes.
 

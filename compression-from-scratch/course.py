@@ -65,7 +65,7 @@ def check_1():
 
     HERE = os.path.dirname(os.path.abspath(__file__))
 
-    DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"
+    DEFAULT_REPO = "/home/diego/Desarrollo/forja"
 
     COURSE = "compression-from-scratch"
 
@@ -86,7 +86,7 @@ def check_1():
                 if parent == candidate:
                     break
                 candidate = parent
-        raise SystemExit("set H7_REPO=/path/to/learn-stuff-from-scratch")
+        raise SystemExit("set H7_REPO=/path/to/forja")
 
     def _harness_env(root):
         """Copy the repo's course into `root` with solutions/ overlaid."""
@@ -365,7 +365,7 @@ def check_2():
 
     COURSE = "compression-from-scratch"
 
-    DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"
+    DEFAULT_REPO = "/home/diego/Desarrollo/forja"
 
     def _repo(start=None):
         for candidate_start in (os.getcwd(), os.environ.get("H7_REPO"), start,
@@ -380,7 +380,7 @@ def check_2():
                 if parent == here:
                     break
                 here = parent
-        raise SystemExit("set H7_REPO=/path/to/learn-stuff-from-scratch")
+        raise SystemExit("set H7_REPO=/path/to/forja")
 
     def _harness_env(root):
         """Copy the repo's course into `root` with solutions/ overlaid."""
@@ -588,7 +588,7 @@ def check_3():
 
     HERE = os.path.dirname(os.path.abspath(__file__))
 
-    DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"
+    DEFAULT_REPO = "/home/diego/Desarrollo/forja"
 
     COURSE = "compression-from-scratch"
 
@@ -609,7 +609,7 @@ def check_3():
                 if parent == candidate:
                     break
                 candidate = parent
-        raise SystemExit("set H7_REPO=/path/to/learn-stuff-from-scratch")
+        raise SystemExit("set H7_REPO=/path/to/forja")
 
     def _harness_env(root):
         """Copy the repo's course into `root` with solutions/ overlaid."""
@@ -947,7 +947,7 @@ def check_4():
 
     HERE = os.path.dirname(os.path.abspath(__file__))
 
-    DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"
+    DEFAULT_REPO = "/home/diego/Desarrollo/forja"
 
     COURSE = "compression-from-scratch"
 
@@ -968,7 +968,7 @@ def check_4():
                 if parent == candidate:
                     break
                 candidate = parent
-        raise SystemExit("set H7_REPO=/path/to/learn-stuff-from-scratch")
+        raise SystemExit("set H7_REPO=/path/to/forja")
 
     def _harness_env(root):
         """Copy the repo's course into `root` with solutions/ overlaid."""
@@ -1193,7 +1193,7 @@ def check_5():
 
     HERE = os.path.dirname(os.path.abspath(__file__))
 
-    DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"
+    DEFAULT_REPO = "/home/diego/Desarrollo/forja"
 
     COURSE = "compression-from-scratch"
 
@@ -1214,7 +1214,7 @@ def check_5():
                 if parent == candidate:
                     break
                 candidate = parent
-        raise SystemExit("set H7_REPO=/path/to/learn-stuff-from-scratch")
+        raise SystemExit("set H7_REPO=/path/to/forja")
 
     def _harness_env(root):
         """Copy the repo's course into `root` with solutions/ overlaid."""
@@ -1549,7 +1549,7 @@ def check_6():
 
     HERE = os.path.dirname(os.path.abspath(__file__))
 
-    DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"
+    DEFAULT_REPO = "/home/diego/Desarrollo/forja"
 
     COURSE = "compression-from-scratch"
 
@@ -1570,7 +1570,7 @@ def check_6():
                 if parent == candidate:
                     break
                 candidate = parent
-        raise SystemExit("set H7_REPO=/path/to/learn-stuff-from-scratch")
+        raise SystemExit("set H7_REPO=/path/to/forja")
 
     def _harness_env(root):
         """Copy the repo's course into `root` with solutions/ overlaid."""
@@ -1828,7 +1828,7 @@ def check_7():
 
     HERE = os.path.dirname(os.path.abspath(__file__))
 
-    DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"
+    DEFAULT_REPO = "/home/diego/Desarrollo/forja"
 
     COURSE = "compression-from-scratch"
 
@@ -1849,7 +1849,7 @@ def check_7():
                 if parent == candidate:
                     break
                 candidate = parent
-        raise SystemExit("set H7_REPO=/path/to/learn-stuff-from-scratch")
+        raise SystemExit("set H7_REPO=/path/to/forja")
 
     def _harness_env(root):
         """Copy the repo's course into `root` with solutions/ overlaid."""
@@ -2128,7 +2128,7 @@ def check_8():
 
     HERE = os.path.dirname(os.path.abspath(__file__))
 
-    DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"
+    DEFAULT_REPO = "/home/diego/Desarrollo/forja"
 
     COURSE = "compression-from-scratch"
 
@@ -2149,7 +2149,7 @@ def check_8():
                 if parent == candidate:
                     break
                 candidate = parent
-        raise SystemExit("set H7_REPO=/path/to/learn-stuff-from-scratch")
+        raise SystemExit("set H7_REPO=/path/to/forja")
 
     def _harness_env(root):
         """Copy the repo's course into `root` with solutions/ overlaid."""
@@ -2472,7 +2472,7 @@ def check_9():
 
     HERE = os.path.dirname(os.path.abspath(__file__))
 
-    DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"
+    DEFAULT_REPO = "/home/diego/Desarrollo/forja"
 
     COURSE = "compression-from-scratch"
 
@@ -2493,7 +2493,7 @@ def check_9():
                 if parent == candidate:
                     break
                 candidate = parent
-        raise SystemExit("set H7_REPO=/path/to/learn-stuff-from-scratch")
+        raise SystemExit("set H7_REPO=/path/to/forja")
 
     def _harness_env(root):
         """Copy the repo's course into `root` with solutions/ overlaid."""
@@ -2976,7 +2976,7 @@ def check_10():
 
     HERE = os.path.dirname(os.path.abspath(__file__))
 
-    DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"
+    DEFAULT_REPO = "/home/diego/Desarrollo/forja"
 
     COURSE = "compression-from-scratch"
 
@@ -2997,7 +2997,7 @@ def check_10():
                 if parent == candidate:
                     break
                 candidate = parent
-        raise SystemExit("set H7_REPO=/path/to/learn-stuff-from-scratch")
+        raise SystemExit("set H7_REPO=/path/to/forja")
 
     def _harness_env(root):
         """Copy the repo's course into `root` with solutions/ overlaid."""

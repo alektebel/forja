@@ -73,7 +73,7 @@ def check_1():
                 if parent == candidate:
                     break
                 candidate = parent
-        raise SystemExit("set J1_REPO=/path/to/learn-stuff-from-scratch")
+        raise SystemExit("set J1_REPO=/path/to/forja")
 
     def _task_fields(task):
         """The five task fields, in the frozen order."""
@@ -334,7 +334,7 @@ def check_2():
                 if parent == candidate:
                     break
                 candidate = parent
-        raise SystemExit("set J1_REPO=/path/to/learn-stuff-from-scratch")
+        raise SystemExit("set J1_REPO=/path/to/forja")
 
     import dataclasses
 
@@ -651,7 +651,7 @@ def check_3():
                 if parent == candidate:
                     break
                 candidate = parent
-        raise SystemExit("set J1_REPO=/path/to/learn-stuff-from-scratch")
+        raise SystemExit("set J1_REPO=/path/to/forja")
 
     def _ids(tickets):
         """The task ids of a sequence of tickets, in order."""
@@ -838,7 +838,7 @@ def check_4():
                 if parent == candidate:
                     break
                 candidate = parent
-        raise SystemExit("set J1_REPO=/path/to/learn-stuff-from-scratch")
+        raise SystemExit("set J1_REPO=/path/to/forja")
 
     def _queue(fleet, stage_02, *, now=0, pool_id="small", **overrides):
         """A queue over one pool, on a fresh clock that has already spent `now`."""
@@ -1262,7 +1262,7 @@ def check_5():
                 if parent == candidate:
                     break
                 candidate = parent
-        raise SystemExit("set J1_REPO=/path/to/learn-stuff-from-scratch")
+        raise SystemExit("set J1_REPO=/path/to/forja")
 
     def _queue(fleet, stage_02, *, now=0, capacity=16, max_concurrency=4):
         """A wide queue on a fresh clock that has already spent `now` ticks."""
@@ -1578,7 +1578,7 @@ def check_6():
                 if parent == candidate:
                     break
                 candidate = parent
-        raise SystemExit("set J1_REPO=/path/to/learn-stuff-from-scratch")
+        raise SystemExit("set J1_REPO=/path/to/forja")
 
     def _zeros():
         """A fresh zeroed counter bag — the check's own copy, never a shared one."""
@@ -1879,7 +1879,7 @@ def check_7():
                 if parent == candidate:
                     break
                 candidate = parent
-        raise SystemExit("set J1_REPO=/path/to/learn-stuff-from-scratch")
+        raise SystemExit("set J1_REPO=/path/to/forja")
 
     def _counts(**overrides):
         """A fresh zeroed counter bag with the named decisions set."""
@@ -2352,7 +2352,7 @@ def check_8():
                 if parent == candidate:
                     break
                 candidate = parent
-        raise SystemExit("set J1_REPO=/path/to/learn-stuff-from-scratch")
+        raise SystemExit("set J1_REPO=/path/to/forja")
 
     def _queue(fleet, stage_02, *, now=0, capacity=16, max_concurrency=4):
         """A wide queue on a fresh clock that has already spent `now` ticks."""
@@ -2647,7 +2647,7 @@ def check_9():
                 if parent == candidate:
                     break
                 candidate = parent
-        raise SystemExit("set J1_REPO=/path/to/learn-stuff-from-scratch")
+        raise SystemExit("set J1_REPO=/path/to/forja")
 
     def _queue(fleet, stage_02, *, start=0, pool_id="bulk", capacity=16,
                concurrency=4):
@@ -3119,7 +3119,7 @@ def check_10():
                 if parent == candidate:
                     break
                 candidate = parent
-        raise SystemExit("set J1_REPO=/path/to/learn-stuff-from-scratch")
+        raise SystemExit("set J1_REPO=/path/to/forja")
 
     def _kinds(queue):
         return [line["kind"] for line in queue.events]

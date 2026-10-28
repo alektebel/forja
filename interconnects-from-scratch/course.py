@@ -77,7 +77,7 @@ def check_1():
                 if parent == candidate:
                     break
                 candidate = parent
-        raise SystemExit("set I9_REPO=/path/to/learn-stuff-from-scratch")
+        raise SystemExit("set I9_REPO=/path/to/forja")
 
     class _Plan:
         """A plan-shaped record for the shapes `fabric.Plan` refuses to build.
@@ -381,7 +381,7 @@ def check_2():
                 if parent == candidate:
                     break
                 candidate = parent
-        raise SystemExit("set I9_REPO=/path/to/learn-stuff-from-scratch")
+        raise SystemExit("set I9_REPO=/path/to/forja")
 
     def _refuses(module, what, call):
         """The message of the `fabric.FabricError` `call` must raise.
@@ -594,7 +594,7 @@ def check_3():
                 if parent == candidate:
                     break
                 candidate = parent
-        raise SystemExit("set I9_REPO=/path/to/learn-stuff-from-scratch")
+        raise SystemExit("set I9_REPO=/path/to/forja")
 
     def _refuses(module, what, call):
         """The message of the `fabric.FabricError` `call` must raise.
@@ -1074,7 +1074,7 @@ def check_4():
                 if parent == candidate:
                     break
                 candidate = parent
-        raise SystemExit("set I9_REPO=/path/to/learn-stuff-from-scratch")
+        raise SystemExit("set I9_REPO=/path/to/forja")
 
     def _refuses(module, what, call):
         """The message of the `fabric.FabricError` `call` must raise.
@@ -1278,7 +1278,7 @@ def check_5():
                 if parent == candidate:
                     break
                 candidate = parent
-        raise SystemExit("set I9_REPO=/path/to/learn-stuff-from-scratch")
+        raise SystemExit("set I9_REPO=/path/to/forja")
 
     def _refuses(module, what, call):
         """The message of the `fabric.FabricError` `call` must raise.
@@ -1693,7 +1693,7 @@ def check_6():
                 if parent == candidate:
                     break
                 candidate = parent
-        raise SystemExit("set I9_REPO=/path/to/learn-stuff-from-scratch")
+        raise SystemExit("set I9_REPO=/path/to/forja")
 
     def _refuses(module, what, call):
         """The message of the `fabric.FabricError` `call` must raise.
@@ -2044,7 +2044,7 @@ def check_7():
                 if parent == candidate:
                     break
                 candidate = parent
-        raise SystemExit("set I9_REPO=/path/to/learn-stuff-from-scratch")
+        raise SystemExit("set I9_REPO=/path/to/forja")
 
     def _refuses(module, what, call):
         """The message of the `fabric.FabricError` `call` must raise.
@@ -2424,7 +2424,7 @@ def check_8():
                 if parent == candidate:
                     break
                 candidate = parent
-        raise SystemExit("set I9_REPO=/path/to/learn-stuff-from-scratch")
+        raise SystemExit("set I9_REPO=/path/to/forja")
 
     def _refuses(module, what, call):
         """The message of the `fabric.FabricError` `call` must raise.
@@ -2713,7 +2713,7 @@ def check_9():
                 if parent == candidate:
                     break
                 candidate = parent
-        raise SystemExit("set I9_REPO=/path/to/learn-stuff-from-scratch")
+        raise SystemExit("set I9_REPO=/path/to/forja")
 
     def _refuses(module, what, call):
         """The message of the `fabric.FabricError` `call` must raise."""
@@ -3244,7 +3244,7 @@ def check_10():
                 if parent == candidate:
                     break
                 candidate = parent
-        raise SystemExit("set I9_REPO=/path/to/learn-stuff-from-scratch")
+        raise SystemExit("set I9_REPO=/path/to/forja")
 
     def _refuses(module, what, call):
         """The message of the `fabric.FabricError` `call` must raise.

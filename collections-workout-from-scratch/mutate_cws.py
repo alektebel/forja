@@ -9,8 +9,8 @@ import sys
 import subprocess
 import ast
 
-COURSE_DIR = "/home/diego/Desarrollo/learn-stuff-from-scratch/collections-workout-from-scratch"
-REPO_DIR = "/home/diego/Desarrollo/learn-stuff-from-scratch"
+COURSE_DIR = "/home/diego/Desarrollo/forja/collections-workout-from-scratch"
+REPO_DIR = "/home/diego/Desarrollo/forja"
 TMP_DIR = "/tmp/opencode/verify_cws"
 SOL_DIR = os.path.join(COURSE_DIR, "solutions")
 

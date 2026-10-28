@@ -35,7 +35,7 @@ def main() -> int:
     courses_meta = {c["name"]: c for c in manifests.discover()}
 
     data = {"generated": state["generated_at"],
-            "repo": "alektebel/learn-stuff-from-scratch", "ref": "main",
+            "repo": "alektebel/forja", "ref": "main",
             "phases": [], "courses": {}}
 
     for ph in state["phases"]:

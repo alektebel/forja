@@ -301,7 +301,7 @@ Inspired by:
 - Stanford CS149/CS231n courses
 - "Programming Massively Parallel Processors" book
 - Educational best practices in CS education
-- The learn-stuff-from-scratch repository philosophy
+- The forja repository philosophy
 
 ## License
 

@@ -85,7 +85,7 @@ def check_1():
                 if parent == candidate:
                     break
                 candidate = parent
-        raise SystemExit("set J5_REPO=/path/to/learn-stuff-from-scratch")
+        raise SystemExit("set J5_REPO=/path/to/forja")
 
     def _refuses(exc, what, call):
         """The message of the refusal `call` must raise, or the mistake named.
@@ -470,7 +470,7 @@ def check_2():
                 if parent == candidate:
                     break
                 candidate = parent
-        raise SystemExit("set J5_REPO=/path/to/learn-stuff-from-scratch")
+        raise SystemExit("set J5_REPO=/path/to/forja")
 
     def _refuses(exc, what, call):
         """The message of the refusal `call` must raise, or the mistake named.
@@ -723,7 +723,7 @@ def check_3():
                 if parent == candidate:
                     break
                 candidate = parent
-        raise SystemExit("set J5_REPO=/path/to/learn-stuff-from-scratch")
+        raise SystemExit("set J5_REPO=/path/to/forja")
 
     def _refuses(exc, what, call):
         """The message of the refusal `call` must raise, or the mistake named.
@@ -1028,7 +1028,7 @@ def check_4():
                 if parent == candidate:
                     break
                 candidate = parent
-        raise SystemExit("set J5_REPO=/path/to/learn-stuff-from-scratch")
+        raise SystemExit("set J5_REPO=/path/to/forja")
 
     def _refuses(exc, what, call):
         """The message of the refusal `call` must raise, or the mistake named.
@@ -1261,7 +1261,7 @@ def check_5():
                 if parent == candidate:
                     break
                 candidate = parent
-        raise SystemExit("set J5_REPO=/path/to/learn-stuff-from-scratch")
+        raise SystemExit("set J5_REPO=/path/to/forja")
 
     def _refuses(exc, what, call):
         """The message of the refusal `call` must raise, or the mistake named.
@@ -1526,7 +1526,7 @@ def check_6():
                 if parent == candidate:
                     break
                 candidate = parent
-        raise SystemExit("set J5_REPO=/path/to/learn-stuff-from-scratch")
+        raise SystemExit("set J5_REPO=/path/to/forja")
 
     def _refuses(exc, what, call):
         """The message of the refusal `call` must raise, or the mistake named.
@@ -1767,7 +1767,7 @@ def check_7():
                 if parent == candidate:
                     break
                 candidate = parent
-        raise SystemExit("set J5_REPO=/path/to/learn-stuff-from-scratch")
+        raise SystemExit("set J5_REPO=/path/to/forja")
 
     def _refuses(exc, what, call):
         """The message of the refusal `call` must raise, or the mistake named.
@@ -2039,7 +2039,7 @@ def check_8():
                 if parent == candidate:
                     break
                 candidate = parent
-        raise SystemExit("set J5_REPO=/path/to/learn-stuff-from-scratch")
+        raise SystemExit("set J5_REPO=/path/to/forja")
 
     def _refuses(exc, what, call):
         """The message of the refusal `call` must raise, or the mistake named.
@@ -2554,7 +2554,7 @@ def check_9():
                 if parent == candidate:
                     break
                 candidate = parent
-        raise SystemExit("set J5_REPO=/path/to/learn-stuff-from-scratch")
+        raise SystemExit("set J5_REPO=/path/to/forja")
 
     def _refuses(exc, what, call):
         """The message of the refusal `call` must raise, or the mistake named.
@@ -3162,7 +3162,7 @@ def check_10():
                 if parent == candidate:
                     break
                 candidate = parent
-        raise SystemExit("set J5_REPO=/path/to/learn-stuff-from-scratch")
+        raise SystemExit("set J5_REPO=/path/to/forja")
 
     def _refuses(exc, what, call):
         """The message of the refusal `call` must raise, or the mistake named.

@@ -42,5 +42,5 @@ jobs:
           git config user.name "forja-bake"
           git config user.email "forja-bake@users.noreply.github.com"
           git add forja/data.json
-          git commit -m "forja: rebake from learn-stuff-from-scratch@${GITHUB_SHA::7}"
+          git commit -m "forja: rebake from forja@${GITHUB_SHA::7}"
           git push

@@ -884,7 +884,7 @@ def check_5():
                 if parent == candidate:
                     break
                 candidate = parent
-        raise SystemExit("set F3_REPO=/path/to/learn-stuff-from-scratch")
+        raise SystemExit("set F3_REPO=/path/to/forja")
 
     def _fault(fn, *args, **kwargs):
         """The exception a refused call raised, or None when it was not refused."""

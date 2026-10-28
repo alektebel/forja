@@ -62,7 +62,7 @@ def check_1():
 
     HERE = os.path.dirname(os.path.abspath(__file__))
 
-    DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"
+    DEFAULT_REPO = "/home/diego/Desarrollo/forja"
 
     COURSE = "git-from-scratch"
 
@@ -81,7 +81,7 @@ def check_1():
                 if parent == candidate:
                     break
                 candidate = parent
-        raise SystemExit("set L4_REPO=/path/to/learn-stuff-from-scratch")
+        raise SystemExit("set L4_REPO=/path/to/forja")
 
     def _git(*args, cwd=None):
         out = subprocess.run(list(args), capture_output=True, text=True,
@@ -154,7 +154,7 @@ def check_2():
 
     HERE = os.path.dirname(os.path.abspath(__file__))
 
-    DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"
+    DEFAULT_REPO = "/home/diego/Desarrollo/forja"
 
     COURSE = "git-from-scratch"
 
@@ -173,7 +173,7 @@ def check_2():
                 if parent == candidate:
                     break
                 candidate = parent
-        raise SystemExit("set L4_REPO=/path/to/learn-stuff-from-scratch")
+        raise SystemExit("set L4_REPO=/path/to/forja")
 
     def _refuses(exc, call, *must_name):
         try:
@@ -240,7 +240,7 @@ def check_3():
 
     HERE = os.path.dirname(os.path.abspath(__file__))
 
-    DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"
+    DEFAULT_REPO = "/home/diego/Desarrollo/forja"
 
     COURSE = "git-from-scratch"
 
@@ -257,7 +257,7 @@ def check_3():
                 if parent == candidate:
                     break
                 candidate = parent
-        raise SystemExit("set L4_REPO=/path/to/learn-stuff-from-scratch")
+        raise SystemExit("set L4_REPO=/path/to/forja")
 
     def _s3_surface(s):
         public = set()
@@ -322,7 +322,7 @@ def check_4():
 
     HERE = os.path.dirname(os.path.abspath(__file__))
 
-    DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"
+    DEFAULT_REPO = "/home/diego/Desarrollo/forja"
 
     COURSE = "git-from-scratch"
 
@@ -339,7 +339,7 @@ def check_4():
                 if parent == candidate:
                     break
                 candidate = parent
-        raise SystemExit("set L4_REPO=/path/to/learn-stuff-from-scratch")
+        raise SystemExit("set L4_REPO=/path/to/forja")
 
     def _build_fixture_tree(rp, s1):
         """The CodeCrafters test's own shape: file1, dir1/(a,b), dir2/(c)."""
@@ -432,7 +432,7 @@ def check_5():
 
     HERE = os.path.dirname(os.path.abspath(__file__))
 
-    DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"
+    DEFAULT_REPO = "/home/diego/Desarrollo/forja"
 
     COURSE = "git-from-scratch"
 
@@ -451,7 +451,7 @@ def check_5():
                 if parent == candidate:
                     break
                 candidate = parent
-        raise SystemExit("set L4_REPO=/path/to/learn-stuff-from-scratch")
+        raise SystemExit("set L4_REPO=/path/to/forja")
 
     def _s5_surface(s):
         public = set()
@@ -517,7 +517,7 @@ def check_6():
 
     HERE = os.path.dirname(os.path.abspath(__file__))
 
-    DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"
+    DEFAULT_REPO = "/home/diego/Desarrollo/forja"
 
     COURSE = "git-from-scratch"
 
@@ -536,7 +536,7 @@ def check_6():
                 if parent == candidate:
                     break
                 candidate = parent
-        raise SystemExit("set L4_REPO=/path/to/learn-stuff-from-scratch")
+        raise SystemExit("set L4_REPO=/path/to/forja")
 
     def _s6_surface(s):
         public = set()
@@ -618,7 +618,7 @@ def check_7():
 
     HERE = os.path.dirname(os.path.abspath(__file__))
 
-    DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"
+    DEFAULT_REPO = "/home/diego/Desarrollo/forja"
 
     COURSE = "git-from-scratch"
 
@@ -635,7 +635,7 @@ def check_7():
                 if parent == candidate:
                     break
                 candidate = parent
-        raise SystemExit("set L4_REPO=/path/to/learn-stuff-from-scratch")
+        raise SystemExit("set L4_REPO=/path/to/forja")
 
     def _s7_surface(s):
         public = set()
@@ -746,7 +746,7 @@ def check_8():
 
     HERE = os.path.dirname(os.path.abspath(__file__))
 
-    DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"
+    DEFAULT_REPO = "/home/diego/Desarrollo/forja"
 
     COURSE = "git-from-scratch"
 
@@ -765,7 +765,7 @@ def check_8():
                 if parent == candidate:
                     break
                 candidate = parent
-        raise SystemExit("set L4_REPO=/path/to/learn-stuff-from-scratch")
+        raise SystemExit("set L4_REPO=/path/to/forja")
 
     def _s8_surface(s):
         public = set()
@@ -869,7 +869,7 @@ def check_9():
 
     HERE = os.path.dirname(os.path.abspath(__file__))
 
-    DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"
+    DEFAULT_REPO = "/home/diego/Desarrollo/forja"
 
     COURSE = "git-from-scratch"
 
@@ -897,7 +897,7 @@ def check_9():
                 if parent == candidate:
                     break
                 candidate = parent
-        raise SystemExit("set L4_REPO=/path/to/learn-stuff-from-scratch")
+        raise SystemExit("set L4_REPO=/path/to/forja")
 
     def _pv(n):
         """The delta header's plain varint, built for the scripts below."""
@@ -1048,7 +1048,7 @@ def check_10():
 
     HERE = os.path.dirname(os.path.abspath(__file__))
 
-    DEFAULT_REPO = "/home/diego/Desarrollo/learn-stuff-from-scratch"
+    DEFAULT_REPO = "/home/diego/Desarrollo/forja"
 
     COURSE = "git-from-scratch"
 
@@ -1075,7 +1075,7 @@ def check_10():
                 if parent == candidate:
                     break
                 candidate = parent
-        raise SystemExit("set L4_REPO=/path/to/learn-stuff-from-scratch")
+        raise SystemExit("set L4_REPO=/path/to/forja")
 
     def _s10_surface(s):
         """The stage's public surface is exactly the names §4.0 pins."""

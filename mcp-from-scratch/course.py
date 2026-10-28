@@ -2930,7 +2930,7 @@ def check_9():
                     break
                 path = parent
         raise AssertionError(
-            f"check_09: set D1_REPO=/path/to/learn-stuff-from-scratch — no "
+            f"check_09: set D1_REPO=/path/to/forja — no "
             f"mcp-from-scratch/stage_09.py was found above {tried}")
 
     _importable()
