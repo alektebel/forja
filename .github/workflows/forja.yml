@@ -42,6 +42,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p forja/logos
+          STRIP="$GITHUB_WORKSPACE/scripts/forja_strip_json.py"
 
           # One-time: park the old dc-runtime map under forja/legacy/
           if [ -f forja/support.js ] && [ ! -f forja/legacy/support.js ]; then
@@ -51,23 +52,8 @@ jobs:
             done
           fi
 
-          strip_json() {
-            python3 -c '
-import json, os, sys
-p = sys.argv[1]
-if not os.path.isfile(p):
-    print("")
-    raise SystemExit
-d = json.load(open(p, encoding="utf-8"))
-d.pop("generated", None)
-d.pop("generated_at", None)
-print(json.dumps(d, sort_keys=True, ensure_ascii=False))
-' "$1"
-          }
-
           changed=0
 
-          # HTML/CSS/JS/logos — copy when content differs
           for f in index.html styles.css app.js; do
             if ! cmp -s "$SITE_SRC/$f" "forja/$f" 2>/dev/null; then
               cp "$SITE_SRC/$f" "forja/$f"
@@ -80,9 +66,8 @@ print(json.dumps(d, sort_keys=True, ensure_ascii=False))
             changed=1
           fi
 
-          # JSON — ignore wall-clock fields so a no-op push stays a no-op
           for f in state.json data.json; do
-            if [ "$(strip_json "$SITE_SRC/$f")" != "$(strip_json "forja/$f")" ]; then
+            if [ "$(python3 "$STRIP" "$SITE_SRC/$f")" != "$(python3 "$STRIP" "forja/$f")" ]; then
               cp "$SITE_SRC/$f" "forja/$f"
               changed=1
             fi
