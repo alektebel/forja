@@ -1,10 +1,12 @@
 """Evals From Scratch — course manifest.
 
-Ten graded stages that build an evaluation harness for text-output systems and
-the statistics that decide whether a difference is real: the split that must
-not leak, the metrics that are not about quality, deterministic assertions, EM
-and F1, ranking metrics, a judge and its biases, calibration, paired
-significance, multiple comparisons, and the gate you put in CI.
+Thirteen graded stages that build an evaluation harness for text-output and
+structured-extraction systems, and the statistics that decide whether a
+difference is real: the split that must not leak, the metrics that are not
+about quality, deterministic assertions, EM and F1, ranking metrics, a judge
+and its biases, judge calibration, paired significance, multiple comparisons,
+the gate you put in CI, field-level extraction metrics, confidence ECE, and
+format sensitivity with criteria identity.
 
     python3 codecraft/cli.py run evals-from-scratch
 """
@@ -19,7 +21,9 @@ TITLE = "Evals From Scratch"
 DESCRIPTION = ("An evaluation harness from the parts up: honest splits, "
                "operational metrics, deterministic assertions, EM/F1, ranking "
                "metrics, an LLM judge with its biases, calibration, paired "
-               "significance, multiple comparisons and a regression gate.")
+               "significance, multiple comparisons, a regression gate, "
+               "structured field metrics, confidence ECE, and format "
+               "sensitivity.")
 LEVEL = "intermediate"
 ORDER = 10
 
@@ -739,6 +743,222 @@ def check_10():
     assert "decision" in text and "inconclusive" in text
 
 
+# --- 11. fields, not strings ------------------------------------------------
+
+def check_11():
+    import stage_11 as s
+
+    schema = {
+        "vendor": str,
+        "amount": float,
+        "line_items": [{"sku": str, "qty": int}],
+    }
+    gold = {"vendor": "Acme", "amount": 100.0,
+            "line_items": [{"sku": "A", "qty": 2}, {"sku": "B", "qty": 1}]}
+
+    # Typed coerce: a model-string amount must match a float gold.
+    pred = {"vendor": "Acme", "amount": "100",
+            "line_items": [{"sku": "A", "qty": 2}, {"sku": "B", "qty": 1}]}
+    cells = s.compare_extraction(pred, gold, schema)
+    assert all(c["status"] == "correct" for c in cells), (
+        f"got {[(c['path'], c['status']) for c in cells]}: amount '100' under "
+        f"a float schema is 100.0, not a string mismatch. Comparing with "
+        f"Python equality before coerce is how every extraction harness "
+        f"reports a false regression after json.loads on one side only")
+    assert s.schema_valid(pred, schema), "coercible values are schema-valid"
+    assert s.coerce("100", float) == 100.0
+    assert s.coerce("2", int) == 2
+    try:
+        s.coerce(True, int)
+    except ValueError:
+        pass
+    else:
+        raise AssertionError(
+            "bool must not coerce to int: isinstance(True, int) is True in "
+            "Python, and a model that sent true for a count would silently "
+            "become 1")
+
+    # Missing vs incorrect vs extra are three different statuses.
+    pred_miss = {"vendor": "Acme", "amount": 100.0,
+                 "line_items": [{"sku": "A", "qty": 2}, {"sku": "B"}]}
+    cells = s.compare_extraction(pred_miss, gold, schema)
+    by = {c["path"]: c["status"] for c in cells}
+    assert by.get("line_items[1].qty") == "missing", (
+        f"got {by}: a field the gold has and the pred omits is missing, not "
+        f"incorrect — the fix is to emit it, not to edit a value")
+    assert not s.schema_valid(pred_miss, schema), (
+        "a missing required leaf is not schema-valid, even if the rest parses")
+
+    pred_wrong = {"vendor": "Other", "amount": 100.0,
+                  "line_items": [{"sku": "A", "qty": 2}, {"sku": "B", "qty": 1}],
+                  "notes": "hallucinated"}
+    cells = s.compare_extraction(pred_wrong, gold, schema)
+    by = {c["path"]: c["status"] for c in cells}
+    assert by.get("vendor") == "incorrect", f"{by}"
+    assert by.get("notes") == "extra", (
+        f"got {by}: a key the schema does not declare is extra. Ignoring "
+        f"extras makes precision ignore hallucinations")
+    micro = s.micro_scores(cells)
+    # 5 correct (amount + 4 line fields), 1 incorrect vendor, 1 extra
+    assert micro["tp"] == 5 and micro["fp"] == 2 and micro["fn"] == 1, (
+        f"{micro}: incorrect counts as FP and FN; extra counts as FP only")
+    assert _close(micro["precision"], 5 / 7) and _close(micro["recall"], 5 / 6), (
+        f"{micro}")
+
+    # Macro is dragged by a rare field; micro is not (many correct line cells).
+    wide = {"vendor": str, "line_items": [{"sku": str}]}
+    pairs = []
+    for _ in range(2):
+        g = {"vendor": "Acme",
+             "line_items": [{"sku": f"S{j}"} for j in range(5)]}
+        p = {"vendor": "WRONG",
+             "line_items": [{"sku": f"S{j}"} for j in range(5)]}
+        pairs.append((p, g))
+    report = s.extraction_report(pairs, wide)
+    assert report["n"] == 2
+    assert report["macro_f1"] < report["micro"]["f1"] - 1e-9, (
+        f"micro={report['micro']['f1']}, macro={report['macro_f1']}: with five "
+        f"correct skus per doc and one wrong vendor, micro stays high and "
+        f"macro averages the per-field F1s — vendor's 0 pulls it to 0.5. "
+        f"Shipping micro alone is how a broken billing field hides")
+    assert _close(report["macro_f1"], 0.5), f"{report['macro_f1']}"
+    assert _close(report["schema_valid_rate"], 1.0), (
+        f"{report['schema_valid_rate']}: wrong values can still be well-typed")
+
+    # Empty pairs: defined, not a division by zero.
+    empty = s.extraction_report([], schema)
+    assert empty["n"] == 0 and _close(empty["macro_f1"], 1.0)
+
+    try:
+        s.compare_extraction({}, {}, ["not", "a", "dict"])
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("a non-dict schema must raise")
+
+
+# --- 12. confidence that earns its name ------------------------------------
+
+def check_12():
+    import stage_12 as s
+
+    # Perfectly calibrated masses at 0.1 and 0.9.
+    conf = [0.1] * 10 + [0.9] * 10
+    ok = [True] + [False] * 9 + [True] * 9 + [False]
+    assert _close(s.ece(conf, ok, n_bins=10), 0.0), (
+        f"got {s.ece(conf, ok)}: ten rows at conf 0.1 with 10% accuracy and "
+        f"ten at 0.9 with 90% accuracy is ECE 0. A non-zero here usually means "
+        f"bins are unweighted (each bin counts as 1) or 1.0 fell off the end")
+
+    # Overconfident: all say 0.9, half are right → ECE 0.4.
+    conf2 = [0.9] * 10
+    ok2 = [True] * 5 + [False] * 5
+    assert _close(s.ece(conf2, ok2, n_bins=10), 0.4), (
+        f"got {s.ece(conf2, ok2)}: |0.5 - 0.9| weighted by the whole mass is "
+        f"0.4. Averaging |acc-conf| across all ten bins (nine of them empty) "
+        f"gives 0.04 and green-lights a badly calibrated system")
+
+    bins = s.reliability_bins([1.0, 1.0, 0.05], [True, False, False], n_bins=10)
+    assert len(bins) == 10
+    assert bins[-1]["count"] == 2 and _close(bins[-1]["accuracy"], 0.5), (
+        f"{bins[-1]}: confidence 1.0 must land in the last bin. Half-open "
+        f"[0.9, 1.0) drops it on the floor and silently shrinks N")
+    assert bins[0]["count"] == 1 and _close(bins[0]["mean_conf"], 0.05)
+
+    assert _close(s.ece([], [], n_bins=10), 0.0)
+    try:
+        s.ece([0.5, 1.5], [True, False])
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("confidence outside [0,1] must raise")
+    try:
+        s.ece([0.5], [True, False])
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("length mismatch must raise")
+
+    # Review threshold: approve only the high-precision tail.
+    conf3 = [0.5, 0.8, 0.95, 0.99]
+    ok3 = [False, False, True, True]
+    t = s.auto_approve_threshold(conf3, ok3, min_precision=0.99)
+    assert _close(t, 0.95), (
+        f"got {t}: at 0.95 the approved set is {{0.95, 0.99}} with precision "
+        f"1.0; at 0.8 it includes two failures. The cut is the lowest "
+        f"threshold that still meets the floor — so coverage is maximised")
+    assert s.auto_approve_threshold(
+        [0.9, 0.9], [True, False], min_precision=0.99) is None, (
+        "when no cut meets the floor, return None — everything goes to review. "
+        "Returning 1.0 and approving the empty set is a silent always-green")
+    assert _close(s.auto_approve_threshold(
+        [0.99, 0.99], [True, True], min_precision=0.99), 0.0), (
+        "a fully correct set meets the floor at t=0.0: approve everything. "
+        "Starting the sweep at the first confidence value would refuse to "
+        "approve rows below that value for no reason")
+    try:
+        s.auto_approve_threshold([], [], min_precision=0.99)
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("empty labelled set must raise")
+
+
+# --- 13. the score that moves when the prompt's clothes move ----------------
+
+def check_13():
+    import stage_13 as s
+
+    scores = {"colon": 0.91, "newline": 0.88, "bullet": 0.40}
+    spread = s.format_spread(scores)
+    assert spread["n"] == 3
+    assert _close(spread["mean"], (0.91 + 0.88 + 0.40) / 3), f"{spread}"
+    assert _close(spread["min"], 0.40) and _close(spread["max"], 0.91)
+    assert _close(spread["range"], 0.51), (
+        f"{spread}: the range is what the mean hides. A dashboard that only "
+        f"shows 0.73 calls this system fine")
+    assert spread["worst"] == "bullet" and spread["best"] == "colon", f"{spread}"
+    assert not s.holds_under_formats(scores, 0.1), (
+        "a 0.51 range does not hold under a 0.1 margin")
+    assert s.holds_under_formats({"a": 0.5, "b": 0.5}, 0.0)
+
+    # Ties pick the lexicographically first name — the rule has to be pinned.
+    tied = s.format_spread({"b": 0.2, "a": 0.2, "c": 0.9})
+    assert tied["worst"] == "a" and tied["best"] == "c", (
+        f"{tied}: when two formats share the min, pick the lexicographically "
+        f"first name, or the same data reports a different 'worst' tomorrow")
+
+    try:
+        s.format_spread({})
+    except ValueError:
+        pass
+    else:
+        raise AssertionError(
+            "a spread over no formats must raise — returning zeros invents a "
+            "measurement")
+
+    # Criteria identity: order and casing must not change the fingerprint.
+    a = s.criteria_id(["Must cite page", "Amount is a number"])
+    b = s.criteria_id(["amount is a number", "must cite page"])
+    c = s.criteria_id(["Must cite page", "Amount is a number", "extra"])
+    assert a == b, (
+        f"{a} vs {b}: criteria_id sorts and normalises, or declaring the same "
+        f"rubric in a different order looks like criteria drift (EvalGen) and "
+        f"blocks every comparison")
+    assert a != c, "adding a criterion must change the id"
+    assert s.comparable({"criteria_id": a, "score": 0.9},
+                        {"criteria_id": b, "score": 0.4}) is True
+    assert s.comparable({"criteria_id": a}, {"criteria_id": c}) is False
+    try:
+        s.comparable({"score": 1.0}, {"criteria_id": a})
+    except ValueError:
+        pass
+    else:
+        raise AssertionError(
+            "a run without criteria_id must raise, not compare equal to "
+            "another unversioned run — that is how drift stays invisible")
+
+
 STAGES = [
     stage(
         1, file="stage_01.py", title="the eval set, and the split that must not leak",
@@ -834,4 +1054,35 @@ STAGES = [
                "rows without a partner are dropped and counted, never paired "
                "by position"],
         check=check_10, solution="solutions/stage_10.py: gate"),
+    stage(
+        11, file="stage_11.py", title="fields, not strings",
+        tags=["extraction", "structured", "metrics"],
+        action=("Implement coerce, compare_extraction (correct/incorrect/"
+                "missing/extra), micro_scores, macro_f1, schema_valid and "
+                "extraction_report over a typed schema."),
+        predict="Five correct line-item cells and one wrong vendor: micro vs macro F1?",
+        hints=["coerce through the schema before comparing — '100' is 100.0",
+               "incorrect is both FP and FN; extra is FP only; missing is FN only",
+               "macro averages per-field-name F1 with list indices collapsed to [*]"],
+        check=check_11, solution="solutions/stage_11.py: compare_extraction"),
+    stage(
+        12, file="stage_12.py", title="confidence that earns its name",
+        tags=["calibration", "ece", "confidence"],
+        action=("Implement reliability_bins, ece (count-weighted) and "
+                "auto_approve_threshold under a precision floor."),
+        predict="All confidences 0.9, half correct, 10 bins: ECE?",
+        hints=["ECE weights each bin by n_b/N — empty bins must not dilute it",
+               "confidence 1.0 belongs in the last bin, not off the end",
+               "the threshold is the lowest cut that still meets min_precision"],
+        check=check_12, solution="solutions/stage_12.py: ece"),
+    stage(
+        13, file="stage_13.py",
+        title="the score that moves when the prompt's clothes move",
+        tags=["sensitivity", "criteria", "validity"],
+        action=("Implement format_spread, holds_under_formats, criteria_id "
+                "(order-independent) and comparable."),
+        predict="Scores 0.91 / 0.88 / 0.40 across three formats: what does the mean hide?",
+        hints=["report the range and the worst format, not only the mean",
+               "criteria_id sorts and normalises, or declaration order looks like drift"],
+        check=check_13, solution="solutions/stage_13.py: format_spread"),
 ]

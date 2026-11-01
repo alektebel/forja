@@ -43,7 +43,8 @@ STAGES = {
         (22, None), (13, None), (15, None), (11, None), (15, None)],
     "evals-from-scratch": [
         (16, None), (18, None), (23, None), (17, None), (14, None),
-        (14, None), (20, None), (17, None), (16, None), (20, None)],
+        (14, None), (20, None), (17, None), (16, None), (20, None),
+        (17, None), (12, None), (14, None)],
     "agents-from-scratch": [
         (30, None), (40, None), (81, None), (33, None), (38, None),
         (1, None), (2, None), (30, None), (57, None), (37, None)],
@@ -95,6 +96,12 @@ STAGES = {
     "mqtt-broker-from-scratch": [
         (72, 43), (106, 69), (81, 44), (80, 63), (123, 66),
         (151, 67), (95, 58), (131, 86), (60, 64), (85, 40)],
+    # Measured 2026-10-30 from the assembled `course.py` with the same recipe
+    # (asserts + explicit raises + `_refuses` calls). The mutation sweep for
+    # this course was not run, so the second number is None rather than a zero.
+    "websocket-from-scratch": [
+        (50, None), (34, None), (29, None), (34, None),
+        (32, None), (22, None), (36, None), (57, None)],
     # Measured 2026-10-16 from the assembled `course.py` with the same recipe the
     # rows above follow (asserts + explicit raises + refusal calls + the two
     # rejections inside the shared helper), re-derived against L2's, mqtt's,

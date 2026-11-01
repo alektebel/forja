@@ -1,10 +1,12 @@
 # Evals From Scratch
 
-Build the harness that decides whether a text system got better, in pure
-standard-library Python: the split that must not leak, the metrics that are not
-about quality, deterministic assertions, EM and F1, ranking metrics, an LLM
-judge and its biases, calibration, paired significance, multiple comparisons,
-and the gate that runs in CI.
+Build the harness that decides whether a text — or structured-extraction —
+system got better, in pure standard-library Python: the split that must not
+leak, the metrics that are not about quality, deterministic assertions, EM and
+F1, ranking metrics, an LLM judge and its biases, judge calibration, paired
+significance, multiple comparisons, the gate that runs in CI, field-level
+extraction metrics, confidence ECE, and format sensitivity with criteria
+identity.
 
 A model that produces text has no `==`. Everything downstream of that — "is
 this version better", "did that prompt change help", "can we ship this" — is a
@@ -12,8 +14,10 @@ measurement problem, and the measurement is where the bugs are cheap to write
 and expensive to notice: a split that leaks, a refusal rate that counts
 timeouts, a judge that prefers whichever answer was shown first, a "win" that
 is three flipped examples, the best of ten configurations that is significant
-only because nobody counted ten. Ten stages, each one a mistake that is easy to
-make and hard to see in the numbers.
+only because nobody counted ten, a micro-F1 that hides a broken billing field,
+an unweighted ECE that green-lights overconfidence, a mean across prompt
+formats that hides a collapse on one separator. Thirteen stages, each one a
+mistake that is easy to make and hard to see in the numbers.
 
 No API keys, no model downloads, no network. The judge is a callable you pass
 in, so the whole harness — including the LLM-judge stage — is synchronous,
@@ -33,10 +37,14 @@ offline and reproducible.
 | 8 | `stage_08.py` | McNemar, the paired bootstrap | A p-value instead of an interval; an interval that contains zero called a win |
 | 9 | `stage_09.py` | Holm's step-down | Ten configs, no correction: the best of ten looks significant 40% of the time |
 | 10 | `stage_10.py` | The regression gate and its report | The overall mean, which is exactly the number that hides the broken slice |
+| 11 | `stage_11.py` | Structured fields: coerce, micro/macro, schema validity | `"100" != 100` without coerce; shipping micro while a rare field is always wrong |
+| 12 | `stage_12.py` | ECE and the auto-approve threshold | Unweighted bin average; confidence `1.0` dropped off the last bin |
+| 13 | `stage_13.py` | Format spread + criteria identity | Reporting only the mean across formats; comparing runs whose rubric drifted |
 
-Stages 1–5 are the harness, 6–9 are the statistics, 10 is the decision. The
-checks exercise the earlier stages (the gate pairs rows by id and bootstraps
-with stage 8's machinery), so they are meant to be done in order.
+Stages 1–5 are the harness, 6–9 the statistics, 10 the ship/no-ship decision,
+11–12 the structured-extraction product surface, 13 the validity of the
+comparison itself. The checks exercise earlier stages (the gate pairs by id
+and bootstraps with stage 8), so they are meant to be done in order.
 
 ## How to use this directory
 
@@ -110,19 +118,45 @@ checks are what teach them.
 - **The report is part of the result.** Reasons, dropped-row counts and 4-decimal
   floats: a gate that returns a bare boolean cannot be reviewed, and a report
   that is not byte-stable makes a CI diff useless.
+- **Four field statuses, not a boolean.** Missing and incorrect are different
+  failures; extras are hallucinations that must hit precision. Micro pools
+  cells; macro averages per field name — a rare billing field that is always
+  wrong barely moves micro and tanks macro.
+- **ECE is count-weighted.** Empty bins must not dilute miscalibration, and
+  confidence `1.0` belongs in the last bin. The auto-approve cut maximises
+  coverage under a precision floor; `None` means everything goes to review.
+- **The mean across prompt formats is not the measurement.** The range and the
+  worst format are. Criteria identity is part of comparability: a drifted
+  rubric is not a delta, it is a different question.
+
+## Sources (mapped to stages)
+
+What this course implements, and what it deliberately leaves as reading.
+
+| Area | Canonical pointer | Where it lands |
+|---|---|---|
+| Product evals | [Hamel — Your AI Product Needs Evals](https://hamel.dev/blog/posts/evals/), [Field Guide](https://hamel.dev/blog/posts/field-guide/) | Stages 1–3, 10–12 (error analysis → gate → fields/confidence) |
+| Criteria drift | [Shankar et al., EvalGen](https://arxiv.org/abs/2404.12272) | Stage 13 `criteria_id` / `comparable` |
+| LLM-as-judge practice | [Eugene Yan — LLM-evaluators](https://eugeneyan.com/writing/llm-evaluators/) | Stages 6–7 |
+| Position bias | [Wang et al.](https://arxiv.org/abs/2305.17926); [Zheng et al., MT-Bench](https://arxiv.org/abs/2306.05685) | Stage 6 (judge both orders) |
+| Error bars on evals | [Evan Miller](https://arxiv.org/abs/2411.00640) | Stage 8 (paired bootstrap / intervals) |
+| Format sensitivity | [Sclar et al.](https://arxiv.org/abs/2310.11324) | Stage 13 `format_spread` |
+| Construct validity | [Bean et al., Measuring What Matters](https://arxiv.org/abs/2511.04703); [checklist](https://syntheticsociety.oii.ox.ac.uk/research/measuring-what-matters) | Reading — checklist for whether your metric measures the claim |
+| HELM / broad eval | [Liang et al.](https://arxiv.org/abs/2211.09110) | Reading — taxonomy of scenarios; not re-implemented |
+| Contamination survey | [Cheng et al.](https://arxiv.org/abs/2502.14425) | Reading — stage 1 covers *group* leakage; train-set contamination is adjacent |
+| tinyBenchmarks (IRT) | [Polo et al.](https://arxiv.org/abs/2402.14992) | Out of scope — adaptive item selection |
+| Long-task ability | [METR blog](https://metr.org/blog/2025-03-19-measuring-ai-ability-to-complete-long-tasks/) / [paper](https://arxiv.org/abs/2503.14499) | Out of scope — horizon metrics |
+| Harness tooling | [Inspect](https://inspect.aisi.org.uk/), [lm-eval-harness](https://github.com/EleutherAI/lm-evaluation-harness) | `eval-framework-from-scratch` — the runner, not the metrics |
+| Course (paid) | [Hamel & Shankar, Maven](https://maven.com/parlance-labs/evals) | Curriculum depth behind stages 1–10 |
 
 ## Verification
 
-The solutions pass all ten checks, and every check is mutation-tested: 34
-plausible wrong implementations — row-wise splits, `load` without a copy, an
-uncapped two-sided p-value, McNemar over all rows instead of the discordant
-ones, `decide` reading the mean instead of the interval, IDCG from the
-retrieved pool, a set overlap in F1, one-order judging, kappa replaced by
-agreement, Bonferroni instead of Holm, a step-down that does not stop, a floor
-that is ignored, rows paired by position, a report that keeps the raw floats —
-are each planted into a solution, and the stage's check must fail. The
-assertions that catch them name the mistake in the message, and none of the
-checks is allowed to pass on a mutation of the idea it exists to test.
+The solutions pass all thirteen checks. Stages 1–10 stay mutation-pinned as
+before (34 planted wrong implementations). Stages 11–13 pin the classic
+mistakes in the assertion messages themselves: string/float equality without
+coerce, micro that hides a broken rare field, unweighted ECE, `1.0` dropped
+from the last bin, a mean that hides a format collapse, criteria compared
+without an id.
 
 Running a check by hand:
 
@@ -152,3 +186,11 @@ Deliberately left out, so you know the boundary:
 - **Text metrics are lexical.** No embeddings, no learned metrics, no
   semantic similarity — stage 4 is the baseline those have to beat, and the
   reason they need a judge at all.
+- **No citation/span geometry.** Field correctness is value-level; "cited to
+  the right page box" is a separate geometric metric a document product needs
+  on top of stage 11.
+- **No IRT / adaptive benchmarking, no contamination detectors, no long-horizon
+  task metrics.** See the sources table — they are real, and they are not this
+  course.
+- **No eval runner.** Suites, caching, resume and plugin metrics live in
+  `eval-framework-from-scratch` (Inspect / lm-eval shaped).

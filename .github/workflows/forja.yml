@@ -1,8 +1,10 @@
 name: Bake forja
 
-# Every push to main re-bakes the /forja page's data from this repo's plan,
-# manifests and checkers, and commits it to the site repo that serves
-# diegoatencia.dev. FORJA_DEPLOY_KEY is a write deploy key on that repo.
+# Every push to main rebuilds the /forja catalog (HTML/CSS/JS/logos + baked
+# state) and commits it to alektebel/alektebel.github.io, which serves
+# diegoatencia.dev/forja (and alektebel.github.io/forja).
+#
+# FORJA_DEPLOY_KEY is a write deploy key on the site repo.
 
 on:
   push:
@@ -21,26 +23,78 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
-      - name: Bake data.json
-        run: python3 scripts/forja_data.py "$RUNNER_TEMP/data.json"
+          python-version: "3.12"
+
+      - name: Build static /forja tree
+        run: python3 scripts/forja_site.py "$RUNNER_TEMP/forja-site"
+
       - name: Check out the site
         uses: actions/checkout@v4
         with:
           repository: alektebel/alektebel.github.io
           ssh-key: ${{ secrets.FORJA_DEPLOY_KEY }}
           path: site
-      - name: Commit if changed
+
+      - name: Publish if changed
         working-directory: site
+        env:
+          SITE_SRC: ${{ runner.temp }}/forja-site
         run: |
-          # `generated` is a timestamp; ignore it so a no-op push stays a no-op.
-          strip() { python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); d.pop("generated",None); print(json.dumps(d,sort_keys=True))' "$1"; }
-          if [ -f forja/data.json ] && [ "$(strip forja/data.json)" = "$(strip "$RUNNER_TEMP/data.json")" ]; then
-            echo "forja data unchanged"; exit 0
+          set -euo pipefail
+          mkdir -p forja/logos
+
+          # One-time: park the old dc-runtime map under forja/legacy/
+          if [ -f forja/support.js ] && [ ! -f forja/legacy/support.js ]; then
+            mkdir -p forja/legacy
+            for f in index.html styles.css support.js; do
+              [ -f "forja/$f" ] && mv "forja/$f" "forja/legacy/$f"
+            done
           fi
-          cp "$RUNNER_TEMP/data.json" forja/data.json
+
+          strip_json() {
+            python3 -c '
+import json, os, sys
+p = sys.argv[1]
+if not os.path.isfile(p):
+    print("")
+    raise SystemExit
+d = json.load(open(p, encoding="utf-8"))
+d.pop("generated", None)
+d.pop("generated_at", None)
+print(json.dumps(d, sort_keys=True, ensure_ascii=False))
+' "$1"
+          }
+
+          changed=0
+
+          # HTML/CSS/JS/logos — copy when content differs
+          for f in index.html styles.css app.js; do
+            if ! cmp -s "$SITE_SRC/$f" "forja/$f" 2>/dev/null; then
+              cp "$SITE_SRC/$f" "forja/$f"
+              changed=1
+            fi
+          done
+          mkdir -p forja/logos
+          if ! diff -rq "$SITE_SRC/logos" forja/logos >/dev/null 2>&1; then
+            rsync -a --delete "$SITE_SRC/logos/" forja/logos/
+            changed=1
+          fi
+
+          # JSON — ignore wall-clock fields so a no-op push stays a no-op
+          for f in state.json data.json; do
+            if [ "$(strip_json "$SITE_SRC/$f")" != "$(strip_json "forja/$f")" ]; then
+              cp "$SITE_SRC/$f" "forja/$f"
+              changed=1
+            fi
+          done
+
+          if [ "$changed" -eq 0 ]; then
+            echo "forja site unchanged"
+            exit 0
+          fi
+
           git config user.name "forja-bake"
           git config user.email "forja-bake@users.noreply.github.com"
-          git add forja/data.json
-          git commit -m "forja: rebake from forja@${GITHUB_SHA::7}"
+          git add forja
+          git commit -m "forja: catalog + rebake from forja@${GITHUB_SHA::7}"
           git push

@@ -19,7 +19,27 @@ It has two jobs, and they are the same job from two sides:
 
 No dependencies. `python3 codecraft/cli.py`, nothing else. There is also a
 one-line shim, `cz`, that forwards to the same CLI (`cz run llm-from-scratch`);
-see [The `cz` shim](#the-cz-shim) for putting it on your PATH.
+see [The `cz` shim](#the-cz-shim) for putting it on your PATH. Prefer
+`./forja` for the **Anyformat prep track** (AWS → infra → LLM → evals →
+agents) — same engine, CodeCrafters vocabulary (`test`, `guide`, `smoke`,
+`export`).
+
+---
+
+## Anyformat prep track (start here)
+
+```bash
+./forja track                         # AWS → infra → LLM → evals → agents
+./forja smoke aws-from-scratch        # stage 0: course is runnable
+./forja guide aws-from-scratch 1      # mechanism → tests → predict
+./forja test aws-from-scratch --stage 1
+./forja export llm-from-scratch /tmp/llm-starter   # standalone, no solutions
+./forja guides --write                # regenerate START.md + stages/*.md
+```
+
+Each track course ships `START.md` and a `stages/` directory of CC-shaped
+pages. The graded checkers are unchanged. `deploy-and-debug` stays on the
+full `cz path` for ops depth; it is off this five-course interview track.
 
 ---
 

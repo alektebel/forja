@@ -86,7 +86,9 @@ PHASES = [
         {"id": "C1", "title": "Evals From Scratch",
          "course": "evals-from-scratch", "kind": "ready", "prereq": ["A4"],
          "why": "Datasets, exact/F1 metrics, LLM-as-judge and its calibration, "
-                "statistical significance, regression gating. Do this before agents."},
+                "statistical significance, regression gating, structured field "
+                "metrics, confidence ECE and format sensitivity. Do this before "
+                "agents."},
         {"id": "C2", "title": "Agents From Scratch",
          "course": "agents-from-scratch", "kind": "ready", "prereq": ["C1", "B1"],
          "why": "The loop and the transcript that is its state, tool schemas and "
@@ -917,6 +919,22 @@ PHASES = [
                 "`git` is on PATH the tester runs it: `git fsck` and `git log` have "
                 "to accept your objects. Author git-from-scratch; G4 is the "
                 "format-and-barrier course."},
+        {"id": "L10", "title": "WebSocket From Scratch",
+         "course": "websocket-from-scratch", "kind": "ready",
+         "prereq": ["L1", "L2"],
+         "why": "The protocol a browser speaks after an HTTP request turns into "
+                "a long-lived connection, built as bytes with no sockets and no "
+                "clock: parse the Upgrade request, compute the SHA-1 accept "
+                "value, read the FIN/opcode/MASK header and the shortest length "
+                "encoding, unmask a client frame and refuse a masked server "
+                "frame, enforce the control-frame rules and the close codes that "
+                "may actually be sent, assemble a fragmented message around the "
+                "ping that interrupts it, validate UTF-8 across fragment "
+                "boundaries, turn any chunking of the same stream into the same "
+                "events, and end with a session that answers a handshake, echoes "
+                "text and binary, answers pings and closes with the code the "
+                "peer is allowed to see. Eight graded stages over raw bytes; "
+                "the checker is the client."},
     ]),
     ("M", "Banking and credit risk", [
         {"id": "M1", "title": "Credit Lifecycle",

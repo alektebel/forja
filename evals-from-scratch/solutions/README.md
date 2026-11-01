@@ -16,20 +16,21 @@ into thinking the stage was easy.
 | `stage_08.py` | Is the difference real? |
 | `stage_09.py` | Ten configs, one winner, no correction |
 | `stage_10.py` | The gate, and the report you can diff |
+| `stage_11.py` | Fields, not strings |
+| `stage_12.py` | Confidence that earns its name |
+| `stage_13.py` | The score that moves when the prompt's clothes move |
 
 Stages 6–10 build on the earlier ones (`stage_10` imports `stage_08` for the
-paired bootstrap; the checks for stages 3–5 exercise the stages before them),
-so copying one over its template needs the earlier ones in place too.
-
-To compare a stage, copy it over the template and re-run the checker, then
-restore the template if you want to try again:
+paired bootstrap); 11–13 are self-contained but assume you already care about
+what a gate and a metric *mean*. Copying one over its template needs the
+earlier ones in place if you re-run the whole course.
 
 ```bash
-cp solutions/stage_10.py stage_10.py
-python3 codecraft/cli.py run evals-from-scratch
+cp solutions/stage_11.py stage_11.py
+python3 codecraft/cli.py run evals-from-scratch --stage 11
 ```
 
-All ten pass their checks with the standard library alone. Two of them are
-worth reading even if you solved them: `stage_08.paired_bootstrap` is three
-lines of resampling that decide the whole stage, and `stage_10.gate` is the
-only function in the course whose output a reviewer is expected to read.
+All thirteen pass their checks with the standard library alone. Worth reading
+even if you solved them: `stage_08.paired_bootstrap`, `stage_10.gate`,
+`stage_11.macro_f1` (why micro lies), and `stage_12.ece` (why unweighted bins
+lie).

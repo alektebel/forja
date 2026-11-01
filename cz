@@ -3,16 +3,19 @@
 #
 #   cz                      your learning board
 #   cz path                 the ordered plan, with progress
+#   cz track                Anyformat prep track (AWS→agents)
 #   cz dag [<course>]       the dependency DAG: what must come first
 #   cz tracks [<course>]    the same graph as tracks: what each row ends
 #   cz brief [<course>]     how to author a row: the rules, the reading, the bar
 #   cz run aws-from-scratch run a course; read the nudge
-#   cz run aws-from-scratch --stage 3  one stage, not all of them
+#   cz test aws-from-scratch --stage 3  same as run (CodeCrafters word)
 #   cz stage aws-from-scratch 3  one stage: what to write, what it costs
+#   cz guide aws-from-scratch 1  CC-shaped stage page
 #   cz hint aws-from-scratch  a bigger nudge
 #   cz ask "..." aws-from-scratch   ask the mentor
 #
-# This is a forwarding shim; every subcommand of codecraft/cli.py works.
+# Prefer `forja` for the priority track (same engine). This shim forwards
+# every subcommand of codecraft/cli.py.
 
 set -eu
 

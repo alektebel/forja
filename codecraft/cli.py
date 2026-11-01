@@ -17,6 +17,12 @@
     python3 codecraft/cli.py status [<course>]    # mastery map
     python3 codecraft/cli.py publish [<course>]   # push the last run to the live page
     python3 codecraft/cli.py web                  # the skill tree in a browser
+    python3 codecraft/cli.py track                # Anyformat prep track (AWS→agents)
+    python3 codecraft/cli.py guide <course> [n]   # CodeCrafters-shaped stage page
+    python3 codecraft/cli.py smoke <course>       # stage 0: is the course runnable?
+    python3 codecraft/cli.py export <course> <dir># standalone starter (no solutions)
+    python3 codecraft/cli.py guides [--write]     # generate START.md + stages/ for the track
+    python3 codecraft/cli.py test <course> ...    # alias of run (CodeCrafters vocabulary)
     python3 codecraft/cli.py config --style deep --mentor auto --model glm5.3
     python3 codecraft/cli.py self-test
 """
@@ -29,13 +35,14 @@ import urllib.request
 
 if __package__ in (None, ""):
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    from codecraft import (adapt, briefs, contract, dag, manifests, mentor,
-                           patterns, progress, render, scaffold, serve, stats,
-                           store, style)
+    from codecraft import (adapt, briefs, contract, dag, export, guide,
+                           manifests, mentor, patterns, progress, render,
+                           scaffold, serve, showcase, stats, store, style)
     from codecraft import path as pathmod
 else:                                                          # pragma: no cover
-    from . import (adapt, briefs, contract, dag, manifests, mentor, patterns,
-                   progress, render, scaffold, serve, stats, store, style)
+    from . import (adapt, briefs, contract, dag, export, guide, manifests,
+                   mentor, patterns, progress, render, scaffold, serve,
+                   showcase, stats, store, style)
     from . import path as pathmod
 
 HELP = __doc__
@@ -525,6 +532,141 @@ def cmd_list(courses, ink):
     print("")
 
 
+def cmd_track(profile, ink):
+    """The priority Forja track — Anyformat prep: AWS, infra, LLM, evals, agents."""
+    print("")
+    print(ink("  forja · anyformat prep track", render.BOLD))
+    print(ink("  AWS → infra → LLM → evals → agents", render.GREY))
+    print("")
+    nxt = showcase.next_on_track(profile)
+    for i, row in enumerate(showcase.entries(), 1):
+        mark = "○"
+        extra = ink("missing", render.YELLOW)
+        if row["ready"]:
+            cstate = profile.get("courses", {}).get(row["slug"], {})
+            stages = cstate.get("stages", {})
+            ids = sorted(row["course"]["stages"])
+            passed = sum(1 for s in ids
+                         if stages.get(str(s), {}).get("last_status") == "PASS")
+            if passed == len(ids) and ids:
+                mark, extra = "✓", ink(f"{passed}/{len(ids)} done", render.GREEN)
+            elif passed:
+                mark, extra = "●", ink(f"{passed}/{len(ids)}", render.YELLOW)
+            else:
+                mark, extra = "○", ink(f"0/{len(ids)} stages", render.GREY)
+        title = row.get("headline") or row["label"]
+        print(f"  {mark} {i}. {row['id']:<4} {title:<28} "
+              f"{ink(row['slug'], render.GREY)}  {extra}")
+    print("")
+    if nxt:
+        print(ink("  next", render.BOLD)
+              + f"  {nxt['id']} · stage {nxt['stage']}  {nxt['file']}")
+        if nxt.get("action"):
+            print(f"         {nxt['action']}")
+        print(f"         {ink(nxt['command'], render.GREY)}")
+    else:
+        print(ink("  track complete — every priority course is green.", render.GREEN))
+    print("")
+    return 0
+
+
+def cmd_guide(profile, rest, ink, courses):
+    """Print (or locate) the CodeCrafters-shaped stage page."""
+    positional = [a for a in rest if not a.startswith("-")]
+    if not positional:
+        print("  usage: forja guide <course> [stage]")
+        return 2
+    course = manifests.load(positional[0])
+    if course is None:
+        print(_missing(positional[0]))
+        return 2
+    want = None
+    if len(positional) > 1:
+        if not positional[1].isdigit():
+            print(f"  a stage is a number, not {positional[1]!r}")
+            return 2
+        want = int(positional[1])
+    ids = sorted(course["stages"])
+    if want is None:
+        stages = profile.get("courses", {}).get(course["name"], {}).get("stages", {})
+        want = next((i for i in ids
+                     if stages.get(str(i), {}).get("last_status") != "PASS"),
+                    ids[0] if ids else None)
+    if want is None or want not in course["stages"]:
+        print(f"  {course['name']} has stages 1..{ids[-1] if ids else 0}")
+        return 2
+    path = guide.guide_path(course, want)
+    body = open(path, encoding="utf-8").read() if path else guide.render_stage(course, want)
+    print(body)
+    if not path:
+        print(ink(f"  (not on disk yet — run: forja guides --write)", render.GREY))
+    return 0
+
+
+def cmd_smoke(rest, ink):
+    positional = [a for a in rest if not a.startswith("-")]
+    if not positional:
+        print("  usage: forja smoke <course>")
+        return 2
+    course = manifests.load(positional[0])
+    if course is None:
+        print(_missing(positional[0]))
+        return 2
+    ok, notes = export.smoke(course)
+    print("")
+    print(ink(f"  forja · smoke · {course['name']}", render.BOLD))
+    for note in notes:
+        print(f"  · {note}")
+    print("")
+    if ok:
+        print(ink("  smoke OK", render.GREEN)
+              + ink(f"  — next: forja guide {course['name']} 1", render.GREY))
+        print("")
+        return 0
+    print(ink("  smoke FAILED", render.RED))
+    print("")
+    return 1
+
+
+def cmd_export(rest, ink):
+    positional = [a for a in rest if not a.startswith("-")]
+    if len(positional) < 2:
+        print("  usage: forja export <course> <dest-dir> [--force]")
+        return 2
+    try:
+        dest = export.export_course(
+            positional[0], positional[1], force="--force" in rest)
+    except (ValueError, FileExistsError) as exc:
+        print(f"  {exc}")
+        return 2
+    print(f"\n  exported {positional[0]} → {dest}")
+    print(ink("  solutions omitted on purpose", render.GREY))
+    print(f"  next:  forja smoke {positional[0]}\n")
+    return 0
+
+
+def cmd_guides(rest, ink):
+    write = "--write" in rest or "-w" in rest
+    force = "--force" in rest
+    if not write:
+        print("  usage: forja guides --write [--force]")
+        print(ink("  writes START.md + stages/*.md for the priority track",
+                  render.GREY))
+        return 2
+    report = guide.write_showcase_guides(force=force)
+    print("")
+    print(ink("  forja · guides", render.BOLD))
+    for slug, paths in report.items():
+        print(f"  {slug}: {len(paths)} file(s)")
+        for path in paths[:3]:
+            print(ink(f"    {os.path.relpath(path, manifests.REPO_ROOT)}",
+                      render.GREY))
+        if len(paths) > 3:
+            print(ink(f"    … +{len(paths) - 3} more", render.GREY))
+    print("")
+    return 0
+
+
 def cmd_new(rest, ink):
     positional = [a for a in rest if not a.startswith("-")]
     if not positional:
@@ -722,6 +864,17 @@ def self_test() -> int:
     ok(len(dag.track_of("J4", t)) == t["counts"]["J4"],
        "track_of agrees with the counters")
 
+    # priority Forja track: five courses, all loadable, smoke-green
+    ok(len(showcase.SLUGS) == 5, "showcase track has five courses")
+    for slug in showcase.SLUGS:
+        course = manifests.load(slug)
+        ok(course is not None, f"showcase course loads: {slug}")
+        if course is not None:
+            smoke_ok, _notes = export.smoke(course)
+            ok(smoke_ok, f"showcase smoke: {slug}")
+    ok(guide.render_stage(manifests.load("aws-from-scratch"), 1)
+       .startswith("# Stage 1:"), "guide renders CC-shaped stage 1")
+
     print("")
     if failures:
         print(f"  {len(failures)} self-test failure(s)\n")
@@ -778,7 +931,8 @@ def main(argv) -> int:
         return cmd_config(profile, rest, ink) or 0
     if cmd == "review":
         return cmd_review(profile, ink, courses) or 0
-    if cmd == "run":
+    if cmd in ("run", "test", "submit"):
+        # test/submit = CodeCrafters vocabulary; same engine as run.
         return cmd_run(profile, rest, ink, courses) or 0
     if cmd == "next":
         return cmd_next(profile, rest, ink, courses) or 0
@@ -792,6 +946,16 @@ def main(argv) -> int:
         return cmd_explain(profile, rest, ink, courses) or 0
     if cmd == "ask":
         return cmd_ask(profile, rest, ink, courses) or 0
+    if cmd in ("track", "showcase", "priority"):
+        return cmd_track(profile, ink) or 0
+    if cmd == "guide":
+        return cmd_guide(profile, rest, ink, courses) or 0
+    if cmd == "smoke":
+        return cmd_smoke(rest, ink) or 0
+    if cmd == "export":
+        return cmd_export(rest, ink) or 0
+    if cmd == "guides":
+        return cmd_guides(rest, ink) or 0
 
     print(f"  unknown command {cmd!r}\n")
     print(HELP)

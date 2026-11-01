@@ -14,17 +14,27 @@ MVP-then-complicate driven by limit cases, and verification you can run.
 course's `check.py`, remembers every attempt, classifies how you got stuck (the same
 failure three times vs. three different failures get different advice), and tunes the
 nudge, hint depth and pacing to you. It also scaffolds **new** from-scratch courses you
-author yourself:
+author yourself.
+
+**Start here — Anyformat prep track** (AWS → infra → LLM → evals → agents):
 
 ```bash
-cz run llm-from-scratch       # run a course, get coached (cz = the CLI shim)
+./forja track                              # where you are on the track
+./forja smoke aws-from-scratch             # stage 0: environment green
+./forja guide aws-from-scratch 1           # CodeCrafters-shaped stage page
+./forja test aws-from-scratch --stage 1    # run the tester (alias of cz run)
+./forja guides --write                     # regenerate START.md + stages/
+```
+
+```bash
+cz run llm-from-scratch       # run any course, get coached (cz = the CLI shim)
 cz path                       # the ordered plan, with progress
 cz dag                        # the dependency DAG: what must come first
 cz stage llm-from-scratch 5   # one stage: what to write, what the tester costs
 python3 codecraft/cli.py new my-course --title "Build X" --stages 3
 ```
 
-`cz` is a one-line forwarder to `python3 codecraft/cli.py`; both work. See
+`forja` and `cz` both forward to `python3 codecraft/cli.py`. See
 [codecraft/README.md](codecraft/README.md).
 
 ## Projects still to build
@@ -177,7 +187,7 @@ of the above, check the branch table in [codecraft/ROADMAP.md](codecraft/ROADMAP
   <sub>✅ **ready** — graded course · N1</sub>
 - **[vector-index-from-scratch/](vector-index-from-scratch/)** - Approximate nearest-neighbour search, measured against the exact answer: brute force with a work counter, the metric and its norm cache, k-means, IVF with `nprobe`, HNSW built and walked, deletions by tombstone, int8 quantization, and the recall/latency frontier with the tuning held out (10 graded checks via `python3 codecraft/cli.py run vector-index-from-scratch`)
   <sub>✅ **ready** — graded course</sub>
-- **[evals-from-scratch/](evals-from-scratch/)** - The harness that decides whether a text system got better: group-wise splits, operational rates and percentiles, deterministic assertions with three states, EM and token F1, recall@k/MRR/nDCG, an LLM judge judged in both orders, Cohen's kappa and the F1-optimal threshold, McNemar and the paired bootstrap, Holm's correction, and a regression gate with per-slice floors (10 graded checks via `python3 codecraft/cli.py run evals-from-scratch`)
+- **[evals-from-scratch/](evals-from-scratch/)** - The harness that decides whether a text system got better: group-wise splits, operational rates and percentiles, deterministic assertions with three states, EM and token F1, recall@k/MRR/nDCG, an LLM judge judged in both orders, Cohen's kappa and the F1-optimal threshold, McNemar and the paired bootstrap, Holm's correction, a regression gate with per-slice floors, structured field metrics, confidence ECE, and format sensitivity with criteria identity (13 graded checks via `python3 codecraft/cli.py run evals-from-scratch`)
   <sub>✅ **ready** — graded course</sub>
 - **[agents-from-scratch/](agents-from-scratch/)** - The runtime under an agent, with the model injected as a callable so every run is deterministic and offline: the tool loop and the transcript that is its state, tool schemas and argument validation, a toolbox that turns a failure into an observation, parsing what a model actually writes, retries with an injected clock and effects that cannot land twice, memory bounded by turns, a filesystem sandbox that resolves before it compares, an approval gate against content that is not a command, budgets that stop before the call that would exceed them, and a trace plus a state-based audit (10 graded checks via `python3 codecraft/cli.py run agents-from-scratch`)
   <sub>✅ **ready** — graded course</sub>
@@ -202,6 +212,8 @@ of the above, check the branch table in [codecraft/ROADMAP.md](codecraft/ROADMAP
 
 ### System Design & Distributed Systems
 - **[mqtt-broker-from-scratch/](mqtt-broker-from-scratch/)** - A broker whose every frame its own reader takes back (standard library only, no sockets, no threads, no wall clock, no floats): the fixed header and the variable-length integer that says how long the rest is, CONNECT and the session flags, a topic trie where `+` and `#` are matched by components and never by prefix string, SUBSCRIBE and the QoS actually granted, PUBLISH routed to real subscribers and the message retained for the next one, QoS 1 as state (the packet id, the PUBACK, the deadline that re-sends with DUP) and QoS 2 as a four-way handshake where the id may not be reused before PUBCOMP, a session that outlives the socket with its queue and its keep-alive, the last will a cut connection …
+  <sub>✅ **ready** — graded course</sub>
+- **[websocket-from-scratch/](websocket-from-scratch/)** - The protocol a browser speaks after an HTTP request turns into a long-lived connection, built as bytes with no sockets, no threads and no clock: the Upgrade handshake and the SHA-1 accept value, the FIN/opcode/MASK header and the shortest length encoding, the four-byte mask that is not encryption, the control-frame rules and the close codes that may actually be sent, fragmentation around the ping that interrupts it, UTF-8 validation across fragment boundaries, a streaming reader whose answer does not depend on where TCP split the bytes, and a session that answers the handshake, echoes text and binary, answers pings and closes with the code the peer is allowed to see (8 graded checks via `python3 codecraft/cli.py run websocket-from-scratch`)
   <sub>✅ **ready** — graded course</sub>
 - **[concurrent-servers-from-scratch/](concurrent-servers-from-scratch/)** - Four models for one server on a provided in-memory `link.py` whose own log is the tie-breaker (standard library only, no threads, no sockets, no wall clock, no floats): a connection as a state machine over an outbox that has to be counted rather than assumed, a blocking server and the one slow client that starves everybody behind it, threads whose interleaving the check chooses, a reactor whose readiness is a set and whose poll loop never busy-waits, the event loop with a monotonic timer queue, callbacks as a handle table where the cancelled one must not run, futures and `async`/`await` as a desugaring onto the same loop, backpressure as a reply deferred in the connection's own stat…
   <sub>✅ **ready** — graded course</sub>

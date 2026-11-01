@@ -25,10 +25,10 @@ from urllib.parse import urlparse
 
 if __package__ in (None, ""):
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    from codecraft import contract, manifests, progress, store
+    from codecraft import contract, logos, manifests, progress, showcase, store
     from codecraft import path as pathmod
 else:                                                           # pragma: no cover
-    from . import contract, manifests, progress, store
+    from . import contract, logos, manifests, progress, showcase, store
     from . import path as pathmod
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -136,12 +136,20 @@ def _item_view(item, course, checks, repo, dir_exists=False) -> dict:
         "why": item["why"], "prereq": item["prereq"], "state": state,
         "symbol": _SYMBOL.get(state, "\u00b7"),
         "course": item["course"],
-        "command": f"cz run {item['course']}" if (item["course"] and course) else None,
-        "checks": checks and {"passed": passed, "total": total,
+        "logo": logos.key_for(item["course"]),
+        "logo_url": logos.url_for(item["course"]),
+            "command": (
+                f"forja test {item['course']}" if (
+                    item["course"] and course
+                    and showcase.is_showcase(item["course"]))
+                else (f"cz run {item['course']}" if (item["course"] and course)
+                      else None)),
+            "showcase": bool(item["course"] and showcase.is_showcase(item["course"])),
+            "checks": checks and {"passed": passed, "total": total,
                               "fraction": round(passed / total, 4) if total else 0.0},
-        "repo": repo,
-        "next_step": (checks or {}).get("next_step"),
-        "stages": stages,
+            "repo": repo,
+            "next_step": (checks or {}).get("next_step"),
+            "stages": stages,
     }
 
 
@@ -154,9 +162,12 @@ def _next_action(phases) -> dict:
             course = item["course"]
             step = item["next_step"] or 1
             meta = next((s for s in item["stages"] if s["id"] == step), None)
+            cmd = (f"forja test {course}" if showcase.is_showcase(course)
+                   else f"cz run {course}")
             return {
                 "id": item["id"], "title": item["title"], "course": course,
-                "command": f"cz run {course}",
+                "command": cmd,
+                "showcase": showcase.is_showcase(course),
                 "checks": item["checks"], "repo": item["repo"],
                 "stage": step, "file": (meta or {}).get("file", ""),
                 "stage_title": (meta or {}).get("title", ""),
@@ -221,12 +232,50 @@ def build_state(profile=None, courses=None) -> dict:
     totals["repo_fraction"] = (round(written / totals["repo_baseline"], 4)
                                if totals["repo_baseline"] else 0.0)
 
+    track_next = showcase.next_on_track(profile)
+    item_by_course = {}
+    for phase in phases:
+        for item in phase["items"]:
+            if item.get("course"):
+                item_by_course[item["course"]] = item
+
+    showcase_rows = []
+    for row in showcase.entries():
+        item = item_by_course.get(row["slug"])
+        checks = (item or {}).get("checks")
+        showcase_rows.append({
+            "slug": row["slug"],
+            "id": row["id"],
+            "label": row["label"],
+            "headline": row["headline"],
+            "blurb": row["blurb"],
+            "description": row["description"],
+            "why": row["why"],
+            "logo": row["logo"],
+            "logo_url": logos.url_for(row["slug"]),
+            "stages": row["stages"],
+            "ready": row["ready"],
+            "state": (item or {}).get("state", "ready" if row["ready"] else "missing"),
+            "checks": checks,
+            "stages_detail": (item or {}).get("stages") or [],
+            "command": f"forja test {row['slug']}" if row["ready"] else None,
+            "smoke": f"forja smoke {row['slug']}" if row["ready"] else None,
+            "guide": f"forja guide {row['slug']} 1" if row["ready"] else None,
+        })
+
     return {
         "generated_at": datetime.datetime.now().isoformat(timespec="seconds"),
-        "order": ("AWS, LLM internals, RAG, evals + agents, MCP, harness, "
-                  "benchmark, eval, then the machine stack"),
+        "order": ("Anyformat prep track: AWS → infra → LLM → evals → agents; "
+                  "then RAG, MCP, harness, the machine stack"),
+        "brand": {
+            "name": "forja",
+            "tagline": "The hardest local challenges in this repo.",
+            "loop": (
+                "Pick a challenge, open your editor, forja test. That's it."),
+        },
         "totals": totals,
-        "next": _next_action(phases),
+        "next": track_next or _next_action(phases),
+        "showcase": {"track": showcase_rows, "next": track_next},
         "phases": phases,
         "concepts": _concepts(profile),
         "courses": rows,
