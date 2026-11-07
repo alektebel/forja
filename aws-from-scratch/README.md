@@ -226,6 +226,12 @@ candidates for a ninth and tenth file. The extensions list below starts there.
   eventual-consistency delays on the control plane.
 - **Not secure.** `kms.py` uses XOR. Nothing here is real cryptography.
 - **No pricing model**, though several files count the units you would be billed for.
+- **Not compliance** — the mechanisms are here; the regulated-buyer questions that sit on
+  top of them are in [`COMPLIANCE.md`](COMPLIANCE.md): revocation, Art. 17 erasure across
+  versions/backups/embeddings/LLM logs, key granularity and S3 Bucket Keys, who can call
+  `kms:Decrypt`, cross-region transfer, and 72-hour breach evidence versus a SOC 2 Type II
+  period. Read it after `iam.py` 1–4, `s3.py` 8 and `kms.py` 29–32 — every gap there is one
+  line to the right of a stage you already pass.
 
 ## Extensions worth trying
 
