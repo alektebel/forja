@@ -90,7 +90,7 @@ def checks_signal(course: dict):
     if course.get("mode") != contract.MODE_CHECK:
         return None
     try:
-        outcome = contract.run_checker(course["dir"], ["--all"], timeout=60)
+        outcome = contract.run_checker(course["dir"], ["--all"])
     except Exception as exc:                                   # noqa: BLE001
         return {"error": f"{type(exc).__name__}: {exc}", "total": 0, "passed": 0,
                 "next_step": None, "stages": {}}
