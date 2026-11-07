@@ -29,6 +29,7 @@ def render_stage(course: dict, stage_id: int) -> str:
     file = meta.get("file") or f"stage_{stage_id:02d}.py"
     title = meta.get("title") or file
     action = meta.get("action") or ""
+    why = meta.get("why") or ""
     predict = meta.get("predict") or ""
     tags = meta.get("tags") or []
     hints = meta.get("hints") or []
@@ -50,6 +51,8 @@ def render_stage(course: dict, stage_id: int) -> str:
         lines.append(
             f"Implement what `{file}` asks for. The checker names the failure "
             "mode when you get it wrong.")
+    if why:
+        lines.extend(["", "## Why the requirement is what it is", "", why, ""])
     lines.extend(["", "## Tests", "",
                   "The tester runs your code like this:", "",
                   "```bash",

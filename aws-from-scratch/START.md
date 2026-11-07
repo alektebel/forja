@@ -2,7 +2,7 @@
 
 Toy IAM, S3, SQS, DynamoDB, Lambda, SNS, KMS and VPC, plus a capstone that wires them and breaks them on purpose.
 
-**18 stages.** Code in your editor. Run tests locally. No toy IDE.
+**36 stages, one behavior each.** Code in your editor. Run tests locally. No toy IDE.
 
 ## Stage 0 — smoke (under 30 seconds)
 

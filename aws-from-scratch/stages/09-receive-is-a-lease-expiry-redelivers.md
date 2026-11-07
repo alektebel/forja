@@ -1,12 +1,17 @@
-# Stage 9: capacity, hot partitions, scan cost
+# Stage 9: receive is a lease; expiry redelivers
 
 **Course:** AWS From Scratch (`aws-from-scratch`)
-**File:** `dynamodb.py`
-**Tags:** capacity
+**File:** `sqs.py`
+**Tags:** messaging, lifecycle
 
 ## The mechanism
 
-Capacity: RCU/WCU from item size; a hot partition is a bad key distribution; Scan costs roughly the whole table.
+receive() is a LEASE, not a read: the visibility timeout hides a message; if it is not deleted in time it is redelivered.
+
+## Why the requirement is what it is
+
+Consumers crash mid-message, and the queue cannot know. A read must either lose the message or block the queue; a lease does neither. Redelivery is the queue CHOOSING duplication over loss — so your handler is idempotent or it is wrong.
+
 
 ## Tests
 
@@ -22,7 +27,7 @@ It imports **your** module (never `solutions/`) and asserts the behaviour this s
 
 ## Predict before you look
 
-> WCU for a 2KB write with no batching.
+> whether the same message is received twice.
 
 Commit to a number (or outcome) *before* the check prints. That is where the learning consolidates.
 

@@ -1,12 +1,17 @@
-# Stage 18: the pipeline, and its failures
+# Stage 18: conditional writes fail atomically
 
 **Course:** AWS From Scratch (`aws-from-scratch`)
-**File:** `capstone.py`
-**Tags:** plumbing
+**File:** `dynamodb.py`
+**Tags:** capacity
 
 ## The mechanism
 
-Capstone: wire the services into one pipeline and reproduce each of its failure modes deliberately.
+A strongly consistent read costs exactly TWICE an eventually consistent one.
+
+## Why the requirement is what it is
+
+Consistency is paid per read, not configured once: strong reads hit enough replicas to confirm, eventual ones hit one. Pricing it 2x is what makes people ask 'do I need consistent here?' instead of defaulting to yes.
+
 
 ## Tests
 
@@ -22,7 +27,7 @@ It imports **your** module (never `solutions/`) and asserts the behaviour this s
 
 ## Predict before you look
 
-> which service's failure stops the pipeline first.
+> consistent cost for a 0.5-unit eventual read.
 
 Commit to a number (or outcome) *before* the check prints. That is where the learning consolidates.
 

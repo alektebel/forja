@@ -47,6 +47,12 @@ TRACK = (
         "evals",
     ),
     (
+        "agent-verification-from-scratch", "C3", "Agent Verification",
+        "Verify agents with formal logic",
+        "Learn about LTL, monitors, enforcement gates, spec mining and more",
+        "verify",
+    ),
+    (
         "agents-from-scratch", "C2", "Agents From Scratch",
         "Build your own Agents",
         "Learn about tool loops, retries, sandboxes, budgets and more",
@@ -111,6 +117,7 @@ def next_on_track(profile) -> dict:
                     "file": meta.get("file", ""),
                     "stage_title": meta.get("title", ""),
                     "action": meta.get("action", ""),
+                    "why": meta.get("why", ""),
                     "predict": meta.get("predict", ""),
                     "command": f"forja test {row['slug']} --stage {sid}",
                 }

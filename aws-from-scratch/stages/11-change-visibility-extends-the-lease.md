@@ -1,12 +1,17 @@
-# Stage 11: concurrency, reservations, async retry
+# Stage 11: change_visibility extends the lease
 
 **Course:** AWS From Scratch (`aws-from-scratch`)
-**File:** `lambda_svc.py`
-**Tags:** availability
+**File:** `sqs.py`
+**Tags:** messaging
 
 ## The mechanism
 
-Reserved concurrency caps a function; an async invoke retries twice and then goes to the DLQ.
+change_visibility extends a lease: a consumer whose work outlasts the timeout renews instead of racing redelivery.
+
+## Why the requirement is what it is
+
+Lease expiry exists for CRASHED consumers. A live slow consumer should never hit it — extending the deadline is the fix, and heartbeat loops in real systems are exactly this call on a timer.
+
 
 ## Tests
 
@@ -22,7 +27,7 @@ It imports **your** module (never `solutions/`) and asserts the behaviour this s
 
 ## Predict before you look
 
-> attempts for a failing async handler.
+> whether the message returns at the original timeout after an extension.
 
 Commit to a number (or outcome) *before* the check prints. That is where the learning consolidates.
 

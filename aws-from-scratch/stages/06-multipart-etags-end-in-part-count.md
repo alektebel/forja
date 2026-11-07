@@ -1,12 +1,17 @@
-# Stage 6: visibility timeout and redelivery
+# Stage 6: multipart ETags end in -<part count>
 
 **Course:** AWS From Scratch (`aws-from-scratch`)
-**File:** `sqs.py`
-**Tags:** messaging, lifecycle
+**File:** `s3.py`
+**Tags:** storage
 
 ## The mechanism
 
-The visibility timeout hides a message; if it is not deleted in time it is redelivered.
+Multipart ETags end in '-<part count>' and are NOT the object's MD5: parts assemble in order at complete().
+
+## Why the requirement is what it is
+
+A multipart ETag is the MD5 of the concatenated PART MD5s — hence the suffix. The practical consequence: you cannot verify a multipart upload by md5-ing your local file, and people burn hours on exactly that.
+
 
 ## Tests
 
@@ -22,7 +27,7 @@ It imports **your** module (never `solutions/`) and asserts the behaviour this s
 
 ## Predict before you look
 
-> whether the same message is received twice.
+> the ETag of a two-part multipart upload.
 
 Commit to a number (or outcome) *before* the check prints. That is where the learning consolidates.
 

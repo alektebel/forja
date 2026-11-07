@@ -32,10 +32,14 @@ One mechanism deeply beats nine gestured at.
 ```bash
 cd aws-from-scratch
 python3 check.py            # what to build next
-python3 check.py            # re-run after each function
+python3 check.py 9          # run only stage 9
+forja guide aws-from-scratch 9   # the stage page: mechanism, why, predict
 ```
 
-**18 graded checks** against your code. Red `✗` names the likely cause:
+**36 graded checks, one behavior each** against your code. Each stage's page
+(in `stages/`) states the mechanism, **why the requirement is what it is**, and
+a predict prompt to commit to before the check prints. A red `✗` names the
+likely cause:
 
 ```
   ✗  1. iam.py               explicit deny > allow > implicit deny
@@ -240,13 +244,59 @@ candidates for a ninth and tenth file. The extensions list below starts there.
 
 ---
 
+## The 36 stages, one behavior each
+
+| # | file | the one thing |
+|---|---|---|
+| 1 | `iam.py` | explicit deny > allow > implicit deny |
+| 2 | `iam.py` | conditions: AND keys, OR values, fail closed |
+| 3 | `iam.py` | permissions boundaries subtract, never grant |
+| 4 | `iam.py` | assume-role: caller policy AND role trust |
+| 5 | `s3.py` | put/get, ETag = MD5, NoSuchKey |
+| 6 | `s3.py` | multipart ETags end in `-<part count>` |
+| 7 | `s3.py` | delimiter invents folders at list time |
+| 8 | `s3.py` | delete marker hides versions, frees nothing |
+| 9 | `sqs.py` | receive is a lease; expiry redelivers |
+| 10 | `sqs.py` | stale receipt handles fail to delete |
+| 11 | `sqs.py` | change_visibility extends the lease |
+| 12 | `sqs.py` | poison messages dead-letter after max_receives |
+| 13 | `sqs.py` | oldest_age counts in-flight too |
+| 14 | `sqs.py` | FIFO: one in-flight message per group |
+| 15 | `sqs.py` | FIFO dedup window |
+| 16 | `dynamodb.py` | composite key = partition + sort |
+| 17 | `dynamodb.py` | query reads one partition |
+| 18 | `dynamodb.py` | conditional writes fail atomically |
+| 19 | `dynamodb.py` | consistent reads cost 2x |
+| 20 | `dynamodb.py` | capacity divides across partitions; hot key throttles |
+| 21 | `dynamodb.py` | scan reads everything, then filters |
+| 22 | `lambda_svc.py` | cold start once; warm state survives |
+| 23 | `lambda_svc.py` | env TTL resets state; timeout bills full |
+| 24 | `lambda_svc.py` | concurrency quota; reservation steals a floor |
+| 25 | `lambda_svc.py` | async retries to 3 attempts, then DLQ |
+| 26 | `sns.py` | one publish fans out to every subscriber |
+| 27 | `sns.py` | filters: AND keys, OR values, missing never matches |
+| 28 | `sns.py` | EventBridge: nested shape, fires every rule |
+| 29 | `kms.py` | envelope: data key encrypts, CMK wraps the key |
+| 30 | `kms.py` | one KMS call per object, not per byte |
+| 31 | `kms.py` | encryption context must match on decrypt |
+| 32 | `kms.py` | rotation re-encrypts keys, never data |
+| 33 | `vpc.py` | CIDR containment, overlap, 5 reserved IPs |
+| 34 | `vpc.py` | routes pick the longest matching prefix |
+| 35 | `vpc.py` | SG stateful vs NACL stateless, same rules |
+| 36 | `capstone.py` | the pipeline, and failures surfacing a layer away |
+
+---
+
 ## Structure
 
 ```
 aws-from-scratch/
 ├── README.md
-├── check.py              # progress checker — run this first
-├── iam.py                # templates with TODOs and DESIGN DECISION blocks
+├── AUDIT.md             # audit record: why the course is 36 single-behavior stages
+├── START.md             # onboarding — the first green
+├── check.py             # progress checker — run this first
+├── stages/              # 36 stage pages: mechanism, why, predict
+├── iam.py               # templates with TODOs and DESIGN DECISION blocks
 ├── s3.py
 ├── sqs.py
 ├── dynamodb.py
@@ -260,15 +310,15 @@ aws-from-scratch/
 
 ```bash
 cd solutions
-python3 iam.py            # the three-line rule, and STS in both directions
-python3 s3.py             # flat keys, ETags, delete markers
-python3 sqs.py            # the visibility-timeout limit case
-python3 dynamodb.py       # hot partitions, query vs scan
-python3 lambda_svc.py     # cold starts, concurrency, async retries
-python3 sns.py            # fanout, filter policies, EventBridge
-python3 kms.py            # envelope encryption and rotation
-python3 vpc.py            # stateful vs stateless, side by side
-python3 capstone.py       # the pipeline and its failures
+python3 iam.py            # stages 1-4: deny-wins, conditions, boundaries, assume-role
+python3 s3.py             # stages 5-8: ETags, multipart, listing, delete markers
+python3 sqs.py            # stages 9-15: leases, DLQ, age, FIFO groups, dedup
+python3 dynamodb.py       # stages 16-21: keys, conditions, capacity, hot keys, scans
+python3 lambda_svc.py     # stages 22-25: cold starts, TTL, quotas, async retries
+python3 sns.py            # stages 26-28: fanout, filters, EventBridge
+python3 kms.py            # stages 29-32: envelope, context, rotation
+python3 vpc.py            # stages 33-35: CIDR, routing, SG vs NACL
+python3 capstone.py       # stage 36: the pipeline and its failures
 ```
 
 Pure Python 3 standard library. Everything runs in about a second.
@@ -279,3 +329,5 @@ Pure Python 3 standard library. Everything runs in about a second.
 - [`deploy-and-debug/`](../deploy-and-debug/) — operating and debugging this kind of system
 - [`system-design/`](../system-design/) — the patterns underneath most of these services
 - [`PHILOSOPHY.md`](../PHILOSOPHY.md) — why this repo is built the way it is
+- [`EXTERNAL-RESOURCES.md`](../EXTERNAL-RESOURCES.md) — roadmap.sh/devops (the
+  map of the operations territory this course builds the cloud leg of)

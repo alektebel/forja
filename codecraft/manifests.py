@@ -68,6 +68,7 @@ def load(name: str):
                 "file": file, "title": title,
                 "tags": list(meta.get("tags", [])),
                 "action": meta.get("action", ""),
+                "why": meta.get("why", ""),
                 "predict": meta.get("predict", ""),
                 "hints": [], "solution": "",
             }

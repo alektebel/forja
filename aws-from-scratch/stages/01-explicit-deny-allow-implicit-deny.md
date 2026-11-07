@@ -8,6 +8,11 @@
 
 IAM: an explicit Deny wins; otherwise any matching Allow applies; otherwise implicit Deny.
 
+## Why the requirement is what it is
+
+This rule is what makes a policy SET composable: order never matters, so appending a guard policy can never break existing grants. Evaluate it like a firewall (first or last match wins) and the same policies behave differently depending on document order — no property you can reason about at scale.
+
+
 ## Tests
 
 The tester runs your code like this:

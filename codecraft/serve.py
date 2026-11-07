@@ -128,7 +128,8 @@ def _item_view(item, course, checks, repo, dir_exists=False) -> dict:
                 "id": sid, "file": meta.get("file", ""),
                 "title": meta.get("title", ""), "tags": list(meta.get("tags", [])),
                 "status": row.get("status", "TODO"),
-                "action": meta.get("action", ""), "predict": meta.get("predict", ""),
+                "action": meta.get("action", ""), "why": meta.get("why", ""),
+                "predict": meta.get("predict", ""),
             })
 
     return {

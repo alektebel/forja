@@ -1,12 +1,17 @@
-# Stage 17: stateful SG vs stateless NACL
+# Stage 17: query reads one partition; missing key raises
 
 **Course:** AWS From Scratch (`aws-from-scratch`)
-**File:** `vpc.py`
-**Tags:** stateless-vs-stateful
+**File:** `dynamodb.py`
+**Tags:** storage
 
 ## The mechanism
 
-Security groups are STATEFUL (return traffic is automatic); NACLs are STATELESS (allow both directions explicitly).
+Conditional writes: put with a condition raises ConditionalCheckFailed when it fails, and the failed write changes nothing.
+
+## Why the requirement is what it is
+
+The check and the write happen atomically inside one partition, which is how you get idempotent creates and optimistic locking with no lock service at all. Failing cleanly is the feature: it means someone got there first, exactly what you asked to know.
+
 
 ## Tests
 
@@ -22,7 +27,7 @@ It imports **your** module (never `solutions/`) and asserts the behaviour this s
 
 ## Predict before you look
 
-> why a NACL blocks the reply to an allowed request.
+> the value after a failed conditional put.
 
 Commit to a number (or outcome) *before* the check prints. That is where the learning consolidates.
 

@@ -1,12 +1,17 @@
-# Stage 4: objects, ETags and multipart
+# Stage 4: assume-role: caller policy AND role trust
 
 **Course:** AWS From Scratch (`aws-from-scratch`)
-**File:** `s3.py`
-**Tags:** storage
+**File:** `iam.py`
+**Tags:** authorization
 
 ## The mechanism
 
-Objects carry an ETag (MD5 simple, part-hash multipart); multipart assembles the parts in order.
+Assume-role needs BOTH directions: the caller's own policy must allow sts:AssumeRole, AND the role's trust policy must allow that principal.
+
+## Why the requirement is what it is
+
+Two policies for two different attackers. Your own policy protects you from yourself (an intern's role-escape); the trust policy protects you from OTHER accounts — without it, anyone whose own policy says 'I may assume anything' walks into your roles.
+
 
 ## Tests
 
@@ -22,7 +27,7 @@ It imports **your** module (never `solutions/`) and asserts the behaviour this s
 
 ## Predict before you look
 
-> the ETag of a two-part multipart upload.
+> identity policy Allows but trust policy does not.
 
 Commit to a number (or outcome) *before* the check prints. That is where the learning consolidates.
 

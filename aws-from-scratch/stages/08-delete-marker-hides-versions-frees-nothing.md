@@ -1,12 +1,17 @@
-# Stage 8: composite keys, query, conditions
+# Stage 8: delete marker hides versions, frees nothing
 
 **Course:** AWS From Scratch (`aws-from-scratch`)
-**File:** `dynamodb.py`
-**Tags:** storage
+**File:** `s3.py`
+**Tags:** storage, lifecycle
 
 ## The mechanism
 
-DynamoDB composite key = partition + sort: Query is within one partition, and conditional writes fail cleanly on conflict.
+In a versioned bucket, DELETE pushes a delete marker: plain GET then 404s, but every version is still stored — only deleting a version_id frees bytes.
+
+## Why the requirement is what it is
+
+Versioning makes buckets immutable-by-default, and DELETE must be undoable, so it appends instead of mutating. Consequence: 'I emptied the bucket' and 'the bill went down' are different claims — the bytes sit there, billable, under the marker.
+
 
 ## Tests
 
@@ -22,7 +27,7 @@ It imports **your** module (never `solutions/`) and asserts the behaviour this s
 
 ## Predict before you look
 
-> whether Query can span partitions.
+> what GET returns after a delete marker is added.
 
 Commit to a number (or outcome) *before* the check prints. That is where the learning consolidates.
 

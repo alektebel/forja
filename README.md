@@ -8,6 +8,15 @@ MVP-then-complicate driven by limit cases, and verification you can run.
 
 **Learning Agent Infra? Read [AGENT-INFRA.md](AGENT-INFRA.md)** — the twelve-area skill list this repo's phase J is being built from.
 
+**Wondering what to read outside this repo? [EXTERNAL-RESOURCES.md](EXTERNAL-RESOURCES.md)**
+catalogues the roadmaps, communities and blogs that pair with these courses — as pointers,
+never substitutes for building.
+
+**Curious about hierarchical and conceptual models — Funnel/BLT/H-Net, HRM/TRM,
+DreamCoder, Coconut, causal invariance? [HIERARCHICAL-MODELS.md](HIERARCHICAL-MODELS.md)**
+audits what this repo covers against the full list, and proposes the five from-scratch
+courses (and their checkable invariants) that close the gaps.
+
 ## codecraft — the adaptive course runner
 
 **[codecraft/](codecraft/)** turns this repo into your own CodeCrafters. It runs any
@@ -39,8 +48,8 @@ python3 codecraft/cli.py new my-course --title "Build X" --stages 3
 
 ## Projects still to build
 
-The registry (`codecraft/path.py`) tracks 78 rows; 36 are built and graded
-(`cz run <course>`), 25 legacy projects wait for a checker, and **37 are queued
+The registry (`codecraft/path.py`) tracks 115 rows; **50 are built and graded**
+(`cz run <course>`), 5 are legacy salvage rows, and **34 are queued
 to build or port** — the list below is that queue, rendered from the registry
 so it cannot drift from `cz dag`. Every row names its course slug, what it is,
 and what must exist first; `python3 codecraft/cli.py stage <slug>` prints the
@@ -56,6 +65,7 @@ grep, tail and the shell get their patterns from somewhere.
 | Slot | Course | One line | After |
 |---|---|---|---|
 | G7 | `shell-from-scratch` | A line of text becomes a process tree over the OS course's kernel: expansion order, fork/exec/wait, pipes as a descriptor table, jobs and signals, a session replayed byte for byte | G4 |
+| A9 | `deep-learning-from-scratch` | The CS231n + CS224d families as exact arithmetic over the autograd engine: convolution and its transpose, pooling gradients as argmax routing, a net trained against a planted filter, then RNN unrolls, BPTT with the vanishing gradient as a number, word vectors from PMI, seq2seq, and the attention bridge to A2's transformer | A8 |
 | G8 | `runtime-from-scratch` | Stack machine with frames, then mark-sweep, RC, tri-colour incremental, nursery and copying collection — never collecting a reachable object | G3, G4 |
 | G9 | `coreutils-from-scratch` | grep, tail, sort, wc and a gap-buffer editor, judged byte-for-byte against the real ones | — |
 | H5 | `query-engine-from-scratch` | SQL subset parsed, planned, executed over pages and a B+tree, transactions as a log | G4 |
@@ -73,9 +83,12 @@ grep, tail and the shell get their patterns from somewhere.
 | I13 | `serving-cluster-from-scratch` | Bring-up order, liveness/readiness, drain, rolling upgrade, the cluster's own report | I3, I7, I10 |
 | I14 | `weight-delivery-from-scratch` | Cold start as a storage problem: digests, prefetch, CDN keyed by digest | I3, I7 |
 | K2 | `prompt-ops-from-scratch` | Prompts and model choices as versioned artifacts: shadow mode, rollout gate, cost kill-switch | E1, F2, J1 |
+| K7 | `data-curation-from-scratch` | The dataset before the trainer: MinHash/LSH dedup with the near pair clustered and the merely similar passed, a calibrated quality classifier, domain weighting as a measured mixture, a scaling-law fit checked on the held-out fold, and a synthetic trace pipeline where only verifier-accepted output survives — rejection rate named per batch | A2, C1 |
+| K8 | `reward-modeling-from-scratch` | The preference signal as arithmetic: a reward head trained by pairwise logistic loss over A8's exact engine, rejection sampling and best-of-n measured against the true score, DPO compared to the RL outcome, the reward-hacking gap measured rather than asserted, and the KL leash that bounds it | K4, A8 |
+| K9 | `agent-optimization-from-scratch` | The optimizer loop around a multi-stage program: versioned prompt artifacts, bootstrapped few-shot selection, MIPROv2-style coordinate ascent, reflective prompt editing (TextGrad/GEPA), and the optimized-vs-baseline decision held against a noise measure | C2, C1, A8 |
+| Q1 | **ready** — `mechinterp-from-scratch` | The transformer opened up over a provided tiny trained model: linear probes with the control task, superposition and interference, logit lens, the induction head found by ablation and activation/path patching, a circuit mapped with causal scrubbing, a toy SAE scored by sparsity and reconstruction, and steering that moves behaviour without collapsing accuracy | A8, A2 |
 | K3 | `memory-engine-from-scratch` | The three memory tiers as data structures, recall measured | E1, B2 |
 | K4 | `fine-tuning-from-scratch` | LoRA and DPO over the exact autograd engine; the decision defended against a number | A8, C1 |
-| K5 | `agent-privacy-from-scratch` | Tokenization at the gateway, per-agent least privilege, output sanitization | C2, D1, J2 |
 | L4 | `git-from-scratch` | A `.git` directory real `git` reads: fsck and log are the judge | G4 |
 | M0 | `credit-origination-from-scratch` | The loan before it exists: affordability, scorecard, rating, price, covenant, approval | — |
 | M2 | **ready** — `irb-capital-from-scratch` | IRB formula in integer arithmetic, downturn vs best-estimate LGD, the two-books reconciliation | M1 |
@@ -88,6 +101,11 @@ grep, tail and the shell get their patterns from somewhere.
 | N1 | **ready** — `blockchain-from-scratch` | A ledger as a hash chain plus a rule for who appends: block headers, Merkle trees, signatures, UTXO, PoW, PoS, fork choice, peer convergence | — |
 | N2 | `dapp-from-scratch` | Bytecode VM with gas, a toy contract language and ABI, the dApp front end that never trusts the chain | N1 |
 | N3 | `physics-engine-from-scratch` | Contacts, LCP solver, MJCF subset — then differentiable simulation via A8, checked against finite differences | A8 |
+| N4 | `cryptography-from-scratch` | The number theory applied until it encrypts something: extended Euclid, Miller-Rabin, CRT as a measured speedup, RSA with the correctness proof derived and the textbook-RSA-is-broken list, Diffie-Hellman and the discrete-log table, then GF(2^8) and the AES S-box derived from the multiplicative inverse | G5 |
+| N5 | `qr-codes-from-scratch` | Coding theory with a camera as the judge: GF(2^8) from the QR primitive polynomial, Reed-Solomon encoding and the syndrome decoder with Berlekamp-Massey, erasure correction, block interleaving, the eight masks scored by the penalty rules, BCH-protected format info — and a real phone as the final judge | — |
+| N6 | **ready** — `rasterizer-from-scratch` | The rasterization pipeline exact end to end: Bresenham's integer error, edge functions and barycentric fill with the top-left tie rule, a z-buffer whose exact depth decides every tie by `==`, transforms, clipping, painter-vs-z-buffer, lattice texture sampling, and the exact quadratic ray tracer — the frame compared pixel-for-pixel | N3 |
+| O13 | `agent-privacy-from-scratch` | The gateway between agent and world: PII tokenized before the context window and restored after, per-agent least privilege, OAuth2 machine identities with scoped time-limited tokens, the HITL approval gate, and the sanitizer at the agent-to-agent seam | C2, D1, J2, N4 |
+| O14 | `grammar-decoding-from-scratch` | Enforcement where 'please don't' cannot reach: a CFG compiled to a per-step token mask that provably never masks a valid continuation, JSON-schema and regex compiled to grammars, the token-boundary straddle, and schema-validity measured at exactly 1 against the unconstrained baseline | A2, H2 |
 | G10 | `custom-os-from-scratch` | **The capstone**: a bootable x86-64 kernel in C and a userland end to end — bootloader handoff, GDT/IDT, PIT/APIC, paging, interrupts, the real scheduler, syscalls across the ring, drivers written against the hardware itself (PS/2, ATA, PCI, e1000/virtio), a filesystem, an ELF loader running G5-compiled programs, and G7's shell on your own kernel; QEMU is the judge, the real machine the honest one; arm64 port the second half | G4, G5 |
 | G11 | `advanced-dsa-from-scratch` | La Rocca's *Advanced Algorithms and Data Structures* mechanised, one stage per chapter: d-way heaps on Dijkstra, treaps with the height profiler, Bloom filters with the measured false-positive rate, disjoint sets counted in finds, tries and autocomplete, LRU/LFU caches, k-d trees and SS-trees checked against the linear scan, DBSCAN/OPTICS, graphs to Dijkstra and MST, embeddings and force-directed drawing with counted crossings, gradient descent and simulated annealing, genetic algorithms on TSP | — |
 | G14 | `reverse-engineering-from-scratch` | Reading a program you have no source for: ELF/PE parsed until `readelf` agrees, x86-64 disassembly with its length-decoding traps, CFG recovery by linear sweep vs recursive descent, the decompiler lift and what it gets wrong, then ptrace, breakpoints and the syscall trace; capstone — find, understand and write up a stripped binary's licence check, every claim checked against the estate's ground truth | G3, G5 |
@@ -209,6 +227,8 @@ of the above, check the branch table in [codecraft/ROADMAP.md](codecraft/ROADMAP
   <sub>✅ **ready** — graded course · track P</sub>
 - **[shell-from-scratch/](shell-from-scratch/)** - A shell as what a kernel looks like from the outside, over a provided machine (standard library only, no threads, no wall clock, no floats): the line, the word and the operator with quoting as part of a word's bytes, expansion in the order a shell must (parameter, tilde, split, glob, quote-removal), the descriptor table a pipeline builds before anything runs and the byte cost the machine prices it at, the process tree of fork-exec-wait with every child reaped and the status always the last command's, the job table that knows a background job from a stopped one, signals and traps where `128 + n` is a signal and never a plain status, the builtins that must not fork, lists and `&&`/`||` under the rules of `set -e`, the session replayed byte for byte against the world's own record, and the audit that answers why a status was the number it was (10 graded checks via `python3 codecraft/cli.py run shell-from-scratch`)
   <sub>✅ **ready** — graded course</sub>
+- **[mechinterp-from-scratch/](mechinterp-from-scratch/)** - Mechanistic interpretability over a provided tiny two-head transformer whose every internal is the answer key (`world.py`, `exact.py`; exact rational arithmetic only, no float, no clock, no randomness, hard-argmax attention): the one-hot equality test, the logit lens read at three depths, ablation and activation patching, the A->B composition named in the weights and spliced by a path patch that re-runs the head on borrowed storage, the no-attention reimplementation that pins the circuit's three edges to their evidence, superposition and interference as exact fractions, a toy SAE that rediscovers the four features with exactly zero error, steering that moves behaviour only through the circuit and only at integer alpha, causal scrubbing over all eight keep-subsets, and the capstone audit whose every cell the checker recomputes independently (10 graded checks via `python3 codecraft/cli.py run mechinterp-from-scratch`)
+  <sub>✅ **ready** — graded course · Q1</sub>
 
 ### System Design & Distributed Systems
 - **[mqtt-broker-from-scratch/](mqtt-broker-from-scratch/)** - A broker whose every frame its own reader takes back (standard library only, no sockets, no threads, no wall clock, no floats): the fixed header and the variable-length integer that says how long the rest is, CONNECT and the session flags, a topic trie where `+` and `#` are matched by components and never by prefix string, SUBSCRIBE and the QoS actually granted, PUBLISH routed to real subscribers and the message retained for the next one, QoS 1 as state (the packet id, the PUBACK, the deadline that re-sends with DUP) and QoS 2 as a four-way handshake where the id may not be reused before PUBCOMP, a session that outlives the socket with its queue and its keep-alive, the last will a cut connection …
@@ -239,7 +259,7 @@ of the above, check the branch table in [codecraft/ROADMAP.md](codecraft/ROADMAP
   <sub>✅ **ready** — graded course</sub>
 - **[dynamo-paper/](dynamo-paper/)** - Amazon's Dynamo paper (SOSP 2007) implemented directly: consistent hashing with preference lists, vector clocks, N/R/W quorums, sloppy quorum with hinted handoff, Merkle-tree anti-entropy, and gossip membership (17 graded checks via `python3 check.py`)
   <sub>✅ **ready** — graded course</sub>
-- **[aws-from-scratch/](aws-from-scratch/)** - Learn AWS by implementing toy versions of its core services: IAM policy evaluation, S3 with versioning and delete markers, SQS visibility timeouts, DynamoDB hot partitions, Lambda concurrency and cold starts, SNS filter policies and EventBridge patterns, KMS envelope encryption, VPC stateful-vs-stateless networking, plus a capstone pipeline wiring them together - and a map of which remaining AWS services are variations of which mechanism (18 graded checks via `python3 check.py`)
+- **[aws-from-scratch/](aws-from-scratch/)** - Learn AWS by implementing toy versions of its core services: IAM policy evaluation, S3 with versioning and delete markers, SQS visibility timeouts, DynamoDB hot partitions, Lambda concurrency and cold starts, SNS filter policies and EventBridge patterns, KMS envelope encryption, VPC stateful-vs-stateless networking, plus a capstone pipeline wiring them together - and a map of which remaining AWS services are variations of which mechanism (36 graded checks, one behavior each, via `python3 check.py`)
   <sub>✅ **ready** — graded course</sub>
 
 ### Operations & Reliability

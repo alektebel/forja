@@ -1,12 +1,17 @@
-# Stage 14: envelope encryption
+# Stage 14: FIFO: one in-flight message per group
 
 **Course:** AWS From Scratch (`aws-from-scratch`)
-**File:** `kms.py`
-**Tags:** authorization
+**File:** `sqs.py`
+**Tags:** messaging
 
 ## The mechanism
 
-KMS envelope encryption: a data key encrypts the data, and the CMK encrypts the data key.
+FIFO: only ONE in-flight message per message group; a different group is never blocked.
+
+## Why the requirement is what it is
+
+Ordering within a group is the entire point of groups — and it is exactly what forbids parallelism inside one. The group id is your concurrency dial: coarse enough to keep order, fine enough to keep throughput.
+
 
 ## Tests
 
@@ -22,7 +27,7 @@ It imports **your** module (never `solutions/`) and asserts the behaviour this s
 
 ## Predict before you look
 
-> what you must store alongside the ciphertext.
+> how many of 3 same-group messages one receive returns.
 
 Commit to a number (or outcome) *before* the check prints. That is where the learning consolidates.
 

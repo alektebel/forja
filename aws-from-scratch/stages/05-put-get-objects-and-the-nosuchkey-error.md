@@ -1,12 +1,17 @@
-# Stage 5: prefix listing and delete markers
+# Stage 5: put/get objects and the NoSuchKey error
 
 **Course:** AWS From Scratch (`aws-from-scratch`)
 **File:** `s3.py`
-**Tags:** storage, lifecycle
+**Tags:** storage
 
 ## The mechanism
 
-Listing uses prefix + delimiter; a delete marker HIDES a version without destroying it.
+S3 objects: put/get with an ETag (the body's MD5), and a missing key raises NoSuchKey.
+
+## Why the requirement is what it is
+
+The ETag is the content hash because S3 is a flat KV store with no directories to hide consistency behind — the tag is your only cheap integrity check, and the NoSuchKey error (not a null) is how you distinguish 'absent' from 'present but empty'.
+
 
 ## Tests
 
@@ -22,7 +27,7 @@ It imports **your** module (never `solutions/`) and asserts the behaviour this s
 
 ## Predict before you look
 
-> what GET returns after a delete marker is added.
+> what GET returns for a key that was never written.
 
 Commit to a number (or outcome) *before* the check prints. That is where the learning consolidates.
 

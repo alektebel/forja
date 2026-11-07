@@ -86,11 +86,12 @@ def parse_check_output(text: str) -> Dict[str, object]:
     }
 
 
-def run_checker(project_dir: str, args: Optional[List[str]] = None) -> dict:
+def run_checker(project_dir: str, args: Optional[List[str]] = None,
+                timeout: Optional[float] = None) -> dict:
     """Run `<project>/check.py` and parse it. Defaults to --all for full state."""
     argv = [sys.executable, "check.py", *(args if args is not None else ["--all"])]
     proc = subprocess.run(argv, cwd=project_dir, stdout=subprocess.PIPE,
-                          stderr=subprocess.STDOUT, text=True)
+                          stderr=subprocess.STDOUT, text=True, timeout=timeout)
     return {"returncode": proc.returncode, "stdout": proc.stdout,
             "result": parse_check_output(proc.stdout)}
 

@@ -1,12 +1,17 @@
-# Stage 15: encryption context and rotation
+# Stage 15: FIFO dedup window drops duplicate ids
 
 **Course:** AWS From Scratch (`aws-from-scratch`)
-**File:** `kms.py`
-**Tags:** authorization
+**File:** `sqs.py`
+**Tags:** messaging
 
 ## The mechanism
 
-Encryption context must match on decrypt; rotation changes the CMK but old ciphertext still decrypts.
+FIFO dedup: a duplicate dedup_id inside the 5-minute window is dropped; outside it is accepted again.
+
+## Why the requirement is what it is
+
+Producers retry on network flakiness; without dedup every retry is a duplicate order. A time window instead of forever keeps the dedup table bounded — the cost of the guarantee, and its expiry surprise.
+
 
 ## Tests
 
@@ -22,7 +27,7 @@ It imports **your** module (never `solutions/`) and asserts the behaviour this s
 
 ## Predict before you look
 
-> decrypt with a mismatched context.
+> the second send with the same dedup_id at t=10 and at t=400.
 
 Commit to a number (or outcome) *before* the check prints. That is where the learning consolidates.
 

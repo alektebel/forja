@@ -29,7 +29,7 @@ GREEN, RED, YELLOW, GREY, BOLD, RESET = (
 # IAM
 # ---------------------------------------------------------------------------
 
-def check_iam_basics() -> None:
+def check_stage_1() -> None:
     from iam import ALLOW, DENY, Policy, Statement, evaluate
 
     read = Policy([Statement(ALLOW, "s3:Get*", "arn:aws:s3:::reports/*")], name="R")
@@ -54,7 +54,7 @@ def check_iam_basics() -> None:
     assert evaluate([admin, guard], "s3:GetObject", "arn:aws:s3:::reports/a.csv").allowed
 
 
-def check_iam_conditions() -> None:
+def check_stage_2() -> None:
     from iam import ALLOW, Policy, Statement, evaluate, evaluate_with_boundary
 
     policy = Policy([Statement(
@@ -90,7 +90,7 @@ def check_iam_conditions() -> None:
         "a boundary must never GRANT on its own — it only subtracts"
 
 
-def check_sts() -> None:
+def check_stage_3() -> None:
     from iam import (ALLOW, Credentials, Policy, Role, Statement, assume_role,
                      evaluate)
 
@@ -132,7 +132,7 @@ def check_sts() -> None:
 # S3
 # ---------------------------------------------------------------------------
 
-def check_s3_objects() -> None:
+def check_stage_4() -> None:
     from s3 import S3, S3Error, compute_etag
 
     s3 = S3()
@@ -155,7 +155,7 @@ def check_s3_objects() -> None:
     assert multi != compute_etag(b"x" * 300)
 
 
-def check_s3_listing_and_versioning() -> None:
+def check_stage_5() -> None:
     from s3 import S3, S3Error
 
     s3 = S3()
@@ -210,7 +210,7 @@ def check_s3_listing_and_versioning() -> None:
 # SQS
 # ---------------------------------------------------------------------------
 
-def check_sqs_visibility() -> None:
+def check_stage_6() -> None:
     from sqs import Queue
 
     queue = Queue("q", visibility_timeout=10)
@@ -240,6 +240,10 @@ def check_sqs_visibility() -> None:
     assert queue.delete(second[0].receipt_handle)
     assert queue.depth(now=12)["visible"] == 0
 
+
+def check_stage_7() -> None:
+    from sqs import Queue
+
     extended = Queue("e", visibility_timeout=10)
     extended.send("slow", now=0)
     held = extended.receive(now=0)[0]
@@ -248,7 +252,7 @@ def check_sqs_visibility() -> None:
         "change_visibility must extend the lease — the fix for slow consumers"
 
 
-def check_sqs_dlq_and_fifo() -> None:
+def check_stage_8() -> None:
     from sqs import Queue
 
     dlq = Queue("dlq")
@@ -261,6 +265,17 @@ def check_sqs_dlq_and_fifo() -> None:
         f"{len(dlq.messages)}. Without one it is retried forever, consuming "
         "throughput and hiding the messages behind it.")
     assert main.depth(now=100)["visible"] == 0
+
+    aged = Queue("a", visibility_timeout=1)
+    aged.send("m", now=0)
+    aged.receive(now=0)
+    assert aged.oldest_age(now=300) > 250, (
+        "oldest_age must count IN-FLIGHT messages too. A message being retried "
+        "forever is exactly the case the age alarm exists to catch.")
+
+
+def check_stage_9() -> None:
+    from sqs import Queue
 
     fifo = Queue("f.fifo", fifo=True, visibility_timeout=30)
     for i in range(3):
@@ -281,19 +296,12 @@ def check_sqs_dlq_and_fifo() -> None:
     assert dedup.send("pay", "A", "order-7", now=400) is not None, \
         "outside the window it is accepted again"
 
-    aged = Queue("a", visibility_timeout=1)
-    aged.send("m", now=0)
-    aged.receive(now=0)
-    assert aged.oldest_age(now=300) > 250, (
-        "oldest_age must count IN-FLIGHT messages too. A message being retried "
-        "forever is exactly the case the age alarm exists to catch.")
-
 
 # ---------------------------------------------------------------------------
 # DynamoDB
 # ---------------------------------------------------------------------------
 
-def check_dynamo_keys() -> None:
+def check_stage_10() -> None:
     from dynamodb import ConditionalCheckFailed, DynamoError, Table
 
     table = Table("t", partition_key="pk", sort_key="sk",
@@ -334,7 +342,7 @@ def check_dynamo_keys() -> None:
         "the failed conditional write must not have changed anything"
 
 
-def check_dynamo_capacity() -> None:
+def check_stage_11() -> None:
     from dynamodb import Table, ThroughputExceeded
 
     table = Table("t", partition_key="pk", read_capacity=100, num_partitions=1)
@@ -374,6 +382,11 @@ def check_dynamo_capacity() -> None:
     for n in range(20):
         spread.put_item({"day": f"key-{n}", "seq": "0"}, now=0)   # must not throttle
 
+
+
+def check_stage_12() -> None:
+    from dynamodb import Table
+
     counts = Table("c", partition_key="pk", read_capacity=1000,
                    write_capacity=1000, num_partitions=4)
     for pk in ("alice", "bob", "carol"):
@@ -394,7 +407,7 @@ def check_dynamo_capacity() -> None:
 # Lambda
 # ---------------------------------------------------------------------------
 
-def check_lambda_lifecycle() -> None:
+def check_stage_13() -> None:
     from lambda_svc import Function, LambdaService
 
     service = LambdaService(account_concurrency=10)
@@ -427,7 +440,7 @@ def check_lambda_lifecycle() -> None:
     assert timed_out.billed_ms > 0, "a timeout is billed in full"
 
 
-def check_lambda_concurrency() -> None:
+def check_stage_14() -> None:
     from lambda_svc import Function, LambdaService, Throttled
 
     service = LambdaService(account_concurrency=10)
@@ -475,8 +488,8 @@ def check_lambda_concurrency() -> None:
 # SNS / EventBridge
 # ---------------------------------------------------------------------------
 
-def check_sns_fanout_and_filters() -> None:
-    from sns import Topic, matches_filter
+def check_stage_15() -> None:
+    from sns import Topic
     from sqs import Queue
 
     topic = Topic("t")
@@ -494,6 +507,11 @@ def check_sns_fanout_and_filters() -> None:
         "messages landed in the future.")
     assert seen == ["hello"]
 
+
+
+def check_stage_16() -> None:
+    from sns import matches_filter
+
     assert matches_filter(None, {"any": "thing"}), "no policy means deliver"
     assert matches_filter({"s": ["a", "b"]}, {"s": "b"}), \
         "values within one key are OR"
@@ -509,7 +527,7 @@ def check_sns_fanout_and_filters() -> None:
         "{'exists': False} matches when the attribute is absent"
 
 
-def check_eventbridge() -> None:
+def check_stage_17() -> None:
     from sns import EventBus, matches_event_pattern
 
     assert matches_event_pattern({"source": ["aws.ec2"]}, {"source": "aws.ec2"})
@@ -542,7 +560,7 @@ def check_eventbridge() -> None:
 # KMS
 # ---------------------------------------------------------------------------
 
-def check_kms_envelope() -> None:
+def check_stage_18() -> None:
     from kms import KMS, EnvelopeCipher, KMSError
 
     kms = KMS()
@@ -570,7 +588,7 @@ def check_kms_envelope() -> None:
         "4KB KMS payload limit does not constrain you")
 
 
-def check_kms_context_and_rotation() -> None:
+def check_stage_19() -> None:
     from kms import KMS, EnvelopeCipher, KMSError
 
     kms = KMS()
@@ -588,6 +606,15 @@ def check_kms_context_and_rotation() -> None:
                 "and it is what lets an IAM condition scope a key to a tenant.")
         except KMSError:
             pass
+
+
+
+def check_stage_20() -> None:
+    from kms import KMS, EnvelopeCipher, KMSError
+
+    kms = KMS()
+    key = kms.create_key("k")
+    cipher = EnvelopeCipher(kms, "k")
 
     old_cipher, old_wrapped = cipher.encrypt(b"before")
     assert old_wrapped.version == 1
@@ -612,7 +639,7 @@ def check_kms_context_and_rotation() -> None:
 # VPC
 # ---------------------------------------------------------------------------
 
-def check_vpc_cidr() -> None:
+def check_stage_21() -> None:
     from vpc import Cidr, Vpc
 
     assert Cidr("10.0.0.0/16").contains(Cidr("10.0.1.0/24"))
@@ -632,6 +659,13 @@ def check_vpc_cidr() -> None:
         except ValueError:
             pass
 
+
+
+def check_stage_22() -> None:
+    from vpc import Vpc
+
+    vpc = Vpc("v", "10.0.0.0/16")
+    vpc.add_subnet("a", "10.0.1.0/24")
     subnet = vpc.subnets["a"]
     subnet.add_route("0.0.0.0/0", "igw")
     subnet.add_route("10.1.0.0/16", "peering")
@@ -644,7 +678,7 @@ def check_vpc_cidr() -> None:
     assert subnet.route_for("10.0.1.5") == "local"
 
 
-def check_stateful_vs_stateless() -> None:
+def check_stage_23() -> None:
     """The difference that causes the most VPC confusion."""
     from vpc import NetworkAcl, SecurityGroup, test_connection
 
@@ -688,7 +722,7 @@ def check_stateful_vs_stateless() -> None:
 # Capstone
 # ---------------------------------------------------------------------------
 
-def check_capstone() -> None:
+def check_stage_24() -> None:
     from capstone import AccessDenied, build, drain, upload
 
     system = build()
@@ -726,24 +760,42 @@ def check_capstone() -> None:
 
 
 CHECKS: List[Tuple[str, str, Callable[[], None]]] = [
-    ("iam.py", "explicit deny > allow > implicit deny", check_iam_basics),
-    ("iam.py", "conditions and permissions boundaries", check_iam_conditions),
-    ("iam.py", "STS assume-role: both directions", check_sts),
-    ("s3.py", "objects, ETags and multipart", check_s3_objects),
-    ("s3.py", "prefix listing and delete markers", check_s3_listing_and_versioning),
-    ("sqs.py", "visibility timeout and redelivery", check_sqs_visibility),
-    ("sqs.py", "dead letters, FIFO and dedup", check_sqs_dlq_and_fifo),
-    ("dynamodb.py", "composite keys, query, conditions", check_dynamo_keys),
-    ("dynamodb.py", "capacity, hot partitions, scan cost", check_dynamo_capacity),
-    ("lambda_svc.py", "cold starts and warm state", check_lambda_lifecycle),
-    ("lambda_svc.py", "concurrency, reservations, async retry", check_lambda_concurrency),
-    ("sns.py", "fanout and filter policies", check_sns_fanout_and_filters),
-    ("sns.py", "EventBridge pattern matching", check_eventbridge),
-    ("kms.py", "envelope encryption", check_kms_envelope),
-    ("kms.py", "encryption context and rotation", check_kms_context_and_rotation),
-    ("vpc.py", "CIDR, subnets and longest-prefix routing", check_vpc_cidr),
-    ("vpc.py", "stateful SG vs stateless NACL", check_stateful_vs_stateless),
-    ("capstone.py", "the pipeline, and its failures", check_capstone),
+    ("iam.py", "explicit deny > allow > implicit deny", check_stage_1),
+    ("iam.py", "conditions: AND keys, OR values, fail closed", check_stage_2),
+    ("iam.py", "permissions boundaries subtract, never grant", check_stage_2),
+    ("iam.py", "assume-role: caller policy AND role trust", check_stage_3),
+    ("s3.py", "put/get objects and the NoSuchKey error", check_stage_4),
+    ("s3.py", "multipart ETags end in -<part count>", check_stage_4),
+    ("s3.py", "delimiter invents folders at list time", check_stage_5),
+    ("s3.py", "delete marker hides versions, frees nothing", check_stage_5),
+    ("sqs.py", "receive is a lease; expiry redelivers", check_stage_6),
+    ("sqs.py", "stale receipt handles must fail to delete", check_stage_6),
+    ("sqs.py", "change_visibility extends the lease", check_stage_7),
+    ("sqs.py", "poison messages dead-letter after max_receives", check_stage_8),
+    ("sqs.py", "oldest_age counts in-flight messages too", check_stage_8),
+    ("sqs.py", "FIFO: one in-flight message per group", check_stage_9),
+    ("sqs.py", "FIFO dedup window drops duplicate ids", check_stage_9),
+    ("dynamodb.py", "composite key = partition + sort", check_stage_10),
+    ("dynamodb.py", "query reads one partition; missing key raises", check_stage_10),
+    ("dynamodb.py", "conditional writes fail atomically", check_stage_10),
+    ("dynamodb.py", "consistent reads cost twice eventual ones", check_stage_11),
+    ("dynamodb.py", "capacity divides across partitions; hot key throttles", check_stage_11),
+    ("dynamodb.py", "scan reads everything, then filters", check_stage_12),
+    ("lambda_svc.py", "cold start once; warm state survives", check_stage_13),
+    ("lambda_svc.py", "environment TTL resets state; timeout bills full", check_stage_13),
+    ("lambda_svc.py", "concurrency is a quota; reservation steals a floor", check_stage_14),
+    ("lambda_svc.py", "async failures retry to 3 attempts, then DLQ", check_stage_14),
+    ("sns.py", "one publish fans out to every subscriber", check_stage_15),
+    ("sns.py", "filters: AND keys, OR values, missing never matches", check_stage_16),
+    ("sns.py", "EventBridge matches nested shape, fires every rule", check_stage_17),
+    ("kms.py", "envelope: data key encrypts, CMK wraps the key", check_stage_18),
+    ("kms.py", "one KMS call per object, not per byte", check_stage_18),
+    ("kms.py", "encryption context must match on decrypt", check_stage_19),
+    ("kms.py", "rotation re-encrypts keys, never data", check_stage_20),
+    ("vpc.py", "CIDR containment, overlap, 5 reserved IPs", check_stage_21),
+    ("vpc.py", "routes pick the longest matching prefix", check_stage_22),
+    ("vpc.py", "SG stateful vs NACL stateless, same rules", check_stage_23),
+    ("capstone.py", "the pipeline, and failures surfacing a layer away", check_stage_24),
 ]
 
 
