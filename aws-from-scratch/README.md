@@ -227,11 +227,18 @@ candidates for a ninth and tenth file. The extensions list below starts there.
 - **Not secure.** `kms.py` uses XOR. Nothing here is real cryptography.
 - **No pricing model**, though several files count the units you would be billed for.
 - **Not compliance** — the mechanisms are here; the regulated-buyer questions that sit on
-  top of them are in [`COMPLIANCE.md`](COMPLIANCE.md): revocation, Art. 17 erasure across
-  versions/backups/embeddings/LLM logs, key granularity and S3 Bucket Keys, who can call
-  `kms:Decrypt`, cross-region transfer, and 72-hour breach evidence versus a SOC 2 Type II
-  period. Read it after `iam.py` 1–4, `s3.py` 8 and `kms.py` 29–32 — every gap there is one
-  line to the right of a stage you already pass.
+  top of them are in [`COMPLIANCE.md`](COMPLIANCE.md). Part I (§0–§6) is six scenarios:
+  revocation, Art. 17 erasure across versions/backups/embeddings/LLM logs, key granularity
+  and S3 Bucket Keys, who can call `kms:Decrypt`, cross-region transfer, and 72-hour breach
+  evidence versus a SOC 2 Type II period. Part II (§7–§13) is the full perimeter: the
+  **GDPR Art. 28(3)(a)–(h)** contract letter by letter, the **ISO 27001** management system
+  and the **17021-1** surveillance clocks, the **SOC 2** criteria and observation period
+  (what a Type I versus a Type II actually claims), a **crosswalk** where one piece of
+  evidence serves four audits plus the three places that fails, the **AI Act** classification
+  analysis with **ISO 42001** as the certifiable wrapper, **DORA from the supplier's chair**
+  (Art. 30 as the contract you will be asked to sign), and the program order for a company
+  that holds ISO and has no SOC 2 yet. Read it after `iam.py` 1–4, `s3.py` 8 and `kms.py`
+  29–32 — every gap in either part is one line to the right of a stage you already pass.
 
 ## Extensions worth trying
 
