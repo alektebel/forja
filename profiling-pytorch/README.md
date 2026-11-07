@@ -216,6 +216,12 @@ The reflexes to carry over:
    "read the profiler table", and the table's own footnote is that `Self` excludes children.
 3. **A clean trace is a hypothesis, not a proof.** Check where the cost moved to.
 
+The devices under the trace have a vocabulary of their own: [Modal's GPU
+Glossary](https://modal.com/gpu-glossary/readme/) defines occupancy, warp
+divergence, scoreboard stalls, memory coalescing and the roofline model —
+the names a CUPTI/Nsight counter maps to when a trace shows the kernel
+waiting instead of computing.
+
 ## The posts themselves
 
 The full texts are third-party material with no explicit license, so they are **not**

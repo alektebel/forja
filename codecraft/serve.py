@@ -173,6 +173,7 @@ def _next_action(phases) -> dict:
                 "stage": step, "file": (meta or {}).get("file", ""),
                 "stage_title": (meta or {}).get("title", ""),
                 "action": (meta or {}).get("action", ""),
+                "why": (meta or {}).get("why", ""),
                 "predict": (meta or {}).get("predict", ""),
             }
     return None

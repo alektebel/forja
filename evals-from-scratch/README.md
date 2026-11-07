@@ -148,6 +148,7 @@ What this course implements, and what it deliberately leaves as reading.
 | Long-task ability | [METR blog](https://metr.org/blog/2025-03-19-measuring-ai-ability-to-complete-long-tasks/) / [paper](https://arxiv.org/abs/2503.14499) | Out of scope — horizon metrics |
 | Harness tooling | [Inspect](https://inspect.aisi.org.uk/), [lm-eval-harness](https://github.com/EleutherAI/lm-evaluation-harness) | `eval-framework-from-scratch` — the runner, not the metrics |
 | Course (paid) | [Hamel & Shankar, Maven](https://maven.com/parlance-labs/evals) | Curriculum depth behind stages 1–10 |
+| Agent eval, system level | [CS2680 agent-evaluation note](https://cs2680.com/notes/agent-evaluation.html) | Reading — harness vs eval-harness separation, pass@k vs pass^k estimators, cost per *successful* task, grader-gaming taxonomy; the "agent evaluation" half this course's product-eval stages don't cover |
 
 ## Verification
 

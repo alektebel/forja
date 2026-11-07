@@ -69,6 +69,50 @@ PHASES = [
                 "training step. Ten checks and 504 planted mutations, no float "
                 "anywhere — every gradient is an equal pair and the last stage "
                 "reproduces a reference gradient exactly."},
+        {"id": "A9", "title": "Deep Learning From Scratch",
+         "course": None, "kind": "author", "prereq": ["A8"],
+         "why": "The two architecture families CS231n and CS224d teach, as "
+                "arithmetic a check can catch over A8's exact engine: the "
+                "convolution and its transpose (the backward pass of a conv "
+                "is the same op with the roles of input and filter swapped "
+                "\u2014 the identity the mutation battery tests), pooling and "
+                "its gradient as argmax routing, weight sharing as one "
+                "parameter seen by every patch, stride and padding as index "
+                "arithmetic with the boundary case named, a small net "
+                "trained on a synthetic deterministic dataset (a fixed "
+                "pattern the filters must become \u2014 the learned kernel "
+                "compared against the planted one, not eyeballed); then the "
+                "recurrent half: the RNN cell unrolled, BPTT as A8's "
+                "reverse mode over the unroll (the vanishing gradient made "
+                "a number: the norm of the gradient at step k versus k+1, "
+                "exact), word vectors from counts and PMI before any "
+                "gradient flows, seq2seq with the bottleneck that motivates "
+                "attention, and the bridge stage: the same task solved by "
+                "attention over A2's transformer, where the recurrence "
+                "disappears and the sequential dependency is the thing "
+                "being removed. No float anywhere; the dataset is data, not "
+                "a download. Author deep-learning-from-scratch; A8 is the "
+                "engine it trains through and A2 the transformer it ends "
+                "at."},
+        {"id": "A10", "title": "Continual Learning From Scratch",
+         "course": "continual-learning-from-scratch", "kind": "ready",
+         "prereq": ["A8"],
+         "why": "The forgetting experiment in exact rational arithmetic, as "
+                "the capstone A8's engine exists to support: two linear tasks "
+                "A and B on disjoint and overlapping input subspaces, exact "
+                "SGD, forgetting measured as the exact prediction change "
+                "|f_afterB(x_A) - f_beforeB(x_A)| — never a tolerance — and "
+                "four families compared on identical tasks: naive joint "
+                "fine-tune (forgetting > 0, reproducible, not asserted), "
+                "progressive column addition (forgetting == Rational(0) by "
+                "construction, capacity growing O(tasks)), parameter freeze "
+                "(gradients exactly zero, but task B underfits on overlap — "
+                "the capacity trade pinned), and deterministic replay (full "
+                "replay converges to joint-training weights on A∪B exactly; "
+                "partial replay upper-bounds forgetting recomputably). RIM "
+                "and a program-tree module net extend the same engine: "
+                "permutation equivariance and bit-identical composition, "
+                "pinned. The four-family comparison table is the course."},
     ]),
     ("B", "RAG", [
         {"id": "B1", "title": "RAG From Scratch", "course": "rag-from-scratch",
@@ -411,7 +455,9 @@ PHASES = [
         {"id": "H3", "title": "Generative models", "course": None,
          "kind": "legacy", "prereq": ["C1"],
          "why": "diffusion-models, world-models (10k lines of PyTorch), deepfake "
-                "creation and detection."},
+                "creation and detection. The architecture primitives these "
+                "assume (convolution, recurrence) are A9's syllabus; H3 "
+                "itself waits for a checker."},
         {"id": "H4", "title": "Long tail", "course": None, "kind": "legacy", "prereq": [],
          "why": "quantitative-trading, spectral-graphs, lean-proofs, haskell-projects, "
                 "mlops, ml-in-production, sas-lineage-tool, web-scraping."},
@@ -752,15 +798,6 @@ PHASES = [
                 "from recorded failures, and the decision itself — fine-tune, "
                 "RAG or prompting — defended against a number. Author "
                 "fine-tuning-from-scratch; C1 is how the result is judged."},
-        {"id": "K5", "title": "Privacy & Injection", "course": None,
-         "kind": "author", "prereq": ["C2", "D1", "J2"],
-         "why": "What leaves the process and what may come back: a gateway that "
-                "tokenizes sensitive values before the context window and "
-                "restores them after, an audit line that answers 'what did it "
-                "touch', per-agent least privilege and scoped tool sets, and the "
-                "sanitization of one agent's output before it becomes another's "
-                "input. Author agent-privacy-from-scratch; J4 is the sandbox "
-                "half and this is the data-in-transit half."},
         {"id": "K6", "title": "Forward Deployed Engineer",
          "course": "fde-from-scratch", "kind": "ready",
          "prereq": ["B1", "C1", "D1", "J4"],
@@ -782,6 +819,130 @@ PHASES = [
                 "refuse a row, C1 the harness it points at the customer's tickets, D1 "
                 "the protocol behind its tools, and J4 the discipline its credentials "
                 "follow."},
+        {"id": "K7", "title": "Data Curation & Synthetic Pipelines", "course": None,
+         "kind": "author", "prereq": ["A2", "C1"],
+         "why": "The dataset before the trainer, judged by the filter's own "
+                "decisions: a document stream with the duplicates planted in it "
+                "(exact, near, and cross-corpus), MinHash shingles and LSH "
+                "bands that must cluster the near pair and pass the merely "
+                "similar one, a quality classifier calibrated on held-out "
+                "labels, domain weighting as a mixture with a measured "
+                "per-domain token share, a scaling-law fit that predicts the "
+                "loss the held-out fold actually shows, and a synthetic trace "
+                "pipeline where a generator's output survives only what a "
+                "verifier model accepts — with the rejection rate and the "
+                "contamination it catches named per batch. Deterministic "
+                "hashing and fixed-point arithmetic over a provided corpus, "
+                "no network, no clock. Author data-curation-from-scratch; A2 "
+                "is the model the traces are generated with and C1 the harness "
+                "the filtered set is graded through."},
+        {"id": "K8", "title": "Reward Modeling & Preference Optimization", "course": None,
+         "kind": "author", "prereq": ["K4", "A8"],
+         "why": "The preference signal as arithmetic a check can catch: the "
+                "reward model as a head over A8's engine trained by pairwise "
+                "logistic loss on annotated preference pairs (with ties and "
+                "deliberately inconsistent labels the loss must survive), "
+                "rejection sampling against that reward, best-of-n measured "
+                "against the true score, DPO over the same pairs and the "
+                "comparison to the RL pipeline's outcome, the reward-hacking "
+                "case where the proxy diverges from the true metric and the "
+                "gap is measured rather than asserted, and the KL leash that "
+                "bounds it. Everything over A8's exact rationals; the judge is "
+                "the true preference order the world keeps. Author "
+                "reward-modeling-from-scratch; K4 is the LoRA and DPO half "
+                "this extends to the reward side."},
+        {"id": "K9", "title": "Agent & Prompt Optimization", "course": None,
+         "kind": "author", "prereq": ["C2", "C1", "A8"],
+         "why": "The optimizer loop around a multi-stage program, as "
+                "arithmetic a check can catch: a typed pipeline whose stages "
+                "are versioned artifacts (signature, demos, instructions) "
+                "with the compiled form as data, bootstrapped few-shot "
+                "selection scored by a held-out metric, the coordinate "
+                "ascent of MIPROv2 in miniature — propose instructions, "
+                "evaluate on minibatches, accept on the aggregate, refuse a "
+                "candidate the budget cannot pay for — reflective prompt "
+                "editors (the TextGrad/GEPA move: feedback as text that "
+                "names the failure before rewriting), and the decision the "
+                "whole loop serves: when the optimized prompt beats the "
+                "baseline on the held-out split by more than the noise "
+                "measure says, and when the honest answer is weights. "
+                "Deterministic: the proposal model is a provided candidate "
+                "table, not a sampled one. Author "
+                "agent-optimization-from-scratch; C2 is the agent the "
+                "pipeline wraps, C1 the harness the metric is held out "
+                "through, and A8 the engine the acceptance rule runs on."},
+    ]),
+    ("Q", "Mechanistic interpretability", [
+        {"id": "Q1", "title": "Mechanistic Interpretability",
+         "course": "mechinterp-from-scratch", "kind": "ready",
+         "prereq": ["A8", "A2"],
+         "why": "The transformer opened up, over a provided tiny trained "
+                "model whose internals are the answer key: linear probes on "
+                "each layer and the control task that catches a memorizing "
+                "probe, superposition and the interference between features "
+                "packed past capacity, logit lens and where the prediction "
+                "crystallizes, the induction head found by ablation and "
+                "patching (activation patching and path patching as two "
+                "granularities of the same intervention), a small circuit "
+                "mapped end to end with causal scrubbing as the strict test, "
+                "a toy SAE over one layer's activations with the dictionary "
+                "evaluated by sparsity and reconstruction, and steering by "
+                "adding a direction — with the check that the behaviour moved "
+                "and the task accuracy did not collapse. Deterministic and "
+                "in-process; A8 gives the autograd the SAE trains through. "
+                "Author mechinterp-from-scratch."},
+    ]),
+    ("R", "Architectures and reasoning", [
+        {"id": "R1", "title": "Hierarchical Sequences",
+         "course": "hierarchical-sequence-from-scratch", "kind": "ready",
+         "prereq": ["A2"],
+         "why": "Token resolution as the architecture's own decision, priced "
+                "and probed in exact arithmetic: the pooling cost ledger "
+                "(pool_len's ragged tail, quadratic attention work down to "
+                "1/16 and 15/16 at k=4), the S_k permutation invariance of "
+                "mean-pooling and the witness that is provably unrecoverable "
+                "from a pooled value, Hourglass's shift-by-(k-1) causality "
+                "law that makes a funnel autoregressive, BLT's entropy-threshold "
+                "patching and H-Net's learned boundary against the fixed strip, "
+                "and the BPE counterexample. The invariant, not the trained "
+                "funnel — the claims of the four papers stay cited reading."},
+        {"id": "R2", "title": "Recursive Depth (HRM/TRM)",
+         "course": "recursive-depth-from-scratch", "kind": "ready",
+         "prereq": ["C2"],
+         "why": "The two-timescale skeleton and the dispute, both checkable: "
+                "a coupled recurrence as exact fixed-point iteration on a "
+                "grid puzzle, halting iff the next state is byte-identical "
+                "(Kleene–Tarski on a monotone finite lattice), verified by "
+                "an independent constraint check — and then the ARC-AGI "
+                "dispute as graded stages: the single-rate ablation that "
+                "barely moves the score, the identity-conditioning collapse, "
+                "and the TRM paper's own fixed-point violation counted "
+                "exactly. What the skeleton does and does not claim."},
+        {"id": "R3", "title": "Library Learning (DreamCoder)",
+         "course": "library-learning-from-scratch", "kind": "ready",
+         "prereq": ["C2"],
+         "why": "The sleep phase as arithmetic: MDL-gated refactoring over a "
+                "corpus of exact symbolic programs — a generalized "
+                "subexpression promoted iff its version-space intersection is "
+                "non-empty, its utility ledger is positive, and promotion is "
+                "monotone (solved tasks stay solved, description length "
+                "strictly decreases); wake as bottom-up enumeration over a "
+                "rational-expression DSL, dream as deterministic "
+                "recombination, and Voyager's gate — only verifier-accepted "
+                "programs enter the library — which is this repo's own audit "
+                "rule reused."},
+        {"id": "R4", "title": "Causal Invariance (ICP)",
+         "course": "causal-invariance-from-scratch", "kind": "ready",
+         "prereq": ["A9"],
+         "why": "The whole method, exact: environments as integer tuples, "
+                "per-environment regression over Fractions, the exact "
+                "conditional permutation p-value over all C(n+m,n) label "
+                "assignments of pooled residuals, accept S iff p > alpha, "
+                "the answer the intersection of accepted S — plus the "
+                "over-acceptance case two environments cannot resolve, the "
+                "mechanism-shift table, and the null case. Nothing trained; "
+                "Schölkopf's causal-representation-learning stack is the "
+                "reading this course pins the floor of."},
     ]),
     ("L", "Programs that talk", [
         {"id": "L1", "title": "TCP/IP From Scratch",
@@ -1152,6 +1313,43 @@ PHASES = [
          "course": "llm-security-from-scratch", "kind": "ready", "prereq": ["J5", "A7", "O1"],
          "why": "Built: audit log analysis, anomaly detection, and NIST-aligned "
                 "incident response plans. J5 provides the log infrastructure, A7 provides SLO patterns."},
+        {"id": "O13", "title": "Privacy Gateway & Delegated Access", "course": None,
+         "kind": "author", "prereq": ["C2", "D1", "J2", "N4"],
+         "why": "The gateway between the agent and the world, as data a check "
+                "can read back: sensitive values tokenized before the context "
+                "window and restored after (deterministic masking, UUID "
+                "swapping, the pre-flight/post-flight proxy), per-agent least "
+                "privilege with scoped tool sets, then the identity half — "
+                "machine identities rather than user sessions: an OAuth2 "
+                "grant flow where the agent holds a heavily scoped, "
+                "time-limited token minted for one action class instead of "
+                "the user's credentials, the human-in-the-loop approval gate "
+                "that stops the flow at a person and journals the decision, "
+                "and the agent-to-agent trust boundary where one agent's "
+                "output becomes another's input and the sanitizer must run "
+                "on the seam. The audit line answers 'what did it touch'. "
+                "Author agent-privacy-from-scratch; J4 is the sandbox half, "
+                "D1 the protocol the tools speak, N4 the crypto the tokens "
+                "and MACs stand on."},
+        {"id": "O14", "title": "Grammar-Constrained Decoding",
+         "course": None, "kind": "author", "prereq": ["A2", "H2"],
+         "why": "Enforcement at the token level, where 'please don't' cannot "
+                "reach: a context-free grammar compiled to a mask such that "
+                "every decode step scores only the tokens the grammar "
+                "accepts — the mask as an intersection of the FSM state with "
+                "the vocabulary, computed per step and provably complete (no "
+                "valid continuation is ever masked), the JSON-schema subset "
+                "compiled to that grammar, regex constraints as the DFA "
+                "special case, the token-boundary problem where one token "
+                "straddles two grammar states and the correct answer is to "
+                "mask both halves or split the token, and the guarantees "
+                "measured rather than asserted: schema-validity of a thousand "
+                "constrained generations is exactly 1, the unconstrained "
+                "baseline's is the number that makes the constraint worth "
+                "its latency cost. Over A2's sampling loop and I3's "
+                "continuous batching, where the mask cost per step is the "
+                "budget line. Author grammar-decoding-from-scratch; H2 is "
+                "the serving stack the sampler lives in."},
     ]),
     ("P", "Linux device drivers", [
         {"id": "P1", "title": "Kernel Module Lifecycle",
@@ -1226,7 +1424,8 @@ PHASES = [
                 "machine that reads the chain and never trusts it. Author "
                 "dapp-from-scratch; N1 is the machine it runs on."},
         {"id": "N3", "title": "MuJoCo-Style Physics Engine",
-         "course": None, "kind": "author", "prereq": ["A8"],
+         "course": "physics-engine-from-scratch", "kind": "ready",
+         "prereq": ["A8"],
          "why": "A physics engine is a constraint solver wearing a scene "
                 "graph: rigid bodies with mass and inertia tensors, contact "
                 "detection as narrowphase over provided shapes, the contact "
@@ -1241,6 +1440,76 @@ PHASES = [
                 "finite-difference oracle at every parameter. Author "
                 "physics-engine-from-scratch; A8 is the engine that makes "
                 "the last stage possible."},
+        {"id": "N4", "title": "Cryptography From Scratch",
+         "course": None, "kind": "author", "prereq": ["G5"],
+         "why": "The number theory applied until it encrypts something, in "
+                "the repo's exact-arithmetic discipline (integers and "
+                "polynomial coefficients only, no float): modular "
+                "arithmetic and the extended Euclid that inverts in it, "
+                "primes as generated facts (trial division first, then the "
+                "Miller-Rabin witness that makes a composite name itself), "
+                "the Chinese Remainder Theorem as a speedup you can "
+                "measure, RSA from n = pq through the correctness proof "
+                "(m^(ed) = m mod n, derived not asserted) to the "
+                "textbook-RSA-is-broken list — deterministic padding or "
+                "refusal, with the provided RNG the only seeded source — "
+                "Diffie-Hellman over a safe prime and the discrete-log "
+                "table that shows why small p is a toy, then GF(2^8) as a "
+                "quotient ring: multiplication by the polynomial x^8 + x^4 "
+                "+ x^3 + x + 1, the AES S-box derived from the multiplicative "
+                "inverse rather than tabulated, and the MixColumns matrix "
+                "applied by hand. The provided keypair scheme and N1's "
+                "signatures are the consumers; the ungraded "
+                "cryptographic-library/ C port is the second language this "
+                "spec translates to. Author cryptography-from-scratch; G5 "
+                "is the compiler that could port it to C byte for byte."},
+        {"id": "N5", "title": "QR Codes & Error Correction",
+         "course": None, "kind": "author", "prereq": [],
+         "why": "Coding theory with a camera as the judge, over GF(2^8) "
+                "arithmetic a check can catch: the finite field built from "
+                "the QR primitive polynomial 0x11d and carried as log/antilog "
+                "tables, Reed-Solomon as polynomial evaluation — the message "
+                "is a polynomial, the codeword is its values, the parity is "
+                "the remainder of division by the generator — then the "
+                "syndrome decoder that turns corrupted bytes back into a "
+                "locator polynomial, Berlekamp-Massey as exact integer "
+                "work, and the erasure case QR actually uses (the reader "
+                "knows which modules are unreadable, and that halves the "
+                "correction budget honestly). On top of the math, the "
+                "spec: mode segments and byte capacity by version, the "
+                "Reed-Solomon block interleaving that spreads a smudge "
+                "across blocks, the eight masks scored by the penalty rules "
+                "and the best mask named by the score, format and version "
+                "information protected by their own BCH codes, and the "
+                "encoder whose output a real phone decodes — the one judge "
+                "outside the repo that is allowed. Author qr-codes-from-scratch."},
+        {"id": "N6", "title": "Graphics From Scratch",
+         "course": "rasterizer-from-scratch", "kind": "ready",
+         "prereq": [],
+         "why": "The rasterization pipeline with the pixel as the judge, in "
+                "the repo's exact-arithmetic discipline: a frame is a "
+                "lattice of integer pixels whose colours are exact "
+                "mixtures, and every stage's check compares the frame "
+                "pixel-for-pixel — 'this pixel is exactly red' beats any "
+                "image-diff tolerance. The ladder: lines by Bresenham's "
+                "integer error accumulation, polygons filled by integer "
+                "edge functions (the winding sign that is the whole "
+                "barycentric idea), triangles rasterized by exact "
+                "barycentric coordinates with tie-breaking the top-left "
+                "rule names, a z-buffer whose depth interpolation is exact "
+                "so a tie is decidable by ==, vertex transforms as exact "
+                "matrix-vector products (translate, scale, rotate by "
+                "integer cosine), viewport mapping with the off-by-one the "
+                "half-pixel centres carry, clipping by exact comparisons "
+                "against the frame's bounds, a painter-vs-z-buffer race "
+                "settled by depth order, texture sampling on a lattice "
+                "with nearest lookup and the seam the wrap rule chooses, "
+                "and the capstone options the GPU analogy completes: a "
+                "tiny ray tracer whose ray-sphere intersection is an "
+                "exact quadratic at lattice distances, or a matrix-stack "
+                "scene graph walking transforms the way G1's vGPU "
+                "executes them. Author rasterizer-from-scratch; N3's "
+                "physics supplies the geometry the camera watches."},
     ]),
 ]
 
@@ -1306,7 +1575,7 @@ def render_path(profile, courses, ink):
             else:
                 mark, note = ink("\u00b7", grey), ink("no checker yet", grey)
             prereq = ""
-            if item["prereq"]:
+            if item.get("prereq"):
                 prereq = ink("  after " + ", ".join(item["prereq"]), grey)
             label = f"{item['id']}  {item['title']}"
             lines.append(f"  {mark} {label:<34} {note}{prereq}")

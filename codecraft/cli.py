@@ -240,8 +240,12 @@ def cmd_run(profile, rest, ink, courses):
     return 0 if ran["failed"] == 0 else 1
 
 
+_PUBLISH_OFFLINE_HINT = False
+
+
 def _publish_attempt(profile, course, result) -> None:
     """Push one finished attempt to the live page, silently when it is not up."""
+    global _PUBLISH_OFFLINE_HINT
     endpoint = profile["config"].get("publish", "").rstrip("/")
     if not endpoint:
         return
@@ -262,7 +266,10 @@ def _publish_attempt(profile, course, result) -> None:
             if body.get("ok"):
                 print(f"\n  \033[90m→ live on {endpoint}\033[0m")
     except (urllib.error.URLError, OSError, ValueError):
-        pass        # no page listening; publishing is a bonus, never a failure
+        # diegoatencia.dev/forja is baked static; live toasts need local serve.
+        if not _PUBLISH_OFFLINE_HINT:
+            _PUBLISH_OFFLINE_HINT = True
+            print(f"\n  \033[90m→ page offline ({endpoint}) — run: forja web --open\033[0m")
 
 
 def cmd_publish(profile, rest, ink, courses):
@@ -840,7 +847,7 @@ def self_test() -> int:
     ok(all(g["levels"][p] < g["levels"][i]
            for i, pres in g["edges"].items() for p in pres),
        "every prereq sits in an earlier wave")
-    ok("A2" in dag.before("K5") and "K5" not in dag.before("K5"),
+    ok("A2" in dag.before("O13") and "O13" not in dag.before("O13"),
        "a row's closure is transitive and excludes itself")
     ok("H6" in dag.unlocks("J3"), "unlocks walks down the DAG")
     ok(all(other in g["edges"] for ac in g["advice"].values()
@@ -864,8 +871,8 @@ def self_test() -> int:
     ok(len(dag.track_of("J4", t)) == t["counts"]["J4"],
        "track_of agrees with the counters")
 
-    # priority Forja track: five courses, all loadable, smoke-green
-    ok(len(showcase.SLUGS) == 5, "showcase track has five courses")
+    # priority Forja track: six courses, all loadable, smoke-green
+    ok(len(showcase.SLUGS) == 6, "showcase track has six courses")
     for slug in showcase.SLUGS:
         course = manifests.load(slug)
         ok(course is not None, f"showcase course loads: {slug}")

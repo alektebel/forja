@@ -23,9 +23,30 @@ GREEN, RED, YELLOW, BLUE, MAGENTA, CYAN, GREY, BOLD, DIM, RESET = (
 FULL, EMPTY = "\u2588", "\u2591"
 SPARKLES = ["\u2726", "\u2727", "\u2735", "\u2736", "\u2737", "\u2738", "\u2739"]
 
+# CodeCrafters-shaped celebration mark — printed green on every stage land.
+FORJA_ASCII = r"""
+  █████╗  ██████╗ ██████╗      ██╗ █████╗
+ ██╔══██╗██╔═══██╗██╔══██╗     ██║██╔══██╗
+ ███████║██║   ██║██████╔╝     ██║███████║
+ ██╔══██║██║   ██║██╔══██╗██   ██║██╔══██║
+ ██║  ██║╚██████╔╝██║  ██║╚█████╔╝██║  ██║
+ ╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═╝ ╚════╝ ╚═╝  ╚═╝
+""".strip("\n")
+
+FORJA_ASCII_SMALL = r"""
+  █▀▀ █▀█ █▀█ ░░░█ ▄▀█
+  █▀  █▄█ █▀▄ █▄▄█ █▀█
+""".strip("\n")
+
 
 def _visible(text: str) -> int:
     return len(ANSI.sub("", text))
+
+
+def forja_banner(ink, big=False):
+    """Green ASCII `forja` — the pass moment CodeCrafters sells with colour."""
+    art = FORJA_ASCII if big else FORJA_ASCII_SMALL
+    return "\n".join(ink(line, GREEN) for line in art.splitlines())
 
 
 def box(lines, ink, colour="", min_width=0):
@@ -64,7 +85,7 @@ def stage_passed(ink, course_title, stage, file, title, passed, total,
     if first_try:
         body.append("   " + ink("first try \u2014 no hints", GREEN))
     body.append("   " + ink(progress_bar(passed, total), CYAN))
-    lines = box(body, ink, GREEN)
+    lines = [forja_banner(ink, big=False), ""] + box(body, ink, GREEN)
     if first_try:
         lines.append(sparkle(ink, n=5, seed=(stage, title)))
     return "\n".join(lines)
@@ -77,7 +98,10 @@ def course_complete(ink, course_title, total):
         f"      {ink(course_title, BOLD)}",
         f"      {ink(str(total) + '/' + str(total) + ' stages, built from scratch', GREY)}",
     ], ink, YELLOW, min_width=36)
-    return "\n".join(lines + [sparkle(ink, n=11), sparkle(ink, n=9, seed=7)])
+    return "\n".join(
+        [forja_banner(ink, big=True), ""]
+        + lines
+        + [sparkle(ink, n=11), sparkle(ink, n=9, seed=7)])
 
 
 def fail_header(ink, stage, file, title):

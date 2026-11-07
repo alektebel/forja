@@ -404,3 +404,8 @@ system-design/
 
 ### Computer Networks
 - [Computer Networks Courses](https://github.com/Developer-Y/cs-video-courses#computer-networks)
+
+### Maps & Communities
+- [roadmap.sh/backend](https://roadmap.sh/backend) — the community map of this territory; walk it *after* building to find the nodes your implementation skipped
+- [r/databasedevelopment](https://www.reddit.com/r/databasedevelopment/) — practitioners who *implement* databases, the altitude this course teaches at
+- more external sources catalogued in [`EXTERNAL-RESOURCES.md`](../EXTERNAL-RESOURCES.md)

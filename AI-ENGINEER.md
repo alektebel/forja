@@ -197,3 +197,9 @@ deterministic and offline, like J1–J5: nothing is timed, no network, no thread
 - **#15 (architecture teardown)** is not a build: it is the writing, and this
   repository does it in `ROADMAP.md`, `DISTRIBUTED.md` and every course's
   decision docstrings — the three deep-dives it asks for are the sections above.
+
+External second opinion: [Fanout's AI-engineering curriculum](https://fanout.sh/ai-engineering/overview)
+covers much of the same 25-problem territory (context budgets, semantic caching,
+model routing, speculative decoding, tracing) with the arithmetic shown — the
+lesson-level mirror of the lists above. Catalogued in
+[`EXTERNAL-RESOURCES.md`](EXTERNAL-RESOURCES.md).

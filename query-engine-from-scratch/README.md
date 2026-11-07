@@ -88,3 +88,7 @@ The provided world is pinned by digest:
 The ten stages are graded in order; the later ones compose the earlier ones (that is
 what the ladder law is for), and stage 6's executor is what stage 7 buffers, stage 8
 commits, stage 9 recovers, and stage 10 proves.
+
+Second opinion for after the stages: [r/databasedevelopment](https://www.reddit.com/r/databasedevelopment/)
+is where people who build storage engines and query planners argue about the exact
+mechanisms stages 6–10 implement — see [`EXTERNAL-RESOURCES.md`](../EXTERNAL-RESOURCES.md).

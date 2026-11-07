@@ -127,6 +127,11 @@ head once), and a fused kernel retires that number; `FLOP_MULT`'s 2x for
 fp8, int8 and int4 against fp16 is the tensor-core claim the dtype rows are
 measured to, and int4 computing at the int8 peak is the one the world pins.
 
+For the vocabulary behind `eff_compute`, `bw_bytes_per_ns` and the roofline's
+two walls — compute-bound, memory-bound, arithmetic intensity, memory
+bandwidth, tensor cores — [Modal's GPU Glossary](https://modal.com/gpu-glossary/readme/)
+is the cross-linked reference this course's cost model silently assumes.
+
 ## Running it
 
     python3 codecraft/cli.py run transformer-inference-physics

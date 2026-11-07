@@ -190,3 +190,6 @@ Pure Python 3 standard library. Everything runs in about a second.
 - [`dynamo-paper/`](../dynamo-paper/) — the store this one operates
 - [`context-caching/`](../context-caching/) — the serving mechanisms this one sizes
 - [`system-design/`](../system-design/) — circuit breakers, backpressure, rate limiting
+- [`EXTERNAL-RESOURCES.md`](../EXTERNAL-RESOURCES.md) — roadmap.sh/devops (the
+  map of this territory), r/devops (the incident war stories), Edureka's DevOps
+  interview banks (the vocabulary an interviewer expects)

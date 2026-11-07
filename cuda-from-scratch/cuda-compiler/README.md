@@ -220,6 +220,9 @@ BB_end_0:
 - [PTX ISA Reference](https://docs.nvidia.com/cuda/parallel-thread-execution/)
 - [CUDA Programming Guide](https://docs.nvidia.com/cuda/cuda-c-programming-guide/)
 - [Godbolt Compiler Explorer](https://godbolt.org/) – see real nvcc PTX output
+- [Modal's GPU Glossary](https://modal.com/gpu-glossary/readme/) — SASS, PTX, compute
+  capability, and the nvcc/NVRTC pages sit directly under this compiler's output; the
+  same glossary's device-hardware layer explains the machine the PTX runs on
 
 ## Implementation Notes
 

@@ -268,3 +268,11 @@ No dependencies beyond the Python 3 standard library.
   instinct, applied to distributed storage
 - [`contextcite/`](../contextcite/) — a different "context" problem despite the name:
   explaining which parts of a context caused a response, rather than caching it
+- [Modal's GPU Glossary](https://modal.com/gpu-glossary/readme/) — the hardware
+  half of the `KV bytes = 2 × layers × heads × head_dim × seq_len × dtype_size`
+  formula: what GPU RAM, the memory hierarchy and memory bandwidth physically are,
+  i.e. what the paged-block row of the taxonomy is spending
+- [Fanout's AI-engineering posts](https://fanout.sh/ai-engineering/overview) — the
+  closest external second opinion: KV-cache sizing, prefix-cache miss attribution and
+  FP8 tradeoffs done as arithmetic, in blog form (catalogued in
+  [`EXTERNAL-RESOURCES.md`](../EXTERNAL-RESOURCES.md))

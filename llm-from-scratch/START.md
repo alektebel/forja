@@ -1,8 +1,8 @@
 # LLM From Scratch
 
-The five forward-pass mechanisms of a language model in plain Python: BPE, attention, sampling, the KV cache, RoPE.
+The forward-pass mechanisms of a language model in plain Python (BPE, attention, sampling, the KV cache, RoPE), the modern architectures built on them (MoE, GQA, MLA, SSMs, diffusion, TTT, Titans, MoD), and the distributed-training machinery (tensor/ZeRO/pipeline/expert parallelism, mixed precision, FlashAttention, checkpointing).
 
-**13 stages.** Code in your editor. Run tests locally. No toy IDE.
+**30 stages.** Code in your editor. Run tests locally. No toy IDE.
 
 ## Stage 0 — smoke (under 30 seconds)
 

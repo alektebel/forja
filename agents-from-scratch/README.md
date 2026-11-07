@@ -177,3 +177,19 @@ Deliberately left out, so you know the boundary:
 - **The trace is not a replay.** It is the summary an audit and a CI diff read;
   re-running a recorded model against a changed toolbox is the harness course's
   subject.
+
+Second opinion for after the stages: Harvard's [CS2680](https://cs2680.com/) runs
+the same arc with a real model — use a coding agent (Mads-Lens), build the loop
+around an API (Mads-Loop, the closest mirror of this course), then optimise tokens,
+serve the model yourself and profile the full stack. Its
+[cost-effective-agents note](https://cs2680.com/notes/cost-effective-agents.html) is
+the best external treatment of what this course deliberately leaves out: pricing the
+whole episode, not just the model calls. Catalogued in
+[`EXTERNAL-RESOURCES.md`](../EXTERNAL-RESOURCES.md).
+
+On hierarchical agents (a planner delegating to workers): the pattern is
+orchestration, not architecture, and the two canonical counterweights are
+Anthropic's [multi-agent research system](https://www.anthropic.com/engineering/multi-agent-research-system)
+(how to make it work) and Cognition's [Don't Build Multi-Agents](https://cognition.com/blog/dont-build-multi-agents)
+(why single-agent context engineering usually wins). Both belong in the same
+breath as CS2680 above — read the pair and argue with them.

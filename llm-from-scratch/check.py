@@ -280,6 +280,350 @@ def check_rope_invariants() -> None:
         "behaviour will degrade in a way short tests never reveal.")
 
 
+# ---------------------------------------------------------------------------
+# Modern architectures
+# ---------------------------------------------------------------------------
+
+def check_moe_routing() -> None:
+    from architectures import expert_loads, moe_forward, router_scores
+
+    experts = [[1.0, 0.0], [0.0, 1.0], [0.9, 0.9]]
+    token = [1.0, 0.2]
+    scores = router_scores(token, experts)
+    assert scores[0] == 1.0 and scores[1] == 0.2, f"router logits: {scores}"
+
+    out = moe_forward(token, experts, top_k=1)
+    assert out == experts[2], (
+        f"top-1 MoE must return the argmax expert unchanged; got {out}")
+
+    out2 = moe_forward(token, experts, top_k=2)
+    assert abs(out2[0] - 0.9480010659844419) < 1e-9, (
+        "top-2 must blend the two best experts (2 then 0), renormalised "
+        f"over the chosen ones; got {out2}")
+
+    loads = expert_loads([[1.0, 0.0], [0.0, 1.0]], experts, top_k=1)
+    assert loads[0] == 1 and loads[1] == 1 and loads[2] == 0, (
+        f"loads must count routing decisions per expert: {loads}")
+
+
+def check_gqa() -> None:
+    from architectures import gqa_reshape, gqa_kv_cache_ratio, gqa_shared_kv
+
+    heads = [[1.0], [2.0], [3.0], [4.0]]
+    groups = gqa_reshape(heads, 2)
+    assert groups == [[[1.0], [2.0]], [[3.0], [4.0]]], (
+        "groups must keep heads in order, contiguous")
+
+    shared = gqa_shared_kv([[1.0], [2.0]], 4)
+    assert shared == [[1.0], [2.0], [1.0], [2.0]], (
+        "each query head must map to a KV head, cycling when q > kv")
+
+    ratio = gqa_kv_cache_ratio(32, 8)
+    assert abs(ratio - 0.25) < 1e-12, (
+        f"8 KV heads for 32 query heads is a quarter of the cache: {ratio}")
+
+
+def check_mla() -> None:
+    from architectures import mla_cache_size, mla_roundtrip_error
+
+    kv = [0.5 * ((i % 5) - 2) for i in range(16)]
+    big = mla_roundtrip_error(kv, 16, 0)
+    assert big < 1e-9, (
+        f"a full-size latent must reconstruct exactly, got error {big:.2e}")
+
+    small = mla_roundtrip_error(kv, 4, 0)
+    assert small > 1e-3, (
+        f"a 4-dim latent of 16 dims must lose information, got error {small:.2e}")
+
+    assert mla_cache_size(32, 4, 100) == 400, (
+        "MLA caches the latent per token, not the full KV")
+
+
+def check_ssm() -> None:
+    from architectures import ssm_forgets, ssm_scan, ssm_step
+
+    state, y = ssm_step([0.0, 0.0], 1.0, [-1.0, -2.0], 1.0, 1.0, 1.0)
+    assert abs(state[0] - 1.0) < 1e-12, (
+        "h' = exp(delta*A)*h + delta*B*x; from rest, h' = delta*B*x = 1.0")
+    assert abs(y - (state[0] + state[1])) < 1e-12, "output is C dot h'"
+
+    ys = ssm_scan([1.0, 0.0, 0.0], [1.0, 1.0, 1.0], [-1.0])
+    assert ys[0] > ys[1] > ys[2] > 0.0, (
+        "an impulse must decay through the recurrence")
+
+    factor = ssm_forgets([-1.0], 0.01, 100)
+    assert abs(factor - math.exp(-1.0)) < 1e-9, (
+        "exp(delta*A) compounds per step: the memory horizon is 1/(delta*|A|)")
+
+
+def check_diffusion() -> None:
+    from architectures import MASK_ID, denoise_step, diffusion_rounds, mask_tokens
+    from random import Random
+
+    ids = [1, 2, 3, 4, 5, 6, 7, 8]
+    masked = mask_tokens(ids, 0.5, Random(0))
+    assert all(t in ids or t == MASK_ID for t in masked), (
+        "masking replaces ids with MASK_ID, nothing else")
+    again = mask_tokens(ids, 0.5, Random(0))
+    assert masked == again, "same seed must give the same mask"
+
+    noisy = [MASK_ID, 3, MASK_ID, 5]
+    out = denoise_step(noisy, [2, 0, 4, 0], [0.9, 0.0, 0.8, 0.0], 1)
+    assert out == [2, 3, MASK_ID, 5], (
+        "only the most confident MASKED position unmasks this step")
+
+    assert diffusion_rounds(10, 4) == 3, "round up: 4 + 4 + 2"
+
+
+def check_ttt() -> None:
+    from architectures import ttt_forgets_context, ttt_predict, ttt_train, ttt_update
+
+    w = ttt_update([0.0], [1.0], 1.0, 0.1)
+    assert abs(w[0] - 0.2) < 1e-12, "one gradient step: w + 2*lr*(target - w.x)*x"
+
+    trained = ttt_train([0.0, 0.0], [[1.0, 0.0], [0.0, 1.0]], [1.0, 2.0], 0.5)
+    assert trained[0] > 0.0 and trained[1] > 0.0, (
+        "training must move weights toward the targets")
+
+    err = ttt_forgets_context([0.0, 0.0],
+                              [[1.0, 0.0], [0.0, 1.0], [1.0, 1.0], [2.0, 1.0]],
+                              [1.0, 2.0, 4.0, 6.0], 0.5)
+    assert err > 1e-6, (
+        "TTT overwrites: after later tokens, the first token's fit degrades — "
+        f"error {err:.4f} should be substantial")
+
+    _ = ttt_predict([1.0, 2.0], [0.5, 0.5])
+
+
+def check_titans() -> None:
+    from architectures import (titans_admits_past_window, titans_persistent_vs_episodic,
+                               titans_update)
+
+    m0 = [0.0]
+    m1 = titans_update(m0, [1.0], 1.0, 0.1, 0.0, [0.0])
+    assert abs(m1[0] - 0.1 * 1.0 * 0.9) < 1e-12, (
+        "memory += lr*surprise*x, then 10% weight decay")
+
+    m2 = titans_update(m0, [1.0], 1.0, 0.1, 0.9, [0.5])
+    assert m2[0] > m1[0], "momentum carries the previous update forward"
+
+    persistent, episodic = titans_persistent_vs_episodic([1.0], [1.0], [0.0])
+    assert persistent > episodic, (
+        "the frozen persistent memory and the updatable episodic one score separately")
+
+    assert titans_admits_past_window([0.0] * 10, 4) == 4, (
+        "momentum keeps the last `window` tokens alive in the memory")
+
+
+def check_mod() -> None:
+    from architectures import mod_flops_saved, mod_layer, router_topk
+
+    rows = [[3.0, 3.0], [0.0, 0.0], [1.0, 1.0]]
+    chosen = router_topk(rows, 2)
+    assert chosen == [True, False, True], (
+        f"top-2 by score, ties by lower index: {chosen}")
+
+    ident = [[1.0, 0.0], [0.0, 1.0]]
+    out = mod_layer(rows, 2, ident)
+    assert out[1] == [0.0, 0.0], (
+        "unrouted positions pass through UNCHANGED — that is the whole trick")
+    assert out[0] == [3.0, 3.0], "routed positions go through the layer"
+
+    assert mod_flops_saved(8, 4, 2) == 24, (
+        "skipped positions never pay: (rows - capacity) * d")
+
+
+# ---------------------------------------------------------------------------
+# Distributed training
+# ---------------------------------------------------------------------------
+
+def check_tp() -> None:
+    from parallelism import (all_reduce, column_parallel_matmul, column_shard,
+                             row_parallel_matmul, row_shard)
+
+    w = [[1.0, 2.0, 3.0, 4.0], [5.0, 6.0, 7.0, 8.0]]
+    x = [1.0, -1.0]
+
+    shards = column_shard(w, 2)
+    assert len(shards) == 2 and len(shards[0][0]) == 2, (
+        "column shards keep all rows, half the columns each")
+
+    partials = [column_parallel_matmul(x, s) for s in shards]
+    expected = [sum(x[r] * w[r][c] for r in range(len(x))) for c in range(len(w[0]))]
+    assert partials[0] + partials[1] == expected, (
+        "column-parallel outputs CONCATENATE — no all-reduce on this path")
+
+    rshards = row_shard(w, 2)
+    assert len(rshards[0]) == 1, "row shards split the rows"
+    x_shards = [x[0:1], x[1:2]]
+    rpartials = [row_parallel_matmul(x_shards[s], rshards[s]) for s in range(2)]
+    row_result = all_reduce(rpartials)
+    assert row_result == expected, (
+        f"row-parallel partials must sum to the same result: {row_result}")
+
+
+def check_zero() -> None:
+    from parallelism import all_gather_shards, param_footprint, zero_partition_footprint
+
+    assert param_footprint(1_000_000) == 4_000_000, (
+        "Adam holds weights + grads + two moments")
+    assert param_footprint(1_000_000, "sgd") == 2_000_000, (
+        "SGD holds weights + grads only")
+
+    full = param_footprint(1_000_000)
+    s1 = zero_partition_footprint(1_000_000, 4, 1)
+    s3 = zero_partition_footprint(1_000_000, 4, 3)
+    assert full > s1 > s3 > 0, (
+        f"each stage must shard more state: {full} > {s1} > {s3}")
+    assert s3 == full // 4, "ZeRO-3 partitions everything: exactly a quarter"
+
+    gathered = all_gather_shards([[1.0], [2.0], [3.0], [4.0]])
+    assert gathered == [1.0, 2.0, 3.0, 4.0], "all-gather reassembles in worker order"
+
+
+def check_pipeline() -> None:
+    from parallelism import bubble_fraction, microbatch_timeline, pipeline_stages
+
+    stages = pipeline_stages(5, 2)
+    assert stages == [[0, 1, 2], [3, 4]], (
+        "stages take consecutive layers, the remainder spread from the front")
+
+    timeline = microbatch_timeline(1, 2, 3)
+    first = timeline[0][0]
+    assert first == 0, "step 0: only stage 0 has work"
+    assert timeline[1] == [1, 0], (
+        f"the staircase: stage 1 runs microbatch 0 one step later: {timeline[1]}")
+
+    frac = bubble_fraction(4, 8)
+    assert abs(frac - 3 / 11) < 1e-12, (
+        "bubble = (stages - 1) / (stages - 1 + microbatches); more microbatches shrink it")
+
+
+def check_amp() -> None:
+    from parallelism import fp16_overflows_sum, fp32_master_step, loss_scale_step, to_fp16
+
+    assert to_fp16(1.0) == 1.0, "exactly representable values round-trip"
+    assert to_fp16(1.0 + 2 ** -11) == 1.0, (
+        "half precision has 10 mantissa bits; halfway ties round to even (1.0)")
+    assert to_fp16(1.0 + 2 ** -10 + 2 ** -11) > 1.0, (
+        "just past halfway must step up to the next mantissa value")
+
+    assert fp16_overflows_sum([60000.0, 60000.0]), "120000 exceeds 65504"
+    assert not fp16_overflows_sum([100.0, 100.0])
+
+    w = fp32_master_step([1.0], [0.25], 0.1)
+    assert abs(w[0] - (1.0 - 0.025)) < 1e-12, (
+        "grads are fp16-rounded, the update lands on fp32 master weights")
+
+    descaled = loss_scale_step([16000.0], 1000.0)
+    assert abs(descaled[0] - 16.0) < 1e-12, (
+        "scaled grads are divided back down before the optimizer applies them")
+
+
+def check_flash() -> None:
+    from parallelism import flash_memory, flash_tiled_attention, naive_attention
+
+    q = [[1.0, 0.0], [0.5, 0.5], [0.1, 0.2], [-0.3, 0.7]]
+    k = [[1.0, 0.0], [0.0, 1.0], [0.3, 0.3], [0.9, -0.2]]
+    v = [[1.0, 2.0], [3.0, 4.0], [5.0, 6.0], [7.0, 8.0]]
+
+    got = flash_tiled_attention(q, k, v)
+    want = naive_attention(q, k, v)
+    err = max(abs(p - r) for ra, rb in zip(got, want) for p, r in zip(ra, rb))
+    assert err < 1e-9, (
+        f"tiled attention with a running max must equal the naive path: err {err:.2e}")
+
+    assert flash_memory(512, 64) == 512 * 512, (
+        "the naive path materialises t*t scores; the tiled path never does")
+
+
+def check_checkpointing() -> None:
+    from parallelism import (forward_block, forward_checkpoint, forward_eager,
+                             peak_activation_memory)
+
+    blocks = [[[1.0, 0.5], [0.0, 1.0]], [[0.5, 0.5], [1.0, 0.0]],
+              [[1.0, 1.0], [0.5, 0.5]], [[0.0, 1.0], [1.0, 0.5]]]
+    xs = [[0.3, -0.2], [0.9, 0.1]]
+
+    final, acts = forward_checkpoint(xs, blocks, 2)
+    expected = forward_eager(xs, blocks)
+    assert len(acts) == len(expected), (
+        f"recomputation must produce every intermediate: {len(acts)} vs {len(expected)}")
+    err = max(abs(p - r) for ra, rb in zip(acts, expected)
+              for p, r in zip(ra, rb))
+    assert err < 1e-12, f"checkpointed activations must match eager exactly: {err:.2e}"
+
+    probe = [forward_block(row, blocks[0]) for row in xs]
+    assert all(abs(p - q) < 1e-12 for a, b in zip(probe, expected[len(xs):len(xs) + 2])
+               for p, q in zip(a, b)), "first block output is tanh(affine(x))"
+
+    eager_mem = (len(xs) + len(blocks)) * len(xs) * len(xs[0])
+    ckpt_mem = peak_activation_memory(len(xs), len(xs[0]), len(blocks), 2)
+    assert ckpt_mem < eager_mem, (
+        f"checkpointing must keep less than eager: {ckpt_mem} vs {eager_mem}")
+
+
+def check_sp() -> None:
+    from parallelism import layernorm_local, layernorm_sequence_parallel, scatter_sequence
+
+    xs = [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0], [-1.0, 0.0, 1.0]]
+    shards = scatter_sequence(xs, 2)
+    assert len(shards) == 2 and len(shards[0]) + len(shards[1]) == len(xs), (
+        "sequence shards partition the rows")
+
+    sp = layernorm_sequence_parallel(xs, 2)
+    local = layernorm_local(xs)
+    err = max(abs(p - r) for ra, rb in zip(sp, local) for p, r in zip(ra, rb))
+    assert err < 1e-12, (
+        f"sequence-parallel LayerNorm must match single-worker exactly: {err:.2e}")
+
+
+def check_cp() -> None:
+    from parallelism import (context_partition_kv, context_parallel_work,
+                             ring_attention_step, ring_steps)
+
+    assert ring_steps(4) == 4, "n-1 pushes plus the local pass"
+
+    keys = [[float(i)] for i in range(8)]
+    vals = [[float(i * 10)] for i in range(8)]
+    k0, v0 = context_partition_kv(keys, vals, 0, 4)
+    k3, v3 = context_partition_kv(keys, vals, 3, 4)
+    assert k0[0] == [0.0] and k3[0] == [6.0], (
+        "worker w holds its contiguous chunk of the sequence")
+    assert len(k0) == 2 and len(k3) == 2
+
+    q = [[1.0]]
+    rmax = [-math.inf]
+    rden = [0.0]
+    rout = [[0.0]]
+    rmax, rden, rout = ring_attention_step(q, 0, k0, v0, 0, rmax, rden, rout)
+    rmax, rden, rout = ring_attention_step(q, 0, [[3.0]], [[30.0]], 4, rmax, rden, rout)
+    assert abs(rden[0] - 1.0) < 1e-9, (
+        "only key 0 is unmasked for query 0: the denominator is exactly its weight")
+    assert abs(rout[0][0] - 0.0) < 1e-9, (
+        "query 0 attends only to itself: output equals v[0] = 0.0")
+
+    total = context_parallel_work(64, 4, 4)
+    assert total == 4 * 16 * 64, "each worker scores its chunk against ALL keys"
+
+
+def check_ep() -> None:
+    from parallelism import combine_outputs, dispatch_tokens, ep_footprint, expert_worker
+
+    assert expert_worker(5, 2) == 1, "expert e lives on worker e % workers"
+
+    dispatch = dispatch_tokens([0, 1, 2, 0], 4, 2)
+    assert dispatch == [[0, 2, 3], [1]], (
+        f"tokens grouped by their expert's worker (e % 2), indices ascending: {dispatch}")
+
+    out = combine_outputs([10.0, 20.0], [0, 3], 4)
+    assert out == [10.0, 0.0, 0.0, 20.0], (
+        "the all-to-all return trip scatters results back to token order")
+
+    assert ep_footprint(64, 1000, 8) == 8000, (
+        "experts partitioned across workers: n_experts / n_workers each")
+
+
 CHECKS: List[Tuple[str, str, Callable[[], None]]] = [
     ("tokenizer.py", "pair counts and non-overlapping merges", check_bpe_pairs),
     ("tokenizer.py", "deterministic training and compression", check_bpe_training),
@@ -294,6 +638,23 @@ CHECKS: List[Tuple[str, str, Callable[[], None]]] = [
     ("kv_cache.py", "cached output is bit-exact", check_kv_cache_exactness),
     ("kv_cache.py", "the cost model: linear vs quadratic", check_kv_cache_cost),
     ("rope.py", "norm and relative-position invariants", check_rope_invariants),
+    ("architectures.py", "MoE: routing and expert loads", check_moe_routing),
+    ("architectures.py", "GQA: shared KV heads", check_gqa),
+    ("architectures.py", "MLA: latent compression", check_mla),
+    ("architectures.py", "SSM: selective recurrence", check_ssm),
+    ("architectures.py", "diffusion: mask and denoise", check_diffusion),
+    ("architectures.py", "TTT: inner-loop learning", check_ttt),
+    ("architectures.py", "Titans: neural memory", check_titans),
+    ("architectures.py", "MoD: routed capacity", check_mod),
+    ("parallelism.py", "tensor parallelism", check_tp),
+    ("parallelism.py", "ZeRO model-state sharding", check_zero),
+    ("parallelism.py", "GPipe microbatching", check_pipeline),
+    ("parallelism.py", "mixed precision", check_amp),
+    ("parallelism.py", "FlashAttention tiling", check_flash),
+    ("parallelism.py", "activation checkpointing", check_checkpointing),
+    ("parallelism.py", "sequence parallelism", check_sp),
+    ("parallelism.py", "context parallelism", check_cp),
+    ("parallelism.py", "expert parallelism", check_ep),
 ]
 
 

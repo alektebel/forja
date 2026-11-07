@@ -389,6 +389,15 @@ Input (784) → FC(128) → ReLU → FC(64) → ReLU → FC(10) → Softmax
 - [CUDA Best Practices Guide](https://docs.nvidia.com/cuda/cuda-c-best-practices-guide/)
 - [CUDA Toolkit Documentation](https://docs.nvidia.com/cuda/)
 
+**Glossaries**:
+- [Modal's GPU Glossary](https://modal.com/gpu-glossary/readme/) — the CUDA stack in one
+  hypertext: streaming multiprocessors and tensor cores (device hardware), warps, kernels,
+  PTX/SASS and the memory hierarchy (device software), `nvcc`, `nvidia-smi`, CUPTI/Nsight
+  and cuBLAS/CUTLASS (host software), and a Performance section — roofline model,
+  compute-bound vs memory-bound, arithmetic intensity, occupancy, warp divergence, memory
+  coalescing and bank conflicts — that maps one-to-one onto this repo's kernels and
+  profilers. Cross-linked throughout, unlike a PDF.
+
 **Books**:
 - "Programming Massively Parallel Processors" by Kirk & Hwu
 - "CUDA by Example" by Sanders & Kandrot

@@ -675,6 +675,13 @@ Your implementation should achieve:
 - [FlashAttention](https://github.com/Dao-AILab/flash-attention)
 - [NCCL Documentation](https://docs.nvidia.com/deeplearning/nccl/)
 
+### The Hardware Beneath
+- [Modal's GPU Glossary](https://modal.com/gpu-glossary/readme/) — PagedAttention's
+  block tables and FlashAttention's SRAM tiling both argue about one resource: GPU RAM
+  and the memory hierarchy it sits in. The glossary's Device Hardware pages (HBM,
+  L2, shared memory) and Performance pages (memory bandwidth, arithmetic intensity,
+  the roofline model) are the ground truth the policies in this course schedule against.
+
 ### Related Projects
 - [vLLM](https://github.com/vllm-project/vllm) - Original vLLM
 - [TensorRT-LLM](https://github.com/NVIDIA/TensorRT-LLM) - NVIDIA's LLM engine
