@@ -4,11 +4,11 @@
 
 ## Context
 
-An IAM request starts denied until a policy grants it.
+A request with no policies has no Allow statement, so IAM denies it by default. The supplied Decision class takes an allowed boolean and a reason string.
 
 ## Your task
 
-In iam.py, replace the raise in evaluate() with an implicit-deny Decision when policies is empty. One return statement is enough.
+In iam.py, replace the raise in evaluate() with one return statement: Decision(False, "implicit deny"). The stage-1 checker calls evaluate with an empty policies list; matching statements comes in stage 2.
 
 ## Predict
 
