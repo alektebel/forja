@@ -83,6 +83,7 @@ def load(name: str):
                 "predict": meta.get("predict", ""),
                 "context": meta.get("context", ""),
                 "task": meta.get("task", ""),
+                "example": meta.get("example", ""),
                 "target": meta.get("target", ""),
                 "optional": meta.get("optional", False),
                 "hints": [], "solution": "",

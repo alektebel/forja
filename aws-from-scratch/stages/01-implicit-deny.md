@@ -8,7 +8,13 @@ A request with no policies has no Allow statement, so IAM denies it by default. 
 
 ## Your task
 
-In iam.py, replace the raise in evaluate() with one return statement: Decision(False, "implicit deny"). The stage-1 checker calls evaluate with an empty policies list; matching statements comes in stage 2.
+In iam.py, find evaluate() and replace its raise NotImplementedError with the return statement below. The stage-1 checker passes an empty policies list. You will handle matching statements in stage 2.
+
+## Example edit
+
+```python
+return Decision(False, "implicit deny")
+```
 
 ## Predict
 

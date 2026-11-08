@@ -104,6 +104,10 @@ def _render_micro_stage(course: dict, stage_id: int, meta: dict) -> str:
         "",
         meta["task"],
         "",
+    ]
+    if meta.get("example"):
+        lines.extend(["## Example edit", "", "```python", meta["example"], "```", ""])
+    lines.extend([
         "## Predict",
         "",
         f"> {meta['predict']}",
@@ -114,7 +118,7 @@ def _render_micro_stage(course: dict, stage_id: int, meta: dict) -> str:
         f"forja test {course['name']} --stage {stage_id}",
         "```",
         "",
-    ]
+    ])
     if stage_id < len(course["stages"]):
         lines.extend([f"Next: `forja stage {course['name']} {stage_id + 1}`", ""])
     else:
@@ -127,16 +131,21 @@ def render_start(course: dict) -> str:
     n = len(course["stages"])
     first = course["stages"][min(course["stages"])]
     if first.get("task"):
-        return "\n".join([
+        lines = [
             f"# {course['title']}", "", course.get("description") or "", "",
             f"**{n} short stages.** Build one behavior at a time in your editor.", "",
             "## Check the setup", "", "```bash",
             f"forja smoke {course['name']}", "```", "",
             "## Your first stage", "", first["context"], "", first["task"], "",
+        ]
+        if first.get("example"):
+            lines.extend(["```python", first["example"], "```", ""])
+        lines.extend([
             "Predict: " + first["predict"], "", "```bash",
             f"forja guide {course['name']} 1",
             f"forja test {course['name']} --stage 1", "```", "",
         ])
+        return "\n".join(lines)
     return "\n".join([
         f"# {course['title']}",
         "",

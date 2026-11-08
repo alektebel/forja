@@ -130,6 +130,7 @@ def _item_view(item, course, checks, repo, dir_exists=False) -> dict:
                 "status": row.get("status", "TODO"),
                 "action": meta.get("action", ""), "why": meta.get("why", ""),
                 "predict": meta.get("predict", ""),
+                "example": meta.get("example", ""),
             })
 
     return {
