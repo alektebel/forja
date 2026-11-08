@@ -14,15 +14,18 @@ Nothing here writes `profile.json` or `history.jsonl`; runs are not recorded.
 """
 
 import argparse
+import ast
 import datetime
 import http.server
+import importlib.util
 import json
 import os
 import sys
 import threading
 import time
+import traceback
 import webbrowser
-from urllib.parse import urlparse
+from urllib.parse import parse_qs, urlparse
 
 if __package__ in (None, ""):
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -95,6 +98,145 @@ def recent_events(limit: int = 20) -> list:
         return list(_events[-limit:])
 
 
+def _course(course_name: str) -> dict:
+    courses = {c["name"]: c for c in manifests.discover()}
+    course = courses.get(course_name)
+    if course is None:
+        raise KeyError(f"unknown course: {course_name}")
+    return course
+
+
+def _stage(course: dict, stage: int) -> dict:
+    if stage not in course["stages"]:
+        ids = sorted(course["stages"])
+        have = f"{ids[0]}..{ids[-1]}" if ids else "none"
+        raise ValueError(f"{course['name']} has stages {have} — no stage {stage}")
+    return course["stages"][stage]
+
+
+def _target_ranges(text: str, target: str) -> list:
+    """Line ranges for the function(s) `target` names.
+
+    `lessons.json` uses both plain names (`evaluate`) and dotted methods
+    (`S3.put_object`, `S3.put_object / S3.get_object`). The ranges let the
+    page point at the exact function a stage asks the learner to edit.
+    """
+    try:
+        tree = ast.parse(text)
+    except SyntaxError:
+        return []
+    ranges = []
+    for raw in target.split("/"):
+        parts = [part.strip() for part in raw.split(".") if part.strip()]
+        if not parts:
+            continue
+        node = next(
+            (child for child in tree.body
+             if isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef))
+             and child.name == parts[0]), None)
+        if node is None:
+            continue
+        if len(parts) > 1:
+            node = next(
+                (child for child in getattr(node, "body", [])
+                 if isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef))
+                 and child.name == parts[1]), None)
+        if node is None:
+            continue
+        ranges.append([node.lineno, node.end_lineno or node.lineno])
+    return ranges
+
+
+def stage_source(course: dict, stage: int):
+    """The stage's source file, with the target function's line ranges.
+
+    Only `lessons.json` stages carry a `target`; authored courses and courses
+    without a code-editing target return None, so the source panel stays
+    hidden instead of pretending the whole file is one requirement.
+    """
+    meta = _stage(course, stage)
+    filename = meta.get("file") or ""
+    target = meta.get("target") or ""
+    if not filename or not target:
+        return None
+    root = os.path.abspath(course["dir"])
+    path = os.path.abspath(os.path.join(root, filename))
+    try:
+        if os.path.commonpath([path, root]) != root:
+            return None
+    except ValueError:
+        return None
+    if not os.path.isfile(path):
+        return None
+    try:
+        with open(path, encoding="utf-8", errors="replace") as fh:
+            text = fh.read()
+    except OSError:
+        return None
+    return {
+        "file": filename,
+        "target": target,
+        "lines": text.splitlines(),
+        "ranges": _target_ranges(text, target),
+        "failure_line": None,
+        "failure_kind": None,
+    }
+
+
+def _check_failure_line(course: dict, stage: int, source_path: str):
+    """Run one stage check in-process to locate the line it stopped at.
+
+    The subprocess runner only names a source line for ERROR; a FAIL is an
+    assertion inside `stage_checks.py`. This second pass traces the stage file
+    so a failed behavioural check can still point at the return the learner
+    wrote. It is analysis for the page, not the graded result.
+    """
+    check_path = os.path.join(course["dir"], "stage_checks.py")
+    if not os.path.isfile(check_path):
+        return None, None
+    spec = importlib.util.spec_from_file_location(
+        "codecraft_stage_checks_%s" % course["name"].replace("-", "_"), check_path)
+    if spec is None or spec.loader is None:
+        return None, None
+    module = importlib.util.module_from_spec(spec)
+    root = os.path.abspath(course["dir"])
+    inserted = root not in sys.path
+    if inserted:
+        sys.path.insert(0, root)
+    traced = []
+    old_trace = sys.gettrace()
+
+    def tracer(frame, event, arg):
+        if event == "line" and os.path.abspath(frame.f_code.co_filename) == source_path:
+            traced.append(frame.f_lineno)
+        return tracer
+
+    try:
+        spec.loader.exec_module(module)
+        checks = getattr(module, "CHECKS", [])
+        if stage > len(checks):
+            return None, None
+        sys.settrace(tracer)
+        try:
+            checks[stage - 1]()
+        except BaseException as exc:  # noqa: BLE001 - analysis must not mask the result
+            for frame in reversed(traceback.extract_tb(exc.__traceback__)):
+                if os.path.abspath(frame.filename) == source_path:
+                    return frame.lineno, "stop"
+            if traced:
+                return traced[-1], "last"
+        return None, None
+    except Exception:  # noqa: BLE001 - an optional annotation must not fail the run
+        return None, None
+    finally:
+        sys.settrace(old_trace)
+        if inserted:
+            try:
+                sys.path.remove(root)
+            except ValueError:
+                pass
+
+
 def run_one_stage(course_name: str, stage: int) -> dict:
     """Run one stage's grader inside the local repo and return its result.
 
@@ -102,14 +244,8 @@ def run_one_stage(course_name: str, stage: int) -> dict:
     modules and a process in which to run them.  The CLI remains the source
     of truth; this is the same `run_attempt(..., stage=N)` path it uses.
     """
-    courses = {c["name"]: c for c in manifests.discover()}
-    course = courses.get(course_name)
-    if course is None:
-        raise KeyError(f"unknown course: {course_name}")
-    if stage not in course["stages"]:
-        ids = sorted(course["stages"])
-        have = f"{ids[0]}..{ids[-1]}" if ids else "none"
-        raise ValueError(f"{course_name} has stages {have} — no stage {stage}")
+    course = _course(course_name)
+    _stage(course, stage)
     with _run_lock:
         return contract.run_attempt(course, stage=stage, echo=False)
 
@@ -351,6 +487,27 @@ class Handler(http.server.BaseHTTPRequestHandler):
             return self._json({"events": got, "now": time.time()})
         if path == "/api/runs":
             return self._json({"events": recent_events()})
+        if path == "/api/stage-source":
+            params = parse_qs(urlparse(self.path).query)
+            course_name = (params.get("course") or [""])[0]
+            try:
+                stage = int((params.get("stage") or ["0"])[0])
+            except ValueError:
+                return self._json({"ok": False, "error": "stage must be an integer"}, code=422)
+            if not course_name or stage < 1:
+                return self._json({"ok": False, "error": "course and stage required"}, code=422)
+            try:
+                course = _course(course_name)
+            except KeyError as exc:
+                return self._json({"ok": False, "error": str(exc)}, code=422)
+            try:
+                source = stage_source(course, stage)
+            except ValueError as exc:
+                return self._json({"ok": False, "error": str(exc)}, code=422)
+            if source is None:
+                return self._json(
+                    {"ok": False, "error": "no source target for this stage"}, code=422)
+            return self._json({"ok": True, "source": source})
         return self._file(path.lstrip("/"))
 
     def do_POST(self):
@@ -377,7 +534,27 @@ class Handler(http.server.BaseHTTPRequestHandler):
                     {"ok": False, "error": f"{type(exc).__name__}: {exc}"}, code=500)
             # A stage run is a button-local result, not a whole-course live
             # event: publishing it would duplicate the toast in every open tab.
-            return self._json({"ok": True, "result": result})
+            source = None
+            try:
+                course_data = _course(course)
+                source = stage_source(course_data, stage)
+            except Exception:                                  # noqa: BLE001
+                source = None
+            if source is not None:
+                try:
+                    row = next((s for s in result.get("stages", [])
+                                if s.get("id") == stage), {})
+                    status = row.get("status", "")
+                    source["status"] = status
+                    source["detail"] = row.get("detail", "")
+                    if status and status != "PASS":
+                        path = os.path.abspath(os.path.join(course_data["dir"], source["file"]))
+                        line, kind = _check_failure_line(course_data, stage, path)
+                        source["failure_line"] = line
+                        source["failure_kind"] = kind
+                except Exception:                              # noqa: BLE001
+                    pass
+            return self._json({"ok": True, "result": result, "source": source})
 
         # Only accept runs whose course the local repo actually knows; anything
         # else is a typo or an attack, and either way it renders as nothing.
