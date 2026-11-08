@@ -142,29 +142,25 @@ one by one and says which three have a course nowhere.
 
 ---
 
-## What this repo has never built — eleven registered rows (G7, G8, G10, G11, G12, G13, G14, H5, H6, H7, L4)
+## What this repo has not built yet — four registered rows (G10, G12, G13, G14)
 
 Eleven rows came out of reviewing the corpus by subject rather than by project: each is the
 artefact its own field is normally taught from, each is gradeable on the house rule (a
-provided world, a ladder of decisions, planted mutations the checks must catch), and
-none of them exists here in any form — the repo has never built a shell over a provided
-machine (G7 is built now), a bytecode runtime, a query engine, a consensus protocol, a
-compressor, a git object store, a bootable OS, a mechanised algorithms book, a database
-file format or a regex engine. They are registered in `codecraft/path.py`, which is
-what `codecraft path` renders.
+provided world, a ladder of decisions, planted mutations the checks must catch). Seven are
+built now — **G7, `shell-from-scratch`** and **G11, `advanced-dsa-from-scratch`** (the
+sections after this table), plus **G8, `runtime-from-scratch`**, **H5,
+`query-engine-from-scratch`**, **H6, `consensus-from-scratch`**, **H7,
+`compression-from-scratch`** and **L4, `git-from-scratch`**, each a `ready` row in
+`codecraft/path.py`. The four below remain: a bootable OS, a database file format, a regex
+engine and a reverse-engineering course. They are registered in `codecraft/path.py`,
+which is what `codecraft path` renders.
 
 | Slot | Course to author | The mechanism | After |
 |---|---|---|---|
-| G8 | `runtime-from-scratch` | A bytecode, an assembler and a heap are given; the runtime is yours: a stack machine with calls, frames and exact step accounting, then mark-sweep, reference counting that cannot free a cycle, a tri-colour incremental collector with write barriers and a remembered set, a nursery, and a copying collector — accepted on a program's output and its collection counts, never on a reachable object being freed | G3, G4 |
-| H5 | `query-engine-from-scratch` | A SQL subset parsed, resolved against a catalog that may be wrong, planned (pushdown, join order, an index chosen or refused) and executed with iterators over a page buffer and a B+tree you split yourself — judged by the same rows as the reference for a hundred queries, a plan that earns its index, and a crash schedule where the log decides which tuples exist | G4 |
-| H6 | `consensus-from-scratch` | Raft on five nodes, with a deterministic partitioned network, a clock and storage that can lose its last write: terms and votes, a log that matches term by term, commit by majority, a stale leader refused, membership changes, snapshots, and recovery from a lying disk — accepted by a linearizability check over the history the world itself recorded | J3, I9 |
-| H7 | `compression-from-scratch` | Huffman with canonical codes, LZ77's window, LZ4's nibble lengths, DEFLATE bit by bit with dynamic trees and the stored/static/dynamic choice, then FSE/ANS and a frame with a real header and checksum — accepted when the provided decoder accepts your bytes, the ratio clears the bar, and the checksum you wrote notices the one bit the tester flips | — |
 | G10 | `custom-os-from-scratch` | The big one: a bootable x86-64 kernel in C and a userland on top, end to end — bootloader handoff, GDT/IDT by hand, PIT and APIC, paging you can inspect in QEMU, interrupts where a keypress becomes a character on your own screen, G4's scheduler context-switching for real, the syscall ring crossing with the pointer validated twice, drivers against the device itself (PS/2's second-byte wait, ATA's polled status register, PCI enumeration, an e1000/virtio ring with a shared interrupt), a real filesystem on a disk image, an ELF loader running a program G5 compiled, fork/exec/wait as code, and G7's shell speaking to your kernel — QEMU the judge where the checker reaches, the real machine the honest one; the graded path is x86-64, the arm64 port the second half | G4, G5 |
-| G11 | `advanced-dsa-from-scratch` | La Rocca's *Advanced Algorithms and Data Structures*, one stage per chapter, every structure judged against a work counter and a reference: d-way heaps measured on Dijkstra, treaps with the height profiler, Bloom filters with the measured false-positive rate, disjoint sets counted in finds, tries and autocomplete, LRU/LFU caches, k-d trees and SS-trees checked against the linear scan, DBSCAN/OPTICS, graphs to Dijkstra and MST, embeddings and force-directed drawing with counted crossings, gradient descent, simulated annealing, genetic algorithms on TSP against branch-and-bound | — |
 | G12 | `sqlite-from-scratch` | A real single-file database that `sqlite3` itself opens, from the recovered codecrafters corpus (9 stages): header and schema table, table B-trees page by page — cell pointer array, varints, overflow pages, freelist — the record format's serial types, then the WAL and the commit that is not acknowledged before the WAL says so; the judge is sqlite3 reading what you wrote and the row counts matching | G9 |
 | G13 | `regex-from-scratch` | The engine built twice: Thompson's construction — shunting yard, NFA, epsilon-closures, linear-time simulation — then the backtracking engine whose catastrophic cases the work counter exposes; classes, anchors, quantifiers, groups, backreferences the NFA refuses; grep (G9) re-derives its -E from this engine, tail's scrollback filter and G7's globs borrow the same compile step; the judge is the match sets agreeing with Python's `re` on a corpus built to distinguish the two engines | — |
 | G14 | `reverse-engineering-from-scratch` | Reading a program you have no source for, on binaries you can verify: ELF and PE parsed until `readelf` and yours agree, x86-64 disassembly with the length-decoding problem (prefixes, ModRM, where data is code and back), calling conventions and stack frames from prologues, CFG recovery by linear sweep and recursive descent and where they disagree, the decompiler lift to a C-like IR and what it always gets wrong; then the dynamic half — ptrace attach, breakpoints, memory dumps, the syscall trace that catches the static reading lying; strings, imports, the entropy profile that finds packed sections; capstone: a crackme and a stripped binary from the estate, the licence check found, understood and written up, every claim checked against ground truth the estate carries — objdump, gdb and radare2 the reference outputs your own parser and lifter are checked against | G3, G5 |
-| L4 | `git-from-scratch` | A `.git` directory real `git` reads: blobs addressed by their own digest, sorted trees with exact modes, commits, refs and a detachable HEAD, an index, a diff that names a hunk, a merge that finds the base and marks conflicts instead of guessing, and a packfile whose delta-compressed objects are reachable through its index — where `git` is on PATH, `git fsck` and `git log` are the judge | G4 |
 
 One more was considered and left out rather than registered: a hand-rolled crypto
 handshake — it duplicates the `cryptographic-library` project the G6 legacy slot
@@ -199,6 +195,45 @@ delta from a mark, so a session answers for what it did and not for what the
 machine already held when it was handed over. The contract is frozen in
 `.g7-dev/CONTRACT.md` with ten amendments recorded, each one a reading that a
 stage found in the middle of the work and the plan had got wrong.
+
+---
+
+---
+
+## G11, `advanced-dsa-from-scratch` — the heap ladder, in ten stages
+
+**G11, `advanced-dsa-from-scratch`**, is built: ten graded stages on the structures
+a senior interview still reaches for, in the order the amortized analysis reaches for
+them, judged by work counters over a provided fixture world (`graphs.py` — the
+weighted graph with its pinned distances, the undirected graph with its MST, the
+integer point set with its brute-force nearest neighbours, the word list, the LFU
+script, and one fixed LCG; standard library only, no `random`, no clock, no float).
+The binary heap's array layout and its two hole-and-place sifts, each comparison and
+move counted; the d-way heap generalising the same array (children `D*i+1..D*i+D`,
+parent `(i-1)//D`) with a shared position map that makes decrease-key real — and the
+`n//D - 1` build start the check refuses with a deterministically built `n=6, D=4`
+heap; the Fibonacci heap in **three separate stages**, one mechanism each: the O(1)
+lazy union on one circular doubly-linked root ring (with an integrity walk that
+terminates on corruption instead of spinning), consolidation that buckets roots by
+degree from the watermark so a live-count guard cannot refuse a legal heap, and the
+cut rule whose hand-built cascade is pinned as `(cuts, cascades) == (3, 1)` with the
+potential going `8 -> 6`; Dijkstra run on all three engines — lazy `heapq` (17 pops,
+7 skipped stale entries, each edge relaxed once), the indexed d-ary heap (25
+comparisons, no duplicates), and the Fibonacci heap (work 20, cuts 5, exactly 10
+pops for 10 nodes) — all agreeing with the fixture and with a second source;
+union-find with union by rank and iterative compression, its `24 finds / 40 path
+steps` judging Kruskal's tree (total 17) and a lopsided-merge rank bound; a trie
+whose autocomplete is the prefix's subtree in lexical order and whose
+`longest_prefix_of` is the deepest terminal; an LFU cache whose eviction is one
+`(frequency, age)` total order, replayed on the fixed script to the order
+`('c','b','d')`; and a capstone k-d tree verified against the linear scan by its
+counted visits (62 of 150), with the tie law pinned by a five-point case where an
+equidistant far point wins on point value — closing with an audit that reads every
+`WORK_BARS` entry and refuses a bar with no measurement behind it. Ten checks, 138
+assertions/refusals, **29 planted mutations caught** (`_build/mutations.py`,
+`_build/run_mutations.py`, `MISSED OR BROKEN: 0`), every number in the README
+measured from the reference run. The book's treaps, Bloom filters, SS-trees,
+clustering and optimisation chapters are not claimed.
 
 ---
 
@@ -701,7 +736,7 @@ frame the broker wrote, which decision line a refusal was written on) instead of
 matter of timing.
 
 `L4 git-from-scratch` joined the phase later, from the review of what this repo
-has never built; its row is in *What this repo has never built*, above.
+has not built yet; its row is in *What this repo has not built yet*, above.
 
 What has no slot: the blog posts (the links are the source, not the course), the C
 implementations (the house authors Python; the C versions are what the legacy
