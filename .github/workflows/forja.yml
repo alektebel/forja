@@ -54,7 +54,7 @@ jobs:
 
           changed=0
 
-          for f in index.html styles.css app.js editor.js py-worker.mjs workspace.json; do
+          for f in index.html styles.css app.js review.js editor.js py-worker.mjs workspace.json; do
             if ! cmp -s "$SITE_SRC/$f" "forja/$f" 2>/dev/null; then
               cp "$SITE_SRC/$f" "forja/$f"
               changed=1
