@@ -87,7 +87,7 @@ def build(outdir: str) -> dict:
     logos_out = os.path.join(outdir, "logos")
     os.makedirs(logos_out, exist_ok=True)
 
-    for name in ("index.html", "styles.css", "app.js", "editor.js", "py-worker.mjs"):
+    for name in ("index.html", "styles.css", "app.js", "review.js", "editor.js", "py-worker.mjs"):
         src = os.path.join(WEB, name)
         if not os.path.isfile(src):
             raise SystemExit(f"missing web asset: {src}")
