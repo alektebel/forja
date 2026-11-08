@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
 """codecraft web — the skill tree and the next action, in a browser.
 
-A read-only view over the same engine the CLI uses. It runs the same checkers,
+A local view over the same engine the CLI uses. It runs the same checkers,
 reads the same curriculum, and shows the exact command to run in your terminal:
-the CLI is the interface, this is the map.
+the CLI is the interface, this is the map. The local page can also run one
+stage from its line; the static mirror only copies that command.
 
     python3 codecraft/serve.py            # http://127.0.0.1:8766
     python3 codecraft/serve.py --json     # print the state and exit
     python3 codecraft/serve.py --port 9000 --open
 
-Nothing here writes `profile.json` or `history.jsonl`; looking is free.
+Nothing here writes `profile.json` or `history.jsonl`; runs are not recorded.
 """
 
 import argparse
@@ -38,15 +39,16 @@ MIME = {".html": "text/html; charset=utf-8", ".css": "text/css; charset=utf-8",
         ".js": "application/javascript; charset=utf-8", ".svg": "image/svg+xml",
         ".json": "application/json; charset=utf-8", ".ico": "image/x-icon"}
 
-# Long-poll: wait up to this many seconds for the next run event before
-# answering /api/events with an empty batch. Long-polling rather than SSE so a
-# static-host mirror (GitHub Pages) can consume the same client code.
+# /api/events answers immediately with the events since a sequence number.
+# The page waits a couple of seconds before asking again; a held request would
+# occupy the browser's connection slot and delay a stage-run POST behind it.
 POLL_TIMEOUT = 25.0
 # Events older than this are dropped from the queue: a viewer that reconnects
 # wants the current state, not a replay of stale runs.
 EVENT_TTL = 120.0
 
 _lock = threading.Lock()
+_run_lock = threading.Lock()
 _events: list = []          # [{...run event...}], newest last, TTL-pruned
 _wake = threading.Condition(_lock)
 _seq = 0
@@ -91,6 +93,25 @@ def recent_events(limit: int = 20) -> list:
     with _lock:
         _prune_locked(time.time())
         return list(_events[-limit:])
+
+
+def run_one_stage(course_name: str, stage: int) -> dict:
+    """Run one stage's grader inside the local repo and return its result.
+
+    The static mirror cannot do this: only the local server has the course
+    modules and a process in which to run them.  The CLI remains the source
+    of truth; this is the same `run_attempt(..., stage=N)` path it uses.
+    """
+    courses = {c["name"]: c for c in manifests.discover()}
+    course = courses.get(course_name)
+    if course is None:
+        raise KeyError(f"unknown course: {course_name}")
+    if stage not in course["stages"]:
+        ids = sorted(course["stages"])
+        have = f"{ids[0]}..{ids[-1]}" if ids else "none"
+        raise ValueError(f"{course_name} has stages {have} — no stage {stage}")
+    with _run_lock:
+        return contract.run_attempt(course, stage=stage, echo=False)
 
 _SYMBOL = {"complete": "\u2713", "doing": "\u25cf", "ready": "\u25cb",
            "author": "\u270e", "salvage": "\u21bb", "legacy": "\u00b7",
@@ -303,6 +324,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
         self.send_header("Cache-Control", "no-store")
         self.end_headers()
         self.wfile.write(data)
+        self.wfile.flush()
 
     def _json(self, payload, code=200):
         self._send(code, json.dumps(payload), MIME[".json"])
@@ -325,7 +347,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
                         since = float(part[6:])
                     except ValueError:
                         since = 0.0
-            got = events_since(since)
+            got = events_since(since, timeout=0)
             return self._json({"events": got, "now": time.time()})
         if path == "/api/runs":
             return self._json({"events": recent_events()})
@@ -333,13 +355,30 @@ class Handler(http.server.BaseHTTPRequestHandler):
 
     def do_POST(self):
         path = urlparse(self.path).path
-        if path != "/api/run":
+        if path not in ("/api/run", "/api/run-stage"):
             return self._send(404, "not found", "text/plain; charset=utf-8")
         try:
             length = int(self.headers.get("Content-Length", "0"))
             event = json.loads(self.rfile.read(length).decode("utf-8")) if length else {}
         except (ValueError, UnicodeDecodeError):
             return self._send(400, "bad json", "text/plain; charset=utf-8")
+
+        if path == "/api/run-stage":
+            course = event.get("course")
+            stage = event.get("stage")
+            if not isinstance(course, str) or type(stage) is not int or stage < 1:
+                return self._json({"ok": False, "error": "course and stage required"}, code=422)
+            try:
+                result = run_one_stage(course, stage)
+            except (KeyError, ValueError) as exc:
+                return self._json({"ok": False, "error": str(exc)}, code=422)
+            except Exception as exc:                           # noqa: BLE001
+                return self._json(
+                    {"ok": False, "error": f"{type(exc).__name__}: {exc}"}, code=500)
+            # A stage run is a button-local result, not a whole-course live
+            # event: publishing it would duplicate the toast in every open tab.
+            return self._json({"ok": True, "result": result})
+
         # Only accept runs whose course the local repo actually knows; anything
         # else is a typo or an attack, and either way it renders as nothing.
         allowed = {c["name"] for c in manifests.discover()}
