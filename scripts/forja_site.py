@@ -26,7 +26,7 @@ import sys
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, HERE)
 
-from codecraft import manifests, serve, showcase  # noqa: E402
+from codecraft import manifests, serve, showcase, workspace  # noqa: E402
 
 WEB = os.path.join(HERE, "codecraft", "web")
 LOGOS = os.path.join(WEB, "logos")
@@ -87,7 +87,7 @@ def build(outdir: str) -> dict:
     logos_out = os.path.join(outdir, "logos")
     os.makedirs(logos_out, exist_ok=True)
 
-    for name in ("index.html", "styles.css", "app.js"):
+    for name in ("index.html", "styles.css", "app.js", "editor.js", "py-worker.mjs"):
         src = os.path.join(WEB, name)
         if not os.path.isfile(src):
             raise SystemExit(f"missing web asset: {src}")
@@ -105,6 +105,9 @@ def build(outdir: str) -> dict:
         json.dump(state_payload, fh, ensure_ascii=False, indent=1)
     with open(os.path.join(outdir, "data.json"), "w", encoding="utf-8") as fh:
         json.dump(data_payload, fh, ensure_ascii=False, indent=1)
+
+    with open(os.path.join(outdir, "workspace.json"), "w", encoding="utf-8") as fh:
+        json.dump(workspace.aws_bundle(), fh, ensure_ascii=False)
 
     return {
         "outdir": outdir,

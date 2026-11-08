@@ -26,17 +26,17 @@ from urllib.parse import urlparse
 
 if __package__ in (None, ""):
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    from codecraft import contract, logos, manifests, progress, showcase, store
+    from codecraft import contract, logos, manifests, progress, showcase, store, workspace
     from codecraft import path as pathmod
 else:                                                           # pragma: no cover
-    from . import contract, logos, manifests, progress, showcase, store
+    from . import contract, logos, manifests, progress, showcase, store, workspace
     from . import path as pathmod
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 WEB = os.path.join(HERE, "web")
 
 MIME = {".html": "text/html; charset=utf-8", ".css": "text/css; charset=utf-8",
-        ".js": "application/javascript; charset=utf-8", ".svg": "image/svg+xml",
+        ".js": "application/javascript; charset=utf-8", ".mjs": "application/javascript; charset=utf-8", ".svg": "image/svg+xml",
         ".json": "application/json; charset=utf-8", ".ico": "image/x-icon"}
 
 # /api/events answers immediately with the events since a sequence number.
@@ -152,6 +152,8 @@ def _item_view(item, course, checks, repo, dir_exists=False) -> dict:
                 "action": meta.get("action", ""), "why": meta.get("why", ""),
                 "predict": meta.get("predict", ""),
                 "example": meta.get("example", ""),
+                "target": meta.get("target", ""),
+                "hints": meta.get("hints", []),
             })
 
     return {
@@ -333,6 +335,8 @@ class Handler(http.server.BaseHTTPRequestHandler):
         path = urlparse(self.path).path
         if path in ("/", "/index.html"):
             return self._file("index.html")
+        if path == "/api/workspace/aws-from-scratch":
+            return self._json(workspace.aws_bundle())
         if path == "/api/state":
             Handler.state = build_state()
             return self._json(Handler.state)

@@ -86,7 +86,7 @@ def load(name: str):
                 "example": meta.get("example", ""),
                 "target": meta.get("target", ""),
                 "optional": meta.get("optional", False),
-                "hints": [], "solution": "",
+                "hints": list(meta.get("hints", [])), "solution": "",
             }
         return {
             "name": base, "dir": candidate, "mode": contract.MODE_CHECK,
