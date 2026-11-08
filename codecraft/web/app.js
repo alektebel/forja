@@ -493,7 +493,7 @@ function renderWork() {
     $("#w-stage-context").hidden = !stage.why;
     $("#w-stage-task").textContent = stage.action;
     $("#w-stage-example").textContent = stage.example || "";
-    $("#w-stage-example").hidden = !stage.example;
+    $("#w-stage-example-wrap").hidden = !stage.example;
     $("#w-stage-predict").textContent = stage.predict ? `Before testing: ${stage.predict}` : "";
     $("#w-stage-predict").hidden = !stage.predict;
     const source = $("#w-stage-source");
