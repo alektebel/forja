@@ -22,82 +22,134 @@ Don't:
 - ❌ Skip the template implementation
 - ❌ Use as your first attempt
 
-## Solutions Overview
+## Solutions Status
 
-### Example 1: Vector Addition (`01_vector_addition.cu`)
-- Basic CUDA kernel structure
-- Memory management
-- Error checking
-- Performance measurement
-- **Key takeaway**: Foundation of CUDA programming
+All eight solutions are complete and were compiled and run on an NVIDIA
+RTX 5060 Laptop GPU (sm_120) with CUDA 13.5 (conda nvcc at
+`/home/diego/miniforge3/bin/nvcc`). Every program exits 0 and prints its
+verification line.
 
-### Example 2: Matrix Addition (`02_matrix_addition.cu`)
-- 2D thread indexing
-- Grid configuration
-- Row-major memory layout
-- **Key takeaway**: Extending to 2D data structures
+| # | File | Content | Verified run (default) | Ragged-size check |
+|---|------|---------|------------------------|-------------------|
+| 01 | `01_vector_addition.cu` | 1D kernel, alloc/copy/launch/free, cudaEvent timing in main | `N=1000000` → PASSED | `N=1000003` (not a multiple of 256) → PASSED |
+| 02 | `02_matrix_addition.cu` | 2D `dim3` grid, row-major indexing, timing + bandwidth | `1024x1024` → PASSED | `331x977` (non-square, ragged in both dims) → PASSED |
+| 03 | `03_matrix_multiplication.cu` | Naive vs shared-memory tiled GEMM | `1024^3` → Results match: YES | `M=321 N=129 K=257` (all non-multiples of TILE_SIZE=16) → match YES |
+| 04 | `04_reduction.cu` | Tree reduction in shared memory + true multi-pass host loop | `N=1000000` → PASSED (sum exact) | `N=1000003`, `999999`, `65537`, `262144`, `7` → PASSED |
+| 05 | `05_convolution.cu` | Gaussian 5x5, Sobel magnitude, sharpen + generic `__constant__` filter; all tiled with halos | `512x512` → all 4 filters OK, PASSED | `101x37` image (ragged in both dims) → PASSED |
+| 06 | `06_neural_network_forward.cu` | FC forward (grid-stride), ReLU/Sigmoid/Tanh, 784→128→64→10 pipeline | `batch 32` → vs-CPU max diff 9.3e-10, PASSED | `batch 33` → PASSED |
+| 07 | `07_neural_network_backward.cu` | FC backward (gradInput/gradWeights/gradBias), ReLU backward, SGD, numerical gradient check | `13x7x5` → analytical + numerical grad checks PASSED | `batch 33, 11x17 layer`, and `1x1x1` → PASSED |
+| 08 | `08_complete_neural_network.cu` | Full MNIST training: softmax, cross-entropy, backward, SGD, eval | 20 epochs, batch 100, lr 0.1 → **97.89%** test accuracy, PASSED | `batch 101` (60000/101 leaves a 6-sample final batch; 10000/101 leaves a 1-sample eval chunk) → PASSED |
 
-### Example 3: Matrix Multiplication (`03_matrix_multiplication.cu`)
-- Naive global memory version
-- Tiled version with shared memory
-- Performance comparison
-- **Key takeaway**: 5-10x speedup with shared memory optimization
+## Building and Running (verified on this machine)
 
-### Example 4: Reduction Operations (`04_reduction.cu`)
-- Tree-based parallel reduction
-- Shared memory optimization
-- Avoiding warp divergence
-- Multi-pass for large arrays
-- **Key takeaway**: Fundamental parallel pattern
+**The Makefile's default `ARCH=sm_60` is refused by nvcc 13.5**:
 
-### Example 5: Convolution (`05_convolution.cu`)
-- 2D convolution implementation
-- Constant memory for filters
-- Boundary handling (clamp/wrap)
-- Shared memory tiling with halos
-- **Key takeaway**: Stencil operations and memory hierarchy
+```text
+$ make 01_vector_addition NVCC=/home/diego/miniforge3/bin/nvcc
+nvcc fatal   : Unsupported gpu architecture 'sm_60'
+```
 
-### Example 6: Neural Network Forward Pass (`06_neural_network_forward.cu`)
-- Fully connected layer implementation
-- Activation functions (ReLU, Sigmoid, Tanh)
-- Layer composition
-- Batch processing
-- **Key takeaway**: Building blocks of neural networks
-
-### Example 7: Neural Network Backward Pass (`07_neural_network_backward.cu`)
-- Backpropagation implementation
-- Gradient computation
-- Chain rule application
-- SGD weight updates
-- Numerical gradient verification
-- **Key takeaway**: Training neural networks
-
-### Example 8: Complete Neural Network (`08_complete_neural_network.cu`)
-- Full training pipeline
-- MNIST data loading
-- Loss functions
-- Training loop
-- Model evaluation
-- Achieves >95% accuracy on MNIST
-- **Key takeaway**: End-to-end deep learning system
-
-## Building Solutions
+Maxwell/Pascal/Volta targets were deprecated in newer CUDA toolkits, so on
+this machine you must pass an `sm_120` override. Working invocations (both
+verified):
 
 ```bash
-# Build all solutions
-cd solutions
-make all
+# Explicit compile (what every solution was built with):
+/home/diego/miniforge3/bin/nvcc -arch=sm_120 -O2 04_reduction.cu -o 04
+./04            # runs on the GPU; add LD_LIBRARY_PATH=/home/diego/miniforge3/lib
+                # only if your shell can't find libcudart (conda env active = fine)
 
-# Build specific solution
-make vector_add
-make neural_net
-
-# Run tests
-make test
-
-# Run benchmarks
-make benchmark
+# Or via the Makefile:
+make ARCH=sm_120 NVCC=/home/diego/miniforge3/bin/nvcc 01_vector_addition
 ```
+
+Host gcc 16.2.1 is accepted by nvcc 13.5 as-is — no `-allow-unsupported-compiler`
+was needed.
+
+Solution 08 expects the four MNIST IDX files in a data directory (default
+`data/`); point it at yours:
+
+```bash
+/home/diego/miniforge3/bin/nvcc -arch=sm_120 -O2 08_complete_neural_network.cu -o 08
+./08 ~/mnist 20 100 0.1    # dataDir epochs batch lr
+```
+
+## Measured Output (actual, pasted from runs on RTX 5060 Laptop, sm_120)
+
+```text
+$ ./01_vector_addition
+Vector Addition: N = 1000000 elements
+Kernel execution time: 3.857 ms
+✓ Verification PASSED
+
+$ ./02_matrix_addition
+Matrix Addition: 1024 x 1024
+Grid: (64, 64) blocks, Block: (16, 16) threads
+Kernel execution time: 3.346 ms
+✓ Verification PASSED
+
+$ ./03_matrix_multiplication        # warm run (first cold run shows clock ramp)
+Naive kernel time: 4.342 ms
+Tiled kernel time: 3.648 ms
+Speedup: 1.19x
+Results match: YES
+
+$ ./04_reduction
+Parallel Reduction: N = 1000000 elements
+GPU sum: 1000000.00
+CPU sum: 1000000.00
+Match: YES
+✓ Verification PASSED
+
+$ ./05_convolution                  # 512x512
+Kernel times: gaussian 0.232 ms, sobel 0.110 ms, sharpen 0.109 ms, generic 0.018 ms
+Gaussian blur: OK / Sobel edges: OK / Sharpening: OK / Generic conv (constant filter): OK
+✓ Verification PASSED
+
+$ ./06_neural_network_forward       # batch 32
+Forward pass (batch 32): 0.193 ms
+Max abs diff vs CPU: 9.313e-10
+✓ Verification PASSED
+
+$ ./07_neural_network_backward
+Backward kernel time: 0.332 ms
+gradInput   max diff vs CPU: 1.863e-09
+gradWeights max diff vs CPU: 1.490e-08
+gradBias    max diff vs CPU: 1.490e-08
+Numerical gradient check: worst relative error 1.415e-05 (expect < 1e-3)
+SGD update max diff vs CPU: 7.451e-09
+✓ Verification PASSED
+
+$ ./08 ~/mnist 20 100 0.1
+Epoch  1:  Loss=0.4038, Accuracy=93.38%  (0.2 s)
+Epoch  2:  Loss=0.1923, Accuracy=95.37%  (0.2 s)
+Epoch  5:  Loss=0.0924, Accuracy=97.08%  (0.2 s)
+Epoch 10:  Loss=0.0450, Accuracy=97.58%  (0.2 s)
+Epoch 15:  Loss=0.0246, Accuracy=97.70%  (0.2 s)
+Epoch 20:  Loss=0.0126, Accuracy=97.89%  (0.2 s)
+Final Test Accuracy: 97.89%  (total training wall time 3.6 s)
+✓ Verification PASSED
+```
+
+Timing notes:
+- 01/02/06 wrap the whole host function in events, so the printed time
+  includes `cudaMalloc`/`cudaMemcpy`; first run of the process also pays
+  context init (hence ~4 ms at 1M floats, then ~2 ms on repeats).
+- 03 on a cold/idle GPU reported `Tiled 13.031 ms` on the very first run
+  (SM clock ramping from idle); warm runs show the tiled kernel faster.
+  At 1024^3 both kernels are already near memory/compute-balanced on this
+  GPU, so the classic 5-10x tile speedup does not reproduce; at ragged
+  321x129x257 the tiled kernel is ~1.8x faster.
+- 05 kernel times are pure launch-to-launch event windows.
+- 04's follow-up multi-pass uses ping-pong buffers; the template's single
+  second-pass launch cannot reduce more than 256 block partials and sums
+  wrong (observed 69376.00 for N=1000000 before the fix).
+- The numerical gradient check in 07 must accumulate the MSE loss in
+  `double`; in float the `(lp - lm)` cancellation leaves ~2% relative
+  error even with a correct analytic gradient.
+- 08's final accuracy varies by ~0.01% run to run (97.89%/97.90%) because
+  gradBias/loss accumulate via `atomicAdd` in nondeterministic order;
+  every run converges to >97% for 20 epochs.
 
 ## Solution Structure
 
