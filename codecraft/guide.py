@@ -4,8 +4,8 @@ Renders (and optionally writes) one markdown page per stage in the form:
 
   mechanism excerpt → what to implement → how the tester runs → notes/predict
 
-Sources of truth stay in course.py / curriculum.py / check.py titles — these
-files are a product surface, not a second syllabus.
+Sources of truth stay in course.py, curriculum.py, check.py, or lessons.json;
+generated pages are a product surface, not a second syllabus.
 """
 
 from __future__ import annotations
@@ -26,6 +26,8 @@ def _slugify(title: str) -> str:
 def render_stage(course: dict, stage_id: int) -> str:
     """One CC-style stage page as markdown."""
     meta = course["stages"][stage_id]
+    if meta.get("task"):
+        return _render_micro_stage(course, stage_id, meta)
     file = meta.get("file") or f"stage_{stage_id:02d}.py"
     title = meta.get("title") or file
     action = meta.get("action") or ""
@@ -86,10 +88,55 @@ def render_stage(course: dict, stage_id: int) -> str:
     return "\n".join(lines)
 
 
+def _render_micro_stage(course: dict, stage_id: int, meta: dict) -> str:
+    """Compact guide with one context, task, prediction, and check."""
+    optional = " · optional" if meta.get("optional") else ""
+    lines = [
+        f"# Stage {stage_id}: {meta['title']}",
+        "",
+        f"**Edit:** `{meta['file']}` → `{meta.get('target', '')}`{optional}",
+        "",
+        "## Context",
+        "",
+        meta["context"],
+        "",
+        "## Your task",
+        "",
+        meta["task"],
+        "",
+        "## Predict",
+        "",
+        f"> {meta['predict']}",
+        "",
+        "## Check",
+        "",
+        "```bash",
+        f"forja test {course['name']} --stage {stage_id}",
+        "```",
+        "",
+    ]
+    if stage_id < len(course["stages"]):
+        lines.extend([f"Next: `forja stage {course['name']} {stage_id + 1}`", ""])
+    else:
+        lines.extend(["You finished the course.", ""])
+    return "\n".join(lines)
+
+
 def render_start(course: dict) -> str:
     """Stage-0 / onboarding page — the CodeCrafters 'first green' surface."""
     n = len(course["stages"])
     first = course["stages"][min(course["stages"])]
+    if first.get("task"):
+        return "\n".join([
+            f"# {course['title']}", "", course.get("description") or "", "",
+            f"**{n} short stages.** Build one behavior at a time in your editor.", "",
+            "## Check the setup", "", "```bash",
+            f"forja smoke {course['name']}", "```", "",
+            "## Your first stage", "", first["context"], "", first["task"], "",
+            "Predict: " + first["predict"], "", "```bash",
+            f"forja guide {course['name']} 1",
+            f"forja test {course['name']} --stage 1", "```", "",
+        ])
     return "\n".join([
         f"# {course['title']}",
         "",

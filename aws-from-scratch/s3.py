@@ -1,5 +1,5 @@
 """
-S3 — object storage. Complete Solution.
+S3 — object storage. Starter template.
 
 DESIGN DECISION — a filesystem, or a flat key-value store?
   S3 looks like it has folders. It does not. `reports/2024/q1.csv` is one
@@ -38,7 +38,7 @@ class Version(NamedTuple):
 
     @property
     def is_delete_marker(self) -> bool:
-        raise NotImplementedError
+        return self.body is None
 
 
 def compute_etag(body: bytes, parts: Optional[List[bytes]] = None) -> str:
@@ -61,7 +61,8 @@ class Bucket:
         self._counter = 0
 
     def _next_version(self) -> str:
-        raise NotImplementedError
+        self._counter += 1
+        return f"v{self._counter:06d}"
 
 
 class S3:
@@ -74,10 +75,15 @@ class S3:
     # -- buckets ------------------------------------------------------------
 
     def create_bucket(self, name: str, versioning: bool = False) -> Bucket:
-        raise NotImplementedError
+        if name in self.buckets:
+            raise S3Error("BucketAlreadyExists", name)
+        self.buckets[name] = Bucket(name, versioning)
+        return self.buckets[name]
 
     def _bucket(self, name: str) -> Bucket:
-        raise NotImplementedError
+        if name not in self.buckets:
+            raise S3Error("NoSuchBucket", name)
+        return self.buckets[name]
 
     def set_versioning(self, bucket: str, enabled: bool) -> None:
         """Versioning can be suspended but never turned OFF — existing versions

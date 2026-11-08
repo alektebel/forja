@@ -1,5 +1,5 @@
 """
-Lambda — invocation, concurrency and cold starts. Complete Solution.
+Lambda — invocation, concurrency and cold starts. Starter template.
 
 DESIGN DECISION — how to model a "container"?
   You could invoke the handler directly and call it done.
@@ -95,7 +95,8 @@ class LambdaService:
         self.functions: Dict[str, Function] = {}
 
     def register(self, function: Function) -> Function:
-        raise NotImplementedError
+        self.functions[function.name] = function
+        return function
     # -- concurrency accounting ---------------------------------------------
 
     def unreserved_capacity(self) -> int:

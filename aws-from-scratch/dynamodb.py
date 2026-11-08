@@ -1,5 +1,5 @@
 """
-DynamoDB — the service, not the paper. Complete Solution.
+DynamoDB — the service, not the paper. Starter template.
 
 The `dynamo-paper/` directory implements the 2007 paper: consistent hashing,
 vector clocks, sloppy quorums. This is the *product* built on those ideas, and
@@ -60,7 +60,14 @@ class Partition:
         self.throttled = 0
 
     def consume(self, units: float, kind: str, now: float) -> None:
-        raise NotImplementedError
+        # Basic metering is supplied; stage 31 adds capacity enforcement.
+        if now - self.window_start >= 1.0:
+            self.window_start = now
+            self.read_used = self.write_used = 0.0
+        if kind == "read":
+            self.read_used += units
+        else:
+            self.write_used += units
 
 
 class Table:
@@ -83,7 +90,12 @@ class Table:
                       "returned_items": 0, "throttles": 0}
 
     def _partition(self, key_value: Any) -> Partition:
-        raise NotImplementedError
+        # Stage 32 replaces this single-slot starting point with a stable hash.
+        slot = "p0"
+        if slot not in self.partitions:
+            self.partitions[slot] = Partition(slot, self.per_partition_read,
+                                              self.per_partition_write)
+        return self.partitions[slot]
 
     def _keys(self, item: Item) -> Tuple[Any, Any]:
         raise NotImplementedError
@@ -98,21 +110,30 @@ class Table:
         is the idiom for "create only if absent", and it is the difference
         between an idempotent create and a silent overwrite.
 
-        TODO: refill the bucket if a second has passed, then check the
-        request against THIS PARTITION's capacity and raise ThroughputExceeded
-        if it does not fit.
-
-        Capacity lives on the partition, not the table. That is the entire
-        reason a hot key throttles while the table sits idle.
-
-        TODO: hash the partition key value to one of num_partitions slots,
-        creating the Partition lazily.
-
-        Use hashlib, NOT Python's hash(). String hashing is randomised per
-        process, so hash() would place a key in a different partition on every
-        run and make every capacity result irreproducible.
+        The ordinary write path is supplied. Stage 29 adds the conditional
+        guard before the write. Stage 31 enforces each partition's budget;
+        stage 32 spreads distinct keys with a stable hash. Follow one guide
+        at a time.
         """
-        raise NotImplementedError
+        now = time.time() if now is None else now
+        partition_value, sort_value = self._keys(item)
+        partition = self._partition(partition_value)
+        existing = partition.items.get((partition_value, sort_value))
+        if condition is not None:
+            # Stage 29: check the current value before changing anything.
+            raise NotImplementedError
+        try:
+            partition.consume(1.0, "write", now)
+        except ThroughputExceeded:
+            self.stats["throttles"] += 1
+            raise
+        partition.items[(partition_value, sort_value)] = dict(item)
+        self.stats["writes"] += 1
+        self.stream.append({"event": "INSERT" if existing is None else "MODIFY",
+                            "keys": (partition_value, sort_value),
+                            "old": existing, "new": dict(item), "at": now})
+        for index in self.indexes.values():
+            index.reindex(self)
 
     def delete_item(self, partition_value: Any, sort_value: Any = None,
                     now: Optional[float] = None) -> Optional[Item]:
@@ -123,7 +144,15 @@ class Table:
                  consistent: bool = False,
                  now: Optional[float] = None) -> Optional[Item]:
         """A strongly consistent read costs twice as much."""
-        raise NotImplementedError
+        now = time.time() if now is None else now
+        partition = self._partition(partition_value)
+        if consistent:
+            # Stage 30: charge the extra read units.
+            raise NotImplementedError
+        partition.consume(0.5, "read", now)
+        self.stats["reads"] += 1
+        item = partition.items.get((partition_value, sort_value))
+        return dict(item) if item else None
 
     def query(self, partition_value: Any,
               sort_condition: Optional[Callable[[Any], bool]] = None,

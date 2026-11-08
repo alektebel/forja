@@ -17,7 +17,7 @@ Thirty-one courses, 349 graded checks between them, no dependencies.
 
 | Course | Checks | What it teaches |
 |---|---|---|
-| `aws-from-scratch` | 18 | IAM, S3, SQS, DynamoDB, Lambda, SNS, KMS, VPC + capstone |
+| `aws-from-scratch` | 63 | IAM, S3, SQS, DynamoDB, Lambda, SNS, KMS, VPC + capstone |
 | `dynamo-paper` | 17 | Consistent hashing, vector clocks, quorums, hinted handoff, Merkle, gossip |
 | `context-caching` | 16 | KV cache, prefix/radix caching, paged KV + copy-on-write, routing |
 | `contextcite` | 14 | Context attribution by ablation + LASSO; the eval-flavoured one |

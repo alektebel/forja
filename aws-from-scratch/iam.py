@@ -1,5 +1,5 @@
 """
-IAM — policy evaluation. Complete Solution.
+IAM — policy evaluation. Starter template.
 
 The most valuable service to implement, because the evaluation rule is short,
 counter-intuitive, and everybody gets it wrong at least once:
@@ -52,7 +52,9 @@ class Statement:
 
 
 def _as_list(value) -> List[str]:
-    raise NotImplementedError
+    if value is None:
+        return []
+    return [value] if isinstance(value, str) else list(value)
 
 
 class Policy:
@@ -70,7 +72,7 @@ class Policy:
 
 def matches_action(pattern: str, action: str) -> bool:
     """`s3:*` matches `s3:GetObject`. Case-insensitive, like the real thing."""
-    raise NotImplementedError
+    return fnmatch.fnmatch(action.lower(), pattern.lower())
 
 
 def matches_resource(pattern: str, resource: str) -> bool:
@@ -80,7 +82,7 @@ def matches_resource(pattern: str, resource: str) -> bool:
     surprise, since `arn:aws:s3:::bucket/*` matches every key including ones
     with slashes in them.
     """
-    raise NotImplementedError
+    return fnmatch.fnmatch(resource, pattern)
 
 
 def evaluate_condition(condition: Dict[str, Dict[str, Any]],
@@ -95,7 +97,25 @@ def evaluate_condition(condition: Dict[str, Dict[str, Any]],
 
 
 def _condition_holds(operator: str, actual: Any, options: List[Any]) -> bool:
-    raise NotImplementedError
+    if actual is None:
+        return False
+    if operator == "StringEquals":
+        return any(str(actual) == str(option) for option in options)
+    if operator == "StringNotEquals":
+        return all(str(actual) != str(option) for option in options)
+    if operator in ("StringLike", "ArnLike", "ArnEquals"):
+        return any(fnmatch.fnmatch(str(actual), str(option)) for option in options)
+    if operator == "Bool":
+        return any(bool(actual) == (str(option).lower() == "true") for option in options)
+    if operator == "NumericLessThan":
+        return any(float(actual) < float(option) for option in options)
+    if operator == "NumericGreaterThanEquals":
+        return any(float(actual) >= float(option) for option in options)
+    if operator == "IpAddress":
+        address = ipaddress.ip_address(str(actual))
+        return any(address in ipaddress.ip_network(str(option), strict=False)
+                   for option in options)
+    raise ValueError(f"unsupported condition operator {operator!r}")
 # ---------------------------------------------------------------------------
 # The evaluation rule
 # ---------------------------------------------------------------------------
@@ -115,7 +135,14 @@ class Decision:
 
 def statement_matches(statement: Statement, action: str, resource: str,
                       context: Dict[str, Any]) -> bool:
-    raise NotImplementedError
+    if statement.not_action is not None:
+        if any(matches_action(pattern, action) for pattern in statement.not_action):
+            return False
+    elif not any(matches_action(pattern, action) for pattern in statement.action):
+        return False
+    if not any(matches_resource(pattern, resource) for pattern in statement.resource):
+        return False
+    return not statement.condition or evaluate_condition(statement.condition, context)
 
 
 def evaluate(policies: Sequence[Policy], action: str, resource: str,
@@ -127,17 +154,10 @@ def evaluate(policies: Sequence[Policy], action: str, resource: str,
     verifying yourself, because it is the property that makes large policy sets
     tractable to reason about.
 
-    TODO — the three-line rule, and the order you check it in:
-    1. Walk EVERY statement of EVERY policy. Skip those that do not match the
-       action, resource and conditions.
-    2. If a matching statement is a Deny, return immediately. Nothing later can
-       override it.
-    3. Collect matching Allows as you go. If any exist at the end, allow.
-    4. Otherwise implicit deny.
-
-    Do NOT iterate letting the last match win, firewall-style. Policies are a
-    SET: reordering them must never change the answer, and the checker tests
-    exactly that by evaluating the same two policies in both orders.
+    Stage 1: replace the raise with an implicit-deny Decision when policies is
+    empty. That is a one-line first green. Stage 2 adds a matching Allow;
+    stage 3 gives matching Deny precedence regardless of order. Read only the
+    guide for the stage you are on.
     """
     raise NotImplementedError
 

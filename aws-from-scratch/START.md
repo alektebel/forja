@@ -2,35 +2,23 @@
 
 Toy IAM, S3, SQS, DynamoDB, Lambda, SNS, KMS and VPC, plus a capstone that wires them and breaks them on purpose.
 
-**36 stages, one behavior each.** Code in your editor. Run tests locally. No toy IDE.
+**63 short stages.** Build one behavior at a time in your editor.
 
-## Stage 0 — smoke (under 30 seconds)
-
-Confirm the course is runnable before you write anything:
+## Check the setup
 
 ```bash
 forja smoke aws-from-scratch
 ```
 
-You should see `smoke OK`. That is your first green — the same dopamine CodeCrafters buys with 'uncomment and push', without pretending uncommenting taught you IAM.
+## Your first stage
 
-## Stage 1 — first real work
+An IAM request starts denied until a policy grants it.
 
-**File:** `iam.py` — explicit deny > allow > implicit deny
+In iam.py, replace the raise in evaluate() with an implicit-deny Decision when policies is empty. One return statement is enough.
 
-IAM: an explicit Deny wins; otherwise any matching Allow applies; otherwise implicit Deny.
+Predict: What is allowed for a request with no policies?
 
 ```bash
-forja guide aws-from-scratch 1     # the full stage page
+forja guide aws-from-scratch 1
 forja test aws-from-scratch --stage 1
 ```
-
-## The loop
-
-1. Read the stage guide
-2. Edit the file in your IDE
-3. `forja test` (alias of `cz run`)
-4. Read the cause / mentor nudge
-5. Predict, then re-run
-
-Stuck: `forja hint aws-from-scratch` · `forja explain aws-from-scratch`

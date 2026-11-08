@@ -1,5 +1,5 @@
 """
-SQS — queues, and why "at least once" is a promise about YOUR code. Complete Solution.
+SQS — queues, and why "at least once" is a promise about YOUR code. Starter template.
 
 DESIGN DECISION — delete on receive, or lease with a visibility timeout?
   Deleting on receive gives at-most-once: a consumer that crashes loses the
@@ -60,8 +60,13 @@ class Queue:
 
     def send(self, body: str, group_id: str = "", dedup_id: str = "",
              now: Optional[float] = None) -> Optional[str]:
-        """Enqueue. FIFO queues deduplicate within a 5-minute window."""
-        raise NotImplementedError
+        """Enqueue. Stage 26 adds FIFO deduplication to this baseline."""
+        now = time.time() if now is None else now
+        message = Message(body, str(uuid.uuid4())[:8], group_id, dedup_id)
+        message.visible_at = now + self.delay_seconds
+        self.messages.append(message)
+        self.stats["sent"] += 1
+        return message.message_id
     # -- consuming ----------------------------------------------------------
 
     def receive(self, max_messages: int = 1,
@@ -73,19 +78,10 @@ class Queue:
         working. A FIFO queue serialises per group_id: while a message from a
         group is in flight, no other message from that group is delivered.
 
-        TODO:
-        1. _recover_expired(now) FIRST — expired leases return to the queue,
-           and this is where duplicate delivery is born. It is deliberate.
-        2. For a FIFO queue, collect the group_ids already in flight; those
-           groups are blocked.
-        3. For each visible message: bump receive_count; if it now exceeds
-           max_receives, move it to the dead-letter queue instead of delivering.
-        4. Otherwise mint a NEW receipt handle, set visible_at = now + timeout,
-           move it into in_flight, and hand the consumer a COPY.
-
-        Step 4's copy matters: real SQS gives each receive its own handle. If
-        two consumers share one Message object, a redelivery silently rewrites
-        the first consumer's handle and its stale delete wrongly succeeds.
+        Stage 18: hide one received message. Stage 19: recover an expired lease.
+        Stage 20: give each receive a distinct handle. Stages 23–25 add the DLQ
+        and FIFO behavior. Follow the current guide rather than implementing
+        everything at once.
         """
         raise NotImplementedError
 
@@ -108,10 +104,10 @@ class Queue:
         raise NotImplementedError
 
     def oldest_age(self, now: Optional[float] = None) -> float:
-        """ApproximateAgeOfOldestMessage — the alarm that actually matters.
+        """An internal toy diagnostic, not CloudWatch's SQS age metric.
 
-        Queue DEPTH is a poor alarm: a healthy high-throughput queue is deep.
-        Age tells you whether anything is being drained at all.
+        Real ApproximateAgeOfOldestMessage excludes repeatedly received poison
+        pills in standard queues; this helper can count all retained messages.
         """
         raise NotImplementedError
 

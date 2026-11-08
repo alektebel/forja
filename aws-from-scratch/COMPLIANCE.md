@@ -1,4 +1,9 @@
-# Compliance — the layer the 36 stages do not teach
+# Compliance — the layer the AWS stages do not teach
+
+> This companion document predates the 63-stage redesign. Its course-stage
+> numbers refer to the former 36-stage ladder; use the [migration map](AUDIT.md#2026-11-08-migration-note)
+> to find the corresponding current stages. Numbered legal and audit-standard
+> references elsewhere in this document retain their original meaning.
 
 The course teaches **mechanisms**: how IAM evaluates, what a delete marker does, why
 rotation re-encrypts keys and never data. A regulated bank does not buy mechanisms. It

@@ -32,7 +32,7 @@ BASELINE = {
     "context-caching": 94,
     "contextcite": 42,
     "dynamo-paper": 70,
-    "aws-from-scratch": 95,
+    "aws-from-scratch": 69,
     "deploy-and-debug": 34,
     "compiler-and-vgpu": 53,
 }

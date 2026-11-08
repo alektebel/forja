@@ -1,6 +1,6 @@
 """
 VPC — CIDR, routing, and the difference that causes the most confusion:
-security groups are STATEFUL, network ACLs are NOT. Complete Solution.
+security groups are STATEFUL, network ACLs are NOT. Starter template.
 
 DESIGN DECISION — model packets, or model rules?
   Evaluating rules in isolation tells you what a rule says. It does not tell
@@ -58,7 +58,11 @@ class Rule(NamedTuple):
     cidr: str
 
     def matches(self, protocol: str, port: int, address: str) -> bool:
-        raise NotImplementedError
+        if self.protocol not in ("-1", protocol):
+            return False
+        if self.protocol != "-1" and not self.port_from <= port <= self.port_to:
+            return False
+        return Cidr(self.cidr).contains_ip(address)
 
 
 class SecurityGroup:
@@ -75,12 +79,14 @@ class SecurityGroup:
 
     def allow_inbound(self, protocol: str, port_from: int, port_to: int,
                       cidr: str) -> None:
-        raise NotImplementedError
+        self.inbound.append(Rule(len(self.inbound) + 1, "allow", protocol,
+                                 port_from, port_to, cidr))
 
     def evaluate(self, direction: str, protocol: str, port: int,
                  address: str) -> bool:
         """Allow-only: there is no deny rule. Absence of an allow IS the deny."""
-        raise NotImplementedError
+        rules = self.inbound if direction == "in" else self.outbound
+        return any(rule.matches(protocol, port, address) for rule in rules)
 
 
 class NetworkAcl:
@@ -95,12 +101,18 @@ class NetworkAcl:
 
     def add(self, direction: str, number: int, action: str, protocol: str,
             port_from: int, port_to: int, cidr: str) -> None:
-        raise NotImplementedError
+        rules = self.inbound if direction == "in" else self.outbound
+        rules.append(Rule(number, action, protocol, port_from, port_to, cidr))
 
     def evaluate(self, direction: str, protocol: str, port: int,
                  address: str) -> Tuple[bool, str]:
-        """Lowest rule number that matches decides. No match means deny."""
-        raise NotImplementedError
+        """Stage 58 replaces insertion order with lowest-rule-number priority."""
+        rules = self.inbound if direction == "in" else self.outbound
+        # Stage 58 will order these by rule number. For now use insertion order.
+        for rule in rules:
+            if rule.matches(protocol, port, address):
+                return rule.action == "allow", f"rule {rule.number} ({rule.action})"
+        return False, "no rule matched"
 
 
 class Subnet:

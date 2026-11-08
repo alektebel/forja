@@ -1,5 +1,5 @@
 """
-KMS — envelope encryption. Complete Solution.
+KMS — envelope encryption. Starter template.
 
 DESIGN DECISION — encrypt data with the master key, or with a data key?
   Encrypting directly with the KMS key means every byte crosses the network to
@@ -42,7 +42,7 @@ def _xor(data: bytes, key: bytes) -> bytes:
     around it — envelope structure, wrapping, encryption context, rotation — is
     exactly what you would build with AES-GCM. Do not ship this.
     """
-    raise NotImplementedError
+    return bytes(byte ^ key[index % len(key)] for index, byte in enumerate(data))
 
 
 class KeyVersion(NamedTuple):
@@ -63,7 +63,7 @@ class MasterKey:
 
     @property
     def current(self) -> KeyVersion:
-        raise NotImplementedError
+        return self.versions[-1]
 
     def rotate(self) -> int:
         """New material for NEW encryptions. Old versions are retained.
@@ -75,7 +75,10 @@ class MasterKey:
         raise NotImplementedError
 
     def _version(self, number: int) -> KeyVersion:
-        raise NotImplementedError
+        for version in self.versions:
+            if version.version == number:
+                return version
+        raise KMSError(f"missing key version {number}")
 
 
 class EncryptedDataKey(NamedTuple):
@@ -95,10 +98,14 @@ class KMS:
         self.keys: Dict[str, MasterKey] = {}
 
     def create_key(self, key_id: str, description: str = "") -> MasterKey:
-        raise NotImplementedError
+        key = MasterKey(key_id, description)
+        self.keys[key_id] = key
+        return key
 
     def _key(self, key_id: str) -> MasterKey:
-        raise NotImplementedError
+        if key_id not in self.keys:
+            raise KMSError(f"no such key {key_id!r}")
+        return self.keys[key_id]
 
     @staticmethod
     def _context_bytes(context: Dict[str, str]) -> bytes:
@@ -109,7 +116,8 @@ class KMS:
         key FOR THIS PURPOSE", and it is what lets an IAM condition say
         kms:EncryptionContext:tenant = ${aws:PrincipalTag/tenant}.
         """
-        raise NotImplementedError
+        canonical = "&".join(f"{key}={value}" for key, value in sorted(context.items()))
+        return hashlib.sha256(canonical.encode()).digest()
 
     def generate_data_key(self, key_id: str,
                           context: Optional[Dict[str, str]] = None) -> DataKey:

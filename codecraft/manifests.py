@@ -5,11 +5,11 @@ A *course* is any directory under the repo root that carries either:
   * `course.py`   — an authored course (see codecraft/api.py), or
   * `check.py`    — one of the existing projects (built-in curriculum).
 
-For `check.py` courses we read the ordered `CHECKS` list out of the source so
-`codecraft next` works without running anything, and fill learning metadata
-from `curriculum.py`.
+For `check.py` courses we read `lessons.json` when present, otherwise the
+ordered `CHECKS` list from source and learning metadata from `curriculum.py`.
 """
 
+import json
 import os
 import re
 
@@ -61,15 +61,30 @@ def load(name: str):
         info = curriculum.COURSE_INFO.get(base, {})
         metas = curriculum.CURRICULUM.get(base, {})
         stages = {}
-        for i, (file, title) in enumerate(_parse_check_stages(
-                os.path.join(candidate, "check.py")), start=1):
+        lessons_path = os.path.join(candidate, "lessons.json")
+        lessons = None
+        if os.path.exists(lessons_path):
+            with open(lessons_path, encoding="utf-8") as fh:
+                lessons = json.load(fh)
+            if [row["id"] for row in lessons] != list(range(1, len(lessons) + 1)):
+                raise ValueError(f"nonsequential lesson IDs in {lessons_path}")
+        rows = ([(row["file"], row["title"]) for row in lessons]
+                if lessons is not None else _parse_check_stages(
+                    os.path.join(candidate, "check.py")))
+        for i, (file, title) in enumerate(rows, start=1):
             meta = dict(metas.get(i, {}))
+            if lessons is not None:
+                meta = dict(lessons[i - 1])
             stages[i] = {
                 "file": file, "title": title,
                 "tags": list(meta.get("tags", [])),
-                "action": meta.get("action", ""),
-                "why": meta.get("why", ""),
+                "action": meta.get("action") or meta.get("task", ""),
+                "why": meta.get("why") or meta.get("context", ""),
                 "predict": meta.get("predict", ""),
+                "context": meta.get("context", ""),
+                "task": meta.get("task", ""),
+                "target": meta.get("target", ""),
+                "optional": meta.get("optional", False),
                 "hints": [], "solution": "",
             }
         return {

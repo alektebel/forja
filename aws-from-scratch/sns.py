@@ -1,5 +1,5 @@
 """
-SNS + EventBridge — fanout and pattern matching. Complete Solution.
+SNS + EventBridge — fanout and pattern matching. Starter template.
 
 DESIGN DECISION — push or pull?
   SQS is pull: a consumer asks, and a message waits until someone does.
@@ -65,7 +65,9 @@ class Topic:
 
     def subscribe(self, protocol: str, endpoint: Any, name: str = "",
                   filter_policy: Optional[Dict[str, Any]] = None) -> Subscription:
-        raise NotImplementedError
+        subscription = Subscription(protocol, endpoint, name, filter_policy)
+        self.subscriptions.append(subscription)
+        return subscription
 
     def publish(self, message: str,
                 attributes: Optional[Dict[str, Any]] = None,

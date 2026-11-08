@@ -14,7 +14,7 @@ from . import guide, manifests
 # Never copy these into an exported starter.
 _SKIP_NAMES = {
     "solutions", "__pycache__", ".git", "_build", ".pytest_cache",
-    ".mypy_cache", "mutate_01.py",  # infra mutations stay in-repo authoring
+    ".mypy_cache", "mutate_01.py", "validate_course.py",  # authoring tools stay in-repo
 }
 _SKIP_PREFIXES = ("mutate_", ".")
 _SKIP_SUFFIXES = (".pyc",)

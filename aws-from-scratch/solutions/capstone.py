@@ -145,6 +145,16 @@ def drain(system: Dict[str, Any], now: float = 0.0,
     return {"processed": processed, "throttled": throttled, "failed": failed}
 
 
+def failure_origin(system: Dict[str, Any], outcome: Dict[str, int]) -> Optional[str]:
+    """Name the downstream cause of a worker failure."""
+    if outcome["failed"] and any(
+        row["throttled"] > 0
+        for row in system["documents"].hot_partition_report().values()
+    ):
+        return "dynamodb"
+    return None
+
+
 def _demo() -> None:
     system = build()
     cloud = system["cloud"]

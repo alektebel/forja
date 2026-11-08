@@ -1,5 +1,33 @@
 # Audit — `aws-from-scratch` stage guides (2026-11-07)
 
+> Historical audit. The 2026-11-08 redesign replaced the 36-stage checker with
+> 63 distinct checks and generated the guides from `lessons.json`. See
+> [REDESIGN.md](REDESIGN.md) for the current ladder and AWS fidelity notes.
+
+## 2026-11-08 migration note
+
+No `codecraft/profile.json` or `codecraft/history.jsonl` existed in this
+workspace, so learner progress was not rewritten. Old stage numbers must not
+be interpreted as new ones. The conceptual correspondence is:
+
+| Former | Current | Former | Current | Former | Current |
+|---|---|---|---|---|---|
+| 1 | 1–3 | 13 | removed: toy age metric | 25 | 40–42 |
+| 2 | 4–5 | 14 | 24–25 | 26 | 43 |
+| 3 | 6 | 15 | 26 | 27 | 44–45 |
+| 4 | 7–8 | 16 | 27 | 28 | 46–47 |
+| 5 | 9–11 | 17 | 28 | 29 | 48–49 |
+| 6 | 12 | 18 | 29 | 30 | 49 |
+| 7 | 13–14 | 19 | 30 | 31 | 50 |
+| 8 | 15–17 | 20 | 31–32 | 32 | 51 |
+| 9 | 18–19 | 21 | 33 | 33 | 52–54 |
+| 10 | 20–21 | 22 | 34–35 | 34 | 55 |
+| 11 | 22 | 23 | 36–37 | 35 | 56–58 |
+| 12 | 23 | 24 | 38–39 | 36 | 59–63 |
+
+This is a topic map, not an automatic progress conversion: the old checker
+reused test functions, so a recorded pass can cover more than its old title.
+
 **Criterion:** each stage = one thing to learn; every guide explains in prose
 what to do and *why the requirement is what it is*.
 

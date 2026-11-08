@@ -1,0 +1,632 @@
+[
+  {
+    "id": 1,
+    "file": "iam.py",
+    "title": "Implicit deny",
+    "context": "An IAM request starts denied until a policy grants it.",
+    "task": "In iam.py, replace the raise in evaluate() with an implicit-deny Decision when policies is empty. One return statement is enough.",
+    "predict": "What is allowed for a request with no policies?",
+    "optional": false,
+    "target": "evaluate"
+  },
+  {
+    "id": 2,
+    "file": "iam.py",
+    "title": "Match an action and a resource before applying a statement",
+    "context": "A policy statement applies only to its named action and resource.",
+    "task": "Match an action and a resource before applying a statement.",
+    "predict": "Does GetObject on bucket A pass? What about PutObject or bucket B?",
+    "optional": false,
+    "target": "evaluate"
+  },
+  {
+    "id": 3,
+    "file": "iam.py",
+    "title": "Give a matching explicit Deny precedence over Allow",
+    "context": "Several policy statements may apply to the same request.",
+    "task": "Give a matching explicit Deny precedence over Allow.",
+    "predict": "If Allow and Deny both match, does reversing policy order change the result?",
+    "optional": false,
+    "target": "evaluate"
+  },
+  {
+    "id": 4,
+    "file": "iam.py",
+    "title": "Reject a condition when its context key is missing",
+    "context": "A condition cannot be checked when its input is absent.",
+    "task": "Reject a condition when its context key is missing.",
+    "predict": "What happens when a required source IP is absent?",
+    "optional": false,
+    "target": "evaluate_condition"
+  },
+  {
+    "id": 5,
+    "file": "iam.py",
+    "title": "Combine condition keys with AND and alternatives for one key with OR",
+    "context": "A condition can list alternatives for one key and require another key.",
+    "task": "Combine condition keys with AND and alternatives for one key with OR.",
+    "predict": "Does staging/data pass? Does prod/web pass?",
+    "optional": false,
+    "target": "evaluate_condition"
+  },
+  {
+    "id": 6,
+    "file": "iam.py",
+    "title": "Intersect identity permissions with a permissions boundary",
+    "context": "A boundary caps an identity policy without becoming a grant itself.",
+    "task": "Intersect identity permissions with a permissions boundary.",
+    "predict": "Can a boundary grant GetObject to an identity with no Allow?",
+    "optional": false,
+    "target": "evaluate_with_boundary"
+  },
+  {
+    "id": 7,
+    "file": "iam.py",
+    "title": "Check a role's trust policy when assuming it",
+    "context": "A role controls who may assume it through a trust policy.",
+    "task": "Check a role's trust policy when assuming it.",
+    "predict": "Can a caller assume a role when their policy allows it but the role trust rejects them?",
+    "optional": false,
+    "target": "assume_role"
+  },
+  {
+    "id": 8,
+    "file": "iam.py",
+    "title": "Give an assumed session the role's permissions",
+    "context": "An assumed role uses the role's permissions during the session.",
+    "task": "Give an assumed session the role's permissions.",
+    "predict": "Which permissions does a successful assumed session carry?",
+    "optional": false,
+    "target": "assume_role"
+  },
+  {
+    "id": 9,
+    "file": "s3.py",
+    "title": "Store and retrieve one object by its full key",
+    "context": "An S3 key is an opaque name, even when it contains a slash.",
+    "task": "Use the supplied bucket setup. Implement put_object and get_object so one opaque key round trips. A placeholder ETag is enough until stage 11.",
+    "predict": "What bytes come back after putting b/hello under key a/b.txt?",
+    "optional": false,
+    "target": "S3.put_object / S3.get_object"
+  },
+  {
+    "id": 10,
+    "file": "s3.py",
+    "title": "Raise `NoSuchKey` for an absent object",
+    "context": "An empty object and a missing key are different states.",
+    "task": "Raise `NoSuchKey` for an absent object.",
+    "predict": "How can GET distinguish an empty object from an absent key?",
+    "optional": false,
+    "target": "S3.get_object"
+  },
+  {
+    "id": 11,
+    "file": "s3.py",
+    "title": "Compute the toy's single-part MD5 ETag",
+    "context": "This toy uses MD5 for an ordinary single-part ETag.",
+    "task": "Compute the toy's single-part MD5 ETag.",
+    "predict": "What digest is returned for the single-part body hello?",
+    "optional": false,
+    "target": "compute_etag"
+  },
+  {
+    "id": 12,
+    "file": "s3.py",
+    "title": "Compute a multipart ETag from part digests",
+    "context": "Multipart ETags describe parts rather than a full-body digest.",
+    "task": "Compute a multipart ETag from part digests.",
+    "predict": "Will the ETag for two parts equal the MD5 of their combined body?",
+    "optional": false,
+    "target": "compute_etag"
+  },
+  {
+    "id": 13,
+    "file": "s3.py",
+    "title": "List object keys as a flat sequence",
+    "context": "S3 stores keys in a flat namespace.",
+    "task": "List object keys as a flat sequence.",
+    "predict": "How many keys appear when listing a/1, a/2, and top without a delimiter?",
+    "optional": false,
+    "target": "S3.list_objects"
+  },
+  {
+    "id": 14,
+    "file": "s3.py",
+    "title": "Collapse shared prefixes when a delimiter is requested",
+    "context": "A delimiter groups keys only during a listing.",
+    "task": "Collapse shared prefixes when a delimiter is requested.",
+    "predict": "What appears under common_prefixes when those keys are listed with / as delimiter?",
+    "optional": false,
+    "target": "S3.list_objects"
+  },
+  {
+    "id": 15,
+    "file": "s3.py",
+    "title": "Retain prior values after writes to a versioned key",
+    "context": "Versioning preserves earlier object values.",
+    "task": "Retain prior values after writes to a versioned key.",
+    "predict": "Can the first version still be read after writing a second version?",
+    "optional": false,
+    "target": "S3.put_object / S3.get_object"
+  },
+  {
+    "id": 16,
+    "file": "s3.py",
+    "title": "Append a delete marker for a plain delete in a versioned bucket",
+    "context": "A delete marker hides a versioned key without erasing history.",
+    "task": "Append a delete marker for a plain delete in a versioned bucket.",
+    "predict": "What does plain GET do after a delete marker is written?",
+    "optional": false,
+    "target": "S3.delete_object"
+  },
+  {
+    "id": 17,
+    "file": "s3.py",
+    "title": "Delete one specified version",
+    "context": "Deleting by version ID removes only the chosen version.",
+    "task": "Delete one specified version.",
+    "predict": "Which versions remain after deleting the first version ID?",
+    "optional": false,
+    "target": "S3.delete_object"
+  },
+  {
+    "id": 18,
+    "file": "sqs.py",
+    "title": "Hide a received message for its visibility interval",
+    "context": "Receiving an SQS message temporarily hides it from other consumers.",
+    "task": "Queue.send is supplied. Implement receive so one message becomes invisible until its visibility timeout. Lease expiry arrives in stage 19.",
+    "predict": "Can a second consumer receive the message five seconds after the first?",
+    "optional": false,
+    "target": "Queue.receive"
+  },
+  {
+    "id": 19,
+    "file": "sqs.py",
+    "title": "Make an undeleted message visible after the interval",
+    "context": "A consumer may crash before deleting a message.",
+    "task": "Make an undeleted message visible after the interval.",
+    "predict": "Can that message be received at t=11 if it was not deleted?",
+    "optional": false,
+    "target": "Queue.receive"
+  },
+  {
+    "id": 20,
+    "file": "sqs.py",
+    "title": "Give each receive a new receipt handle",
+    "context": "A new receive issues a new handle for the same message.",
+    "task": "Give each receive a new receipt handle.",
+    "predict": "Are the receipt handles from two receives equal?",
+    "optional": false,
+    "target": "Queue.receive"
+  },
+  {
+    "id": 21,
+    "file": "sqs.py",
+    "title": "Delete the message with its current handle",
+    "context": "Acknowledging a message is separate from receiving it.",
+    "task": "Delete the message with its current handle.",
+    "predict": "Will the message return after its current handle is deleted?",
+    "optional": false,
+    "target": "Queue.delete"
+  },
+  {
+    "id": 22,
+    "file": "sqs.py",
+    "title": "Change visibility relative to the call time",
+    "context": "Slow work can renew the visibility period.",
+    "task": "Change visibility relative to the call time.",
+    "predict": "At t=11, is a lease extended by 60 seconds at t=5 visible?",
+    "optional": false,
+    "target": "Queue.change_visibility"
+  },
+  {
+    "id": 23,
+    "file": "sqs.py",
+    "title": "Move a repeatedly received message to a dead-letter queue",
+    "context": "A poison message needs a place to go after repeated attempts.",
+    "task": "Move a repeatedly received message to a dead-letter queue.",
+    "predict": "Where is a poison message after it passes the receive limit?",
+    "optional": false,
+    "target": "Queue.receive"
+  },
+  {
+    "id": 24,
+    "file": "sqs.py",
+    "title": "Block another in-flight message from the same FIFO group",
+    "context": "FIFO ordering serializes work within one group.",
+    "task": "Block another in-flight message from the same FIFO group.",
+    "predict": "How many A-group messages can one FIFO batch receive at once?",
+    "optional": false,
+    "target": "Queue.receive"
+  },
+  {
+    "id": 25,
+    "file": "sqs.py",
+    "title": "Let a different FIFO group progress",
+    "context": "Different FIFO groups can proceed independently.",
+    "task": "Let a different FIFO group progress.",
+    "predict": "Can group B progress while a group A message is in flight?",
+    "optional": false,
+    "target": "Queue.receive"
+  },
+  {
+    "id": 26,
+    "file": "sqs.py",
+    "title": "Suppress a duplicate deduplication ID inside the toy window",
+    "context": "A bounded deduplication window absorbs producer retries.",
+    "task": "Suppress a duplicate deduplication ID inside the toy window.",
+    "predict": "What happens to a repeated dedup ID at t=10 and t=400?",
+    "optional": false,
+    "target": "Queue.send"
+  },
+  {
+    "id": 27,
+    "file": "dynamodb.py",
+    "title": "Use both partition and sort values as a composite key",
+    "context": "A composite DynamoDB key has partition and sort components.",
+    "task": "The table already stores and reads items. Implement Table._keys to extract both parts of each item key.",
+    "predict": "Do alice/001 and bob/001 hold separate values?",
+    "optional": false,
+    "target": "Table._keys"
+  },
+  {
+    "id": 28,
+    "file": "dynamodb.py",
+    "title": "Query only a named partition key",
+    "context": "A query is routed by its partition key.",
+    "task": "Query only a named partition key.",
+    "predict": "Does query(alice) return any bob items?",
+    "optional": false,
+    "target": "Table.query"
+  },
+  {
+    "id": 29,
+    "file": "dynamodb.py",
+    "title": "Make a conditional put atomic",
+    "context": "A conditional write protects a value from an unwanted overwrite.",
+    "task": "Make a conditional put atomic.",
+    "predict": "After a conditional create fails, what value remains?",
+    "optional": false,
+    "target": "Table.put_item"
+  },
+  {
+    "id": 30,
+    "file": "dynamodb.py",
+    "title": "Charge the toy's strong read twice its eventual read",
+    "context": "A strong read has a higher read-unit cost in this toy.",
+    "task": "Charge the toy's strong read twice its eventual read.",
+    "predict": "How many read units does a strong read use relative to an eventual read?",
+    "optional": false,
+    "target": "Table.get_item"
+  },
+  {
+    "id": 31,
+    "file": "dynamodb.py",
+    "title": "Apply the toy's write budget per partition",
+    "context": "This toy assigns a fixed write budget to each partition.",
+    "task": "Apply the toy's write budget per partition.",
+    "predict": "With a budget of 10, what happens on the 11th same-partition write?",
+    "optional": false,
+    "target": "Partition.consume"
+  },
+  {
+    "id": 32,
+    "file": "dynamodb.py",
+    "title": "Spread distinct partition keys across partitions",
+    "context": "A stable hash lets different keys use different partitions.",
+    "task": "Replace the single-slot starting point in Table._partition with a stable hash of the partition key.",
+    "predict": "Can 20 distinct keys fit when each of four partitions allows 10 writes?",
+    "optional": false,
+    "target": "Table._partition"
+  },
+  {
+    "id": 33,
+    "file": "dynamodb.py",
+    "title": "Apply a scan filter after reading items",
+    "context": "A scan reads items before applying its filter.",
+    "task": "Apply a scan filter after reading items.",
+    "predict": "If a scan returns one of three rows, how many rows does it count as scanned?",
+    "optional": false,
+    "target": "Table.scan"
+  },
+  {
+    "id": 34,
+    "file": "lambda_svc.py",
+    "title": "Initialize an execution environment on first use",
+    "context": "An execution environment has an initialization cost.",
+    "task": "Function registration is supplied. Make the first LambdaService.invoke create an environment and include its init cost.",
+    "predict": "Does the first invocation include environment initialization cost?",
+    "optional": false,
+    "target": "LambdaService.invoke / LambdaService._acquire_environment"
+  },
+  {
+    "id": 35,
+    "file": "lambda_svc.py",
+    "title": "Reuse an environment between invocations",
+    "context": "A reused execution environment retains memory between calls.",
+    "task": "Reuse an environment between invocations.",
+    "predict": "What does a counter stored outside the handler return on the second call?",
+    "optional": false,
+    "target": "LambdaService._acquire_environment"
+  },
+  {
+    "id": 36,
+    "file": "lambda_svc.py",
+    "title": "Replace an expired toy environment",
+    "context": "The toy's deterministic TTL lets us observe environment replacement.",
+    "task": "Replace an expired toy environment.",
+    "predict": "What value does that counter return after the toy TTL expires?",
+    "optional": false,
+    "target": "LambdaService._acquire_environment"
+  },
+  {
+    "id": 37,
+    "file": "lambda_svc.py",
+    "title": "Report and bill an invocation timeout",
+    "context": "A timed-out invocation still occupied capacity.",
+    "task": "Report and bill an invocation timeout.",
+    "predict": "What error and billed duration result from work exceeding a one-second timeout?",
+    "optional": false,
+    "target": "LambdaService.invoke"
+  },
+  {
+    "id": 38,
+    "file": "lambda_svc.py",
+    "title": "Enforce the account concurrency ceiling",
+    "context": "Lambda concurrency limits simultaneous work.",
+    "task": "Enforce the account concurrency ceiling.",
+    "predict": "At concurrency 10, how many of 15 simultaneous calls run?",
+    "optional": false,
+    "target": "LambdaService.concurrent_invoke"
+  },
+  {
+    "id": 39,
+    "file": "lambda_svc.py",
+    "title": "Subtract reserved concurrency from the unreserved pool",
+    "context": "Reserved concurrency reduces the shared unreserved pool.",
+    "task": "Subtract reserved concurrency from the unreserved pool.",
+    "predict": "After reserving 6 of 10 slots, how many can an unrelated function use?",
+    "optional": false,
+    "target": "LambdaService.unreserved_capacity"
+  },
+  {
+    "id": 40,
+    "file": "lambda_svc.py",
+    "title": "Return synchronous handler failure to its caller",
+    "context": "Synchronous invocation reports a handler error to its caller.",
+    "task": "Return synchronous handler failure to its caller.",
+    "predict": "How many times does a failing synchronous handler run?",
+    "optional": false,
+    "target": "LambdaService.invoke"
+  },
+  {
+    "id": 41,
+    "file": "lambda_svc.py",
+    "title": "Retry a failed asynchronous handler in the toy's three-attempt policy",
+    "context": "An asynchronous handler error can trigger another attempt.",
+    "task": "Retry a failed asynchronous handler in the toy's three-attempt policy.",
+    "predict": "How many attempts does one failing async event make by default in this toy?",
+    "optional": false,
+    "target": "LambdaService.invoke_async"
+  },
+  {
+    "id": 42,
+    "file": "lambda_svc.py",
+    "title": "Send an exhausted asynchronous event to the dead-letter queue",
+    "context": "An exhausted asynchronous event can be preserved for inspection.",
+    "task": "Send an exhausted asynchronous event to the dead-letter queue.",
+    "predict": "Where does an async event go after its last failed attempt?",
+    "optional": false,
+    "target": "LambdaService.invoke_async"
+  },
+  {
+    "id": 43,
+    "file": "sns.py",
+    "title": "Fan one publish out to all subscriptions",
+    "context": "SNS sends a copy of one publication to each subscriber.",
+    "task": "Topic.subscribe is supplied. Implement publish and delivery so one message reaches every subscribed queue. Filtering arrives next.",
+    "predict": "How many copies arrive when a topic has two queue subscribers?",
+    "optional": false,
+    "target": "Topic.publish / Topic._deliver"
+  },
+  {
+    "id": 44,
+    "file": "sns.py",
+    "title": "Match any allowed value for one SNS filter key",
+    "context": "A filter key can admit several alternative values.",
+    "task": "Match any allowed value for one SNS filter key.",
+    "predict": "Does staging match a filter allowing prod or staging?",
+    "optional": false,
+    "target": "matches_filter"
+  },
+  {
+    "id": 45,
+    "file": "sns.py",
+    "title": "Require every ordinary SNS filter key",
+    "context": "Ordinary SNS filter keys must all be present and match.",
+    "task": "Require every ordinary SNS filter key.",
+    "predict": "Does a message missing environment match a filter requiring it?",
+    "optional": false,
+    "target": "matches_filter"
+  },
+  {
+    "id": 46,
+    "file": "sns.py",
+    "title": "Match a nested EventBridge pattern",
+    "context": "EventBridge patterns can describe nested event fields.",
+    "task": "Match a nested EventBridge pattern.",
+    "predict": "Does a nested pattern for terminated match a running event?",
+    "optional": false,
+    "target": "matches_event_pattern"
+  },
+  {
+    "id": 47,
+    "file": "sns.py",
+    "title": "Fire every matching EventBridge rule",
+    "context": "More than one EventBridge rule may match one event.",
+    "task": "Fire every matching EventBridge rule.",
+    "predict": "How many rule handlers run when two rules match one event?",
+    "optional": false,
+    "target": "EventBus.put_event"
+  },
+  {
+    "id": 48,
+    "file": "kms.py",
+    "title": "Return plaintext and wrapped copies of one data key",
+    "context": "Envelope encryption begins with a plaintext and wrapped data key.",
+    "task": "Key creation and wrapping helpers are supplied. Implement generate_data_key and decrypt_data_key so the two forms of one key round trip.",
+    "predict": "What two forms of the same data key does GenerateDataKey return?",
+    "optional": false,
+    "target": "KMS.generate_data_key / KMS.decrypt_data_key"
+  },
+  {
+    "id": 49,
+    "file": "kms.py",
+    "title": "Encrypt an object locally with its data key",
+    "context": "The data key encrypts the payload outside KMS.",
+    "task": "Encrypt an object locally with its data key.",
+    "predict": "What must be stored beside the payload ciphertext to decrypt it later?",
+    "optional": false,
+    "target": "EnvelopeCipher.encrypt / EnvelopeCipher.decrypt"
+  },
+  {
+    "id": 50,
+    "file": "kms.py",
+    "title": "Bind the wrapped key to an encryption context",
+    "context": "Encryption context binds a wrapped key to request metadata.",
+    "task": "Bind the wrapped key to an encryption context.",
+    "predict": "Can ciphertext encrypted under tenant A be decrypted under tenant B?",
+    "optional": false,
+    "target": "KMS.decrypt_data_key"
+  },
+  {
+    "id": 51,
+    "file": "kms.py",
+    "title": "Keep old key material usable after rotation",
+    "context": "Rotation keeps older key material available for decryption.",
+    "task": "Keep old key material usable after rotation.",
+    "predict": "Can ciphertext from before rotation still be decrypted afterward?",
+    "optional": false,
+    "target": "MasterKey.rotate"
+  },
+  {
+    "id": 52,
+    "file": "vpc.py",
+    "title": "Decide whether one CIDR contains another",
+    "context": "CIDR containment describes an address range inside another.",
+    "task": "Decide whether one CIDR contains another.",
+    "predict": "Does 10.0.0.0/16 contain 10.0.1.0/24 or 10.1.0.0/24?",
+    "optional": false,
+    "target": "Cidr.contains"
+  },
+  {
+    "id": 53,
+    "file": "vpc.py",
+    "title": "Reject an overlapping subnet",
+    "context": "Overlapping subnets make address assignment ambiguous.",
+    "task": "Reject an overlapping subnet.",
+    "predict": "Can 10.0.1.128/25 be added after 10.0.1.0/24?",
+    "optional": false,
+    "target": "Vpc.add_subnet"
+  },
+  {
+    "id": 54,
+    "file": "vpc.py",
+    "title": "Subtract AWS's five reserved subnet addresses",
+    "context": "AWS reserves five addresses in each VPC subnet.",
+    "task": "Subtract AWS's five reserved subnet addresses.",
+    "predict": "How many usable addresses remain in an AWS /28 subnet?",
+    "optional": false,
+    "target": "Cidr.usable_hosts"
+  },
+  {
+    "id": 55,
+    "file": "vpc.py",
+    "title": "Select the longest matching route prefix",
+    "context": "Routing chooses the most specific matching destination.",
+    "task": "Select the longest matching route prefix.",
+    "predict": "Which route wins for 10.1.5.7: /0, /16, or /24?",
+    "optional": false,
+    "target": "Subnet.route_for"
+  },
+  {
+    "id": 56,
+    "file": "vpc.py",
+    "title": "Permit reply traffic for an allowed security-group connection",
+    "context": "A security group tracks allowed connection state.",
+    "task": "Permit reply traffic for an allowed security-group connection.",
+    "predict": "Does a reply need its own outbound security-group rule?",
+    "optional": false,
+    "target": "test_connection"
+  },
+  {
+    "id": 57,
+    "file": "vpc.py",
+    "title": "Evaluate a NACL reply separately",
+    "context": "A NACL checks the reply packet separately.",
+    "task": "Evaluate a NACL reply separately.",
+    "predict": "Does a NACL allow the reply when only port 443 is open outbound?",
+    "optional": false,
+    "target": "test_connection"
+  },
+  {
+    "id": 58,
+    "file": "vpc.py",
+    "title": "Evaluate NACL rules in number order",
+    "context": "NACL rules have numeric priority.",
+    "task": "Evaluate NACL rules in number order.",
+    "predict": "If allow 200 is added before deny 100, which rule wins for SSH?",
+    "optional": false,
+    "target": "NetworkAcl.evaluate"
+  },
+  {
+    "id": 59,
+    "file": "capstone.py",
+    "title": "Publish one event after an upload",
+    "context": "An upload can publish a notification after storing an object.",
+    "task": "The system setup is supplied. Implement upload so it stores one encrypted object and publishes one notification. The topic has no queue subscriber yet.",
+    "predict": "After uploading one PDF, how many events has the topic published?",
+    "optional": false,
+    "target": "upload"
+  },
+  {
+    "id": 60,
+    "file": "capstone.py",
+    "title": "Subscribe the work queue to the topic",
+    "context": "An SNS subscription can deliver that notification to SQS.",
+    "task": "In build(), subscribe the processing queue to the uploads topic with the PDF filter policy.",
+    "predict": "Is that event visible in SQS after the queue is subscribed?",
+    "optional": false,
+    "target": "build"
+  },
+  {
+    "id": 61,
+    "file": "capstone.py",
+    "title": "Connect SQS processing through Lambda to DynamoDB",
+    "context": "A worker can consume one queued event and write one row.",
+    "task": "Connect SQS processing through Lambda to DynamoDB.",
+    "predict": "How many DynamoDB rows result after draining one queued PDF?",
+    "optional": false,
+    "target": "drain"
+  },
+  {
+    "id": 62,
+    "file": "capstone.py",
+    "title": "Authorize before the upload's first side effect",
+    "context": "Authorization must happen before an upload's first side effect.",
+    "task": "Authorize before the upload's first side effect.",
+    "predict": "What storage or queue side effects remain after a denied upload?",
+    "optional": false,
+    "target": "upload"
+  },
+  {
+    "id": 63,
+    "file": "capstone.py",
+    "title": "Name the downstream failure origin",
+    "context": "A downstream database limit can appear as a worker failure.",
+    "task": "Implement failure_origin: return \"dynamodb\" when the worker failed and a database partition reports throttling; otherwise return None.",
+    "predict": "When the worker fails and a partition reports throttling, what should failure_origin return?",
+    "optional": false,
+    "target": "failure_origin"
+  }
+]
