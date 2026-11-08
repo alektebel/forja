@@ -87,6 +87,11 @@
     "context": "An S3 key is an opaque name, even when it contains a slash.",
     "task": "Use the supplied bucket setup. Implement put_object and get_object so one opaque key round trips. A placeholder ETag is enough until stage 11.",
     "predict": "What bytes come back after putting b/hello under key a/b.txt?",
+    "hints": [
+      "A bucket already has an objects dictionary. Use the entire key, including any slash, as its dictionary key.",
+      "Each value in Bucket.objects is a list of Version records. For this stage, append one Version when writing and return the last one when reading.",
+      "Use self._bucket(bucket) to find the bucket. A placeholder ETag is enough for now; the check only reads the body's bytes."
+    ],
     "optional": false,
     "target": "S3.put_object / S3.get_object"
   },
