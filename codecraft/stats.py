@@ -25,9 +25,12 @@ how big that tester is. Two numbers, and only one of them can be recomputed:
 The pair is the honest answer to "how much does this stage test me": `tests` is
 what the check says about itself, `mutants` is what it was proven to catch.
 
-Measured 2026-10-21 against the thirty-five courses that carry a `course.py`. A check
-that changes invalidates its row: re-measure with the course's harness
-(`mutate_all.py <stage>` prints the caught and missed counts) and fix the tuple.
+Measured 2026-10-21 against the thirty-five courses that carry a `course.py`,
+and 2026-11-08 for `advanced-dsa-from-scratch` (its battery ships as
+`_build/mutations.py` + `_build/run_mutations.py`). A check that changes
+invalidates its row: re-measure with the course's harness (or
+`mutate_all.py <stage>`, which prints the caught and missed counts) and fix the
+tuple.
 """
 
 # course slug -> [(tests, mutants), ...] in stage order, None where unmeasured.
@@ -181,6 +184,9 @@ STAGES = {
     "rasterizer-from-scratch": [
         (39, 36), (22, 35), (24, 35), (38, 35), (35, 37),
         (34, 35), (44, 35), (28, 37), (46, 37), (38, 47)],
+    "advanced-dsa-from-scratch": [
+        (12, 3), (18, 3), (17, 3), (11, 2), (19, 3),
+        (13, 2), (13, 3), (13, 3), (12, 3), (10, 4)],
 }
 
 
