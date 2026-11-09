@@ -9,6 +9,7 @@
   let file = null;
   let hintIndex = 0;
   let running = false;
+  let lastOutcome = null;
 
   function currentLearning() { return stage?.learning || bundle?.learning?.[stage?.id] || null; }
   function records() { return learning.read(localStorage); }
@@ -101,6 +102,7 @@
     $("editor-file").value = name;
     $("editor-code").value = draft(name) ?? bundle.files[name];
     $("editor-save-state").textContent = draft(name) === null ? "Starter code · edits save here" : "Saved in this browser";
+    if (lastOutcome?.file && lastOutcome.file !== name) lastOutcome = null;
     lines();
   }
   function jumpToTask() {
@@ -146,6 +148,8 @@
   }
   function guide() {
     hintIndex = 0;
+    lastOutcome = null;
+    $("editor-review-wrap").hidden = true;
     $("editor-stage-title").textContent = `Stage ${String(stage.id).padStart(2, "0")} · ${stage.title}`;
     $("editor-goal").textContent = stage.action || stage.task || "Complete this stage, then run its check.";
     $("editor-target").textContent = stage.target ? `Edit ${stage.target} in ${stage.file}.` : `Edit ${stage.file}.`;
@@ -236,6 +240,7 @@
       } catch { /* progress still visible for this run */ }
     }
     if (stage?.id !== checkedStage.id || course !== checkedCourse) return;
+    lastOutcome = { ...outcome, sourceHash: learning.fingerprint(source) };
     result(outcome.status, outcome.detail);
     $("editor-run-advice").textContent = advice.message;
     $("editor-run-advice").hidden = false;
@@ -274,6 +279,92 @@
   $("editor-practice-jump").addEventListener("click", () => {
     $("editor-practice").scrollIntoView({ behavior: "smooth", block: "nearest" });
   });
+  function jumpToLine(line) {
+    const code = $("editor-code");
+    const value = code.value;
+    const lines = value.split("\n");
+    let offset = 0;
+    for (let i = 0; i < Math.min(line - 1, lines.length); i += 1) offset += lines[i].length + 1;
+    const end = offset + (lines[line - 1]?.length || 0);
+    code.focus();
+    code.setSelectionRange(offset, end);
+    code.scrollTop = Math.max(0, (line - 4) * 21);
+    $("editor-lines").scrollTop = code.scrollTop;
+  }
+
+  function renderReview(review) {
+    const wrap = $("editor-review-wrap");
+    const list = $("editor-review-list");
+    const summary = $("editor-review-summary");
+    wrap.hidden = false;
+    list.replaceChildren();
+    summary.textContent = review.total
+      ? `${review.total} note${review.total === 1 ? "" : "s"} · ${review.errors} error${review.errors === 1 ? "" : "s"} · ${review.guidelines} guideline${review.guidelines === 1 ? "" : "s"}`
+      : "No guideline or checker issues in the target.";
+    if (!review.total) {
+      const empty = document.createElement("li");
+      empty.className = "review-empty";
+      empty.textContent = "No comments for the target function.";
+      list.appendChild(empty);
+      return;
+    }
+    for (const row of review.lines) {
+      const item = document.createElement("li");
+      item.className = "review-row" + (row.comments.some((c) => c.kind === "error") ? " is-error" : "");
+      item.tabIndex = 0;
+      item.setAttribute("role", "button");
+      item.setAttribute("aria-label", `Review line ${row.line}`);
+      item.onclick = () => jumpToLine(row.line);
+      item.onkeydown = (event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          jumpToLine(row.line);
+        }
+      };
+      const head = document.createElement("div");
+      head.className = "review-row-head";
+      const number = document.createElement("span");
+      number.className = "review-line";
+      number.textContent = `Line ${row.line}`;
+      head.appendChild(number);
+      for (const comment of row.comments) {
+        const kind = document.createElement("span");
+        kind.className = "review-kind";
+        kind.textContent = `${comment.kind} · ${comment.rule}`;
+        head.appendChild(kind);
+      }
+      const code = document.createElement("code");
+      code.className = "review-code";
+      code.textContent = row.code || " ";
+      item.append(head, code);
+      for (const comment of row.comments) {
+        const message = document.createElement("p");
+        message.className = "review-message";
+        message.textContent = comment.message;
+        item.appendChild(message);
+      }
+      list.appendChild(item);
+    }
+  }
+
+  function reviewCode() {
+    if (!stage || !$("editor-code").value) return;
+    const code = $("editor-code").value;
+    const ranges = window.forjaCodeReview?.targetRanges(code.split("\n"), stage.target) || [];
+    const failureLine = lastOutcome?.file === file
+      && lastOutcome.sourceHash === learning.fingerprint(code) ? lastOutcome.line : null;
+    const result = window.forjaCodeReview?.review(code, {
+      ranges,
+      target: stage.target,
+      stage: stage.id,
+      task: stage.action || stage.task,
+      failureLine,
+      failureDetail: lastOutcome?.detail,
+    });
+    if (result) renderReview(result);
+  }
+
+  $("editor-review").addEventListener("click", reviewCode);
   $("editor-run").addEventListener("click", run);
   $("editor-close").addEventListener("click", () => { $("browser-editor").hidden = true; });
   $("editor-download").addEventListener("click", () => {
