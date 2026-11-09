@@ -398,6 +398,15 @@ notice** — a wrong bit index, a false negative on a fresh filter — not line
 coverage. A check whose message names the likely cause is a tutor; the whole
 repo is built on that idea, and your courses inherit it.
 
+The full contract — the two course shapes, the stage anatomy (context, task,
+target, prediction, requirements, non-goals, hint ladder, `learning` block), the
+mutation-test requirement, and the metadata → site/guide chain that puts stage
+detail on the deployed page — lives in
+[`.claude/skills/graded-module/SKILL.md`](../.claude/skills/graded-module/SKILL.md).
+Anything a learner must read belongs in a metadata field (`lessons.json` or
+`stage(...)`) that `manifests.py` passes through; prose that exists only in a
+README does not reach the site.
+
 ---
 
 ## Files

@@ -289,6 +289,8 @@ def _item_view(item, course, checks, repo, dir_exists=False) -> dict:
                 "predict": meta.get("predict", ""),
                 "example": meta.get("example", ""),
                 "target": meta.get("target", ""),
+                "requirements": list(meta.get("requirements", [])),
+                "out_of_scope": list(meta.get("out_of_scope", [])),
                 "hints": meta.get("hints", []),
                 "learning": meta.get("learning"),
             })

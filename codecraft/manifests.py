@@ -87,6 +87,8 @@ def load(name: str):
                 "target": meta.get("target", ""),
                 "optional": meta.get("optional", False),
                 "hints": list(meta.get("hints", [])),
+                "requirements": list(meta.get("requirements", [])),
+                "out_of_scope": list(meta.get("out_of_scope", [])),
                 "learning": meta.get("learning"), "solution": "",
             }
         return {

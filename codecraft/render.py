@@ -183,6 +183,10 @@ def render_stage(course, sid, meta, size, live, statuses, ink: Ink, command):
 
     lines.append("")
     lines += _wrap("what", meta.get("action") or "read the stage docstring.", ink)
+    for item in meta.get("requirements") or []:
+        lines += _wrap("must", item, ink)
+    for item in meta.get("out_of_scope") or []:
+        lines += _wrap("skip", item, ink)
     if meta.get("predict"):
         lines += _wrap("predict", meta["predict"], ink)
     for hint in meta.get("hints") or []:

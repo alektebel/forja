@@ -105,6 +105,16 @@ def _render_micro_stage(course: dict, stage_id: int, meta: dict) -> str:
         meta["task"],
         "",
     ]
+    requirements = meta.get("requirements") or []
+    if requirements:
+        lines.extend(["## Requirements", ""])
+        lines.extend(f"- {item}" for item in requirements)
+        lines.append("")
+    out_of_scope = meta.get("out_of_scope") or []
+    if out_of_scope:
+        lines.extend(["## Not in this stage", ""])
+        lines.extend(f"- {item}" for item in out_of_scope)
+        lines.append("")
     if meta.get("example"):
         lines.extend(["## Example edit", "", "```python", meta["example"], "```", ""])
     lines.extend([
