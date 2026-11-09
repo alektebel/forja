@@ -444,6 +444,7 @@ def build_state(profile=None, courses=None) -> dict:
         "phases": phases,
         "concepts": _concepts(profile),
         "courses": rows,
+        "workspaces": workspace.course_names(),
     }
 
 
@@ -476,6 +477,12 @@ class Handler(http.server.BaseHTTPRequestHandler):
             return self._file("index.html")
         if path == "/api/workspace/aws-from-scratch":
             return self._json(workspace.aws_bundle())
+        if path.startswith("/api/workspace/"):
+            name = path.rsplit("/", 1)[-1]
+            try:
+                return self._json(workspace.bundle(name))
+            except (FileNotFoundError, ValueError):
+                return self._json({"error": "unknown course"}, 404)
         if path == "/api/state":
             Handler.state = build_state()
             return self._json(Handler.state)

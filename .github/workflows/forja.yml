@@ -70,6 +70,11 @@ jobs:
             rsync -a --delete "$SITE_SRC/logos/" forja/logos/
             changed=1
           fi
+          if ! diff -rq "$SITE_SRC/workspaces" forja/workspaces >/dev/null 2>&1; then
+            mkdir -p forja/workspaces
+            rsync -a --delete "$SITE_SRC/workspaces/" forja/workspaces/
+            changed=1
+          fi
 
           for f in state.json data.json; do
             if [ "$(python3 "$STRIP" "$SITE_SRC/$f")" != "$(python3 "$STRIP" "forja/$f")" ]; then

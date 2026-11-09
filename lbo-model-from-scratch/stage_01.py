@@ -68,7 +68,6 @@ def _line(name, kind, amount_cents):
 
 
 def sources_uses(estate, entry_multiple_bp):
-    """The deal's sources and its uses, balanced to the cent.
-
+    """The deal's sources and its uses, balanced to the cent."""
 
     raise NotImplementedError("1: implement sources_uses()")

@@ -113,6 +113,16 @@ def build(outdir: str) -> dict:
     with open(os.path.join(outdir, "workspace.json"), "w", encoding="utf-8") as fh:
         json.dump(workspace.aws_bundle(), fh, ensure_ascii=False)
 
+    workspaces_out = os.path.join(outdir, "workspaces")
+    os.makedirs(workspaces_out, exist_ok=True)
+    for name in workspace.course_names():
+        try:
+            payload = workspace.bundle(name)
+        except (FileNotFoundError, ValueError):
+            continue
+        with open(os.path.join(workspaces_out, f"{name}.json"), "w", encoding="utf-8") as fh:
+            json.dump(payload, fh, ensure_ascii=False)
+
     return {
         "outdir": outdir,
         "phases": len(state["phases"]),
