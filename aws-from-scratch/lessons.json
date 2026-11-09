@@ -92,6 +92,22 @@
       "Each value in Bucket.objects is a list of Version records. For this stage, append one Version when writing and return the last one when reading.",
       "Use self._bucket(bucket) to find the bucket. A placeholder ETag is enough for now; the check only reads the body's bytes."
     ],
+    "learning": {
+      "check_case": "The checker writes b'hello' under a/b.txt, then reads that same full key.",
+      "failure_focus": "Inspect the key used in Bucket.objects and the body on the Version returned by get_object.",
+      "concept": {
+        "prompt": "After storing a/b.txt, what is the key in the bucket's object map?",
+        "options": ["a/b.txt", "b.txt inside a folder named a", "Two keys: a and b.txt"],
+        "correct": 0,
+        "feedback": ["The slash is part of one opaque key.", "S3 has no folder object to contain b.txt; the slash belongs to the key.", "Putting one object creates one key, even when its name contains a slash."]
+      },
+      "transfer": {
+        "prompt": "A bucket has logs/2026/nov.txt and logs/2026/dec.txt. What must a rename to archive/2026/ change?",
+        "options": ["Both object keys", "One folder pointer", "Only each object's metadata"],
+        "correct": 0,
+        "feedback": ["The apparent folder is a shared key prefix, so both keys change.", "There is no folder pointer in the flat key map.", "Metadata does not determine an object's key."]
+      }
+    },
     "optional": false,
     "target": "S3.put_object / S3.get_object"
   },
@@ -102,6 +118,26 @@
     "context": "An empty object and a missing key are different states.",
     "task": "Raise `NoSuchKey` for an absent object.",
     "predict": "How can GET distinguish an empty object from an absent key?",
+    "hints": [
+      "Look up the key's history before inspecting its body. An empty bytes value is still a stored object.",
+      "When the key has no history, raise S3Error with code NoSuchKey. Keep returning a Version for an existing empty body."
+    ],
+    "learning": {
+      "check_case": "The checker stores b'' under empty and then requests the absent key.",
+      "failure_focus": "Check whether get_object distinguishes a missing history from a Version whose body is b''.",
+      "concept": {
+        "prompt": "A key contains b''; another key was never stored. Which result is correct?",
+        "options": ["GET returns empty bytes for the first and raises NoSuchKey for the second", "Both raise NoSuchKey", "Both return empty bytes"],
+        "correct": 0,
+        "feedback": ["Presence of a key is separate from the size of its body.", "A stored empty body is still an object.", "An absent key has no Version to return."]
+      },
+      "transfer": {
+        "prompt": "A client treats `if not version.body` as proof that a key is missing. What goes wrong?",
+        "options": ["It reports a stored empty object as missing", "It mistakes a missing key for an empty object", "Nothing; empty bodies are never stored"],
+        "correct": 0,
+        "feedback": ["The Version exists even when its body is falsy; check key presence instead.", "The bug runs after a Version was returned, so it wrongly rejects a stored empty body.", "An empty bytes body is valid in this model."]
+      }
+    },
     "optional": false,
     "target": "S3.get_object"
   },
@@ -112,6 +148,26 @@
     "context": "This toy uses MD5 for an ordinary single-part ETag.",
     "task": "Compute the toy's single-part MD5 ETag.",
     "predict": "What digest is returned for the single-part body hello?",
+    "hints": [
+      "For this stage, hash the bytes of the body itself. The key and metadata are not inputs.",
+      "Use hashlib.md5(body).hexdigest() for the toy's single-part case. Leave the multipart branch for stage 12."
+    ],
+    "learning": {
+      "check_case": "The checker compares compute_etag(b'hello') with the MD5 hex digest of those bytes.",
+      "failure_focus": "Check which bytes reach MD5 and whether the function returns its hexadecimal digest string.",
+      "concept": {
+        "prompt": "In this toy's single-part case, what input determines the ETag?",
+        "options": ["The object's body bytes", "The object's key", "The body length alone"],
+        "correct": 0,
+        "feedback": ["The toy hashes the original body bytes for a single part.", "The key is not part of this digest.", "Different bodies can have the same length and different digests."]
+      },
+      "transfer": {
+        "prompt": "Two single-part objects have different keys but identical body bytes. In this toy, how do their ETags compare?",
+        "options": ["They match", "They differ because the keys differ", "They match only if their metadata matches"],
+        "correct": 0,
+        "feedback": ["The toy's single-part digest depends on body bytes alone.", "The key does not enter the digest.", "Metadata does not enter this toy's single-part digest."]
+      }
+    },
     "optional": false,
     "target": "compute_etag"
   },
@@ -122,6 +178,26 @@
     "context": "Multipart ETags describe parts rather than a full-body digest.",
     "task": "Compute a multipart ETag from part digests.",
     "predict": "Will the ETag for two parts equal the MD5 of their combined body?",
+    "hints": [
+      "First compute each part's MD5 digest as bytes. The multipart input is those digest bytes in order, not the combined body.",
+      "Hash the concatenated part digests and append a hyphen plus the part count. Keep the single-part behavior from stage 11."
+    ],
+    "learning": {
+      "check_case": "The checker passes parts [b'hello', b'world'] and expects a tag ending in -2 that differs from the single-part tag.",
+      "failure_focus": "Check that the multipart branch hashes ordered part digests and includes the number of parts.",
+      "concept": {
+        "prompt": "Why can a two-part ETag differ from the single-part ETag for the same combined body?",
+        "options": ["It hashes the ordered part digests and records the part count", "It hashes the full body twice", "It includes the object key"],
+        "correct": 0,
+        "feedback": ["Part boundaries change the digest input; the count is recorded in the suffix.", "The multipart input is the part digests, not two passes over the full body.", "The object key is not an input to this toy ETag."]
+      },
+      "transfer": {
+        "prompt": "Two multipart uploads have the same combined bytes and two parts each, but split the bytes at different positions. Can their ETags differ?",
+        "options": ["Yes, the part digests change with the split", "No, the combined bytes and part count are the same", "Only if the object keys differ"],
+        "correct": 0,
+        "feedback": ["Different boundaries produce different per-part digests.", "The multipart digest also depends on the bytes inside each part.", "The object key does not determine this toy ETag."]
+      }
+    },
     "optional": false,
     "target": "compute_etag"
   },

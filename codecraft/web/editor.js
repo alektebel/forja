@@ -2,12 +2,82 @@
 (() => {
   const $ = (id) => document.getElementById(id);
   const PREFIX = "forja.code.aws-from-scratch.";
+  const learning = window.forjaLearning;
   let bundle = null;
   let course = null;
   let stage = null;
   let file = null;
   let hintIndex = 0;
   let running = false;
+
+  function currentLearning() { return stage?.learning || bundle?.learning?.[stage?.id] || null; }
+  function records() { return learning.read(localStorage); }
+  function passedStages() {
+    try { return JSON.parse(localStorage.getItem("forja.browser.passed.v1") || "{}")[course] || []; }
+    catch { return []; }
+  }
+
+  function question(kind, data) {
+    const choices = $(`editor-${kind}-choices`);
+    choices.replaceChildren();
+    $(`editor-${kind}-prompt`).textContent = data.prompt;
+    $(`editor-${kind}-reason`).value = "";
+    const feedback = $(`editor-${kind}-feedback`);
+    feedback.textContent = "";
+    delete feedback.dataset.correct;
+    $(`editor-${kind}-submit`).disabled = false;
+    for (let i = 0; i < data.options.length; i++) {
+      const label = document.createElement("label");
+      const input = document.createElement("input");
+      input.type = "radio";
+      input.name = `editor-${kind}-choice`;
+      input.value = String(i);
+      const words = document.createElement("span");
+      words.textContent = data.options[i];
+      label.append(input, words);
+      choices.appendChild(label);
+    }
+  }
+
+  function showConcept() {
+    const data = currentLearning()?.concept;
+    if (!data) return;
+    question("concept", data);
+    $("editor-concept").hidden = false;
+    $("editor-concept-toggle").hidden = true;
+    $("editor-concept").scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+
+  function showPractice() {
+    const due = learning.duePractice(records(), passedStages(), bundle?.learning, stage.id, Date.now());
+    const panel = $("editor-practice");
+    panel.hidden = !due;
+    $("editor-practice-jump").hidden = !due;
+    if (!due) return;
+    panel.dataset.stage = String(due);
+    $("editor-practice-jump").textContent = `Recall from stage ${due} · 1 question`;
+    $("editor-practice-title").textContent = `Recall · Stage ${due}`;
+    question("practice", bundle.learning[due].transfer);
+  }
+
+  function submitQuestion(kind) {
+    const owner = kind === "concept" ? stage?.id : Number($("editor-practice").dataset.stage);
+    const data = kind === "concept" ? currentLearning()?.concept : bundle?.learning?.[owner]?.transfer;
+    const selected = document.querySelector(`input[name="editor-${kind}-choice"]:checked`);
+    const feedback = $(`editor-${kind}-feedback`);
+    if (!selected) { feedback.textContent = "Choose one answer first."; return; }
+    const choice = Number(selected.value);
+    const judged = learning.answer(data, choice);
+    if (!judged) return;
+    const reasoning = $(`editor-${kind}-reason`).value.trim().slice(0, 600);
+    learning.append(localStorage, {
+      ts: Date.now(), course, stage: owner, kind, choice,
+      correct: judged.correct, reasoning,
+    });
+    feedback.dataset.correct = String(judged.correct);
+    feedback.textContent = `${judged.correct ? "Yes." : `The answer is: ${data.options[data.correct]}.`} ${judged.feedback}`;
+    $(`editor-${kind}-submit`).disabled = true;
+  }
 
   function draft(name) {
     try { return localStorage.getItem(PREFIX + name); } catch { return null; }
@@ -82,7 +152,15 @@
     $("editor-hint-text").textContent = "Hints appear one at a time. Try the stage yourself first.";
     $("editor-hint").disabled = false;
     $("editor-result").hidden = true;
+    $("editor-run-advice").hidden = true;
+    $("editor-concept").hidden = true;
+    $("editor-concept-toggle").hidden = !currentLearning()?.concept;
+    const priorConcept = records().filter((e) => e.kind === "concept" && e.course === course && e.stage === stage.id).at(-1);
+    $("editor-concept-toggle").textContent = priorConcept
+      ? (priorConcept.correct ? "Idea check answered · revisit" : "Revisit idea check")
+      : "Check the idea";
     if (bundle?.editable.includes(stage.file)) selectFile(stage.file);
+    if (bundle) showPractice();
   }
   async function open(nextCourse, nextStage) {
     if (nextCourse !== "aws-from-scratch" || !nextStage) return;
@@ -102,21 +180,27 @@
     if (stage?.id === nextStage.id) return;
     stage = nextStage;
     guide();
+    jumpToTask();
   }
   async function run() {
     if (running || !bundle || !stage) return;
     save();
+    const checkedStage = stage;
+    const checkedCourse = course;
     running = true;
     $("editor-run").disabled = true;
     $("editor-run").textContent = "Running…";
     result("TODO", "Loading Python and checking this stage. The first run may take a moment.");
     const files = { ...bundle.files };
     for (const name of bundle.editable) files[name] = draft(name) ?? bundle.files[name];
+    const source = files[checkedStage.file] || "";
+    const prior = records().filter((e) => e.kind === "run" && e.course === checkedCourse && e.stage === checkedStage.id);
     let worker;
+    let outcome;
     try {
       worker = new Worker(asset("py-worker.mjs"), { type: "module" });
       const id = Date.now();
-      const outcome = await new Promise((resolve, reject) => {
+      outcome = await new Promise((resolve, reject) => {
         const timeout = setTimeout(() => reject(new Error("Python took too long to load. Check your connection and try again.")), 90000);
         worker.onmessage = ({ data }) => {
           if (data.id !== id) return;
@@ -127,25 +211,36 @@
           clearTimeout(timeout);
           reject(new Error("Python could not load. Check your connection and try again."));
         };
-        worker.postMessage({ id, files, stage: stage.id });
+        worker.postMessage({ id, files, stage: checkedStage.id });
       });
-      result(outcome.status, outcome.detail);
-      if (outcome.status === "PASS") {
-        try {
-          const key = "forja.browser.passed.v1";
-          const passed = JSON.parse(localStorage.getItem(key) || "{}");
-          passed[course] = [...new Set([...(passed[course] || []), stage.id])];
-          localStorage.setItem(key, JSON.stringify(passed));
-          window.forjaBrowserPassed?.(course, stage.id);
-        } catch { /* progress still visible for this run */ }
-      }
-    } catch (error) { result("ERROR", error.message); }
+    } catch (error) { outcome = { status: "ERROR", detail: error.message }; }
     finally {
       worker?.terminate();
       running = false;
       $("editor-run").disabled = false;
       $("editor-run").textContent = "Run stage";
     }
+    const advice = learning.runAdvice(checkedStage.learning, checkedStage.target, outcome, source, prior);
+    learning.append(localStorage, {
+      ts: Date.now(), course: checkedCourse, stage: checkedStage.id, kind: "run",
+      status: outcome.status, detail: outcome.detail,
+      sourceHash: learning.fingerprint(source), hintCount: hintIndex,
+    });
+    if (outcome.status === "PASS") {
+      try {
+        const key = "forja.browser.passed.v1";
+        const passed = JSON.parse(localStorage.getItem(key) || "{}");
+        passed[checkedCourse] = [...new Set([...(passed[checkedCourse] || []), checkedStage.id])];
+        localStorage.setItem(key, JSON.stringify(passed));
+        window.forjaBrowserPassed?.(checkedCourse, checkedStage.id);
+      } catch { /* progress still visible for this run */ }
+    }
+    if (stage?.id !== checkedStage.id || course !== checkedCourse) return;
+    result(outcome.status, outcome.detail);
+    $("editor-run-advice").textContent = advice.message;
+    $("editor-run-advice").hidden = false;
+    if (advice.probe && currentLearning()?.concept) showConcept();
+    if (outcome.status === "PASS") showPractice();
   }
 
   $("editor-file").addEventListener("change", (event) => selectFile(event.target.value));
@@ -172,6 +267,12 @@
     $("editor-hint-text").textContent = available[Math.min(hintIndex, available.length - 1)];
     hintIndex++;
     if (hintIndex >= available.length) $("editor-hint").disabled = true;
+  });
+  $("editor-concept-toggle").addEventListener("click", showConcept);
+  $("editor-concept-submit").addEventListener("click", () => submitQuestion("concept"));
+  $("editor-practice-submit").addEventListener("click", () => submitQuestion("practice"));
+  $("editor-practice-jump").addEventListener("click", () => {
+    $("editor-practice").scrollIntoView({ behavior: "smooth", block: "nearest" });
   });
   $("editor-run").addEventListener("click", run);
   $("editor-close").addEventListener("click", () => { $("browser-editor").hidden = true; });
