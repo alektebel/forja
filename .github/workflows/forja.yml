@@ -60,6 +60,11 @@ jobs:
               changed=1
             fi
           done
+          if ! diff -rq "$SITE_SRC/vendor" forja/vendor >/dev/null 2>&1; then
+            mkdir -p forja/vendor
+            rsync -a --delete "$SITE_SRC/vendor/" forja/vendor/
+            changed=1
+          fi
           mkdir -p forja/logos
           if ! diff -rq "$SITE_SRC/logos" forja/logos >/dev/null 2>&1; then
             rsync -a --delete "$SITE_SRC/logos/" forja/logos/

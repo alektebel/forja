@@ -93,6 +93,10 @@ def build(outdir: str) -> dict:
             raise SystemExit(f"missing web asset: {src}")
         shutil.copy2(src, os.path.join(outdir, name))
 
+    vendor_src = os.path.join(WEB, "vendor")
+    if os.path.isdir(vendor_src):
+        shutil.copytree(vendor_src, os.path.join(outdir, "vendor"), dirs_exist_ok=True)
+
     for name in os.listdir(LOGOS):
         if name.endswith(".svg"):
             shutil.copy2(os.path.join(LOGOS, name), os.path.join(logos_out, name))
