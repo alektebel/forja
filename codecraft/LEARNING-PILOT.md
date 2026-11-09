@@ -20,8 +20,10 @@ assessment of mastery.
 
 1. Open a stage and edit immediately. The idea check is optional.
 2. After a run, the helper identifies an unfinished target, an unchanged rerun,
-   or the exact case and concept to inspect. A failed assertion offers the
-   relevant idea check. Python syntax errors stay code errors.
+   or the actual assertion reached by the checker. It distinguishes a new
+   failure from one that survived an edit or moved to another assertion.
+   The idea check opens only when an edited attempt still fails the same
+   assertion. Python syntax errors stay code errors.
 3. Once a stage passes, a different transfer case becomes available after a
    later S3 stage has passed and the learner reaches stage `N+2`, or one day
    after the pass. An incorrect recall answer waits a day before reappearing.

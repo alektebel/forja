@@ -24,16 +24,36 @@ test("the helper names the unfinished target and avoids an unnecessary probe", (
   assert.equal(advice.probe, false);
 });
 
-test("a failed check invokes the concept check; an unchanged rerun asks for an edit", () => {
+test("a first failure shows the focused case; an unchanged rerun asks for an edit", () => {
   const metadata = { check_case: "The checker reads a/b.txt.", failure_focus: "Inspect the key." };
   const source = "def get_object():\n    return None";
   const first = learning.runAdvice(metadata, "get_object", { status: "FAIL" }, source, []);
-  assert.equal(first.probe, true);
+  assert.equal(first.probe, false);
   assert.match(first.message, /a\/b.txt/);
   const second = learning.runAdvice(metadata, "get_object", { status: "FAIL" }, source,
     [{ status: "FAIL", sourceHash: learning.fingerprint(source) }]);
   assert.equal(second.probe, false);
   assert.match(second.message, /same code/);
+});
+
+test("the run coach follows the actual failing check across edits", () => {
+  const metadata = { failure_focus: "Inspect the full key." };
+  const firstSource = "def get_object():\n    return None";
+  const secondSource = "def get_object():\n    return b'wrong'";
+  const first = { status: "FAIL", check: { line: 103,
+    expression: 'assert store.get_object("b", "a/b.txt").body == b"hello"' } };
+  const firstAdvice = learning.runAdvice(metadata, "get_object", first, firstSource, []);
+  assert.match(firstAdvice.message, /get_object\("b", "a\/b.txt"\)/);
+  const history = [{ status: "FAIL", checkId: 103, sourceHash: learning.fingerprint(firstSource) }];
+  const repeat = learning.runAdvice(metadata, "get_object", first, secondSource, history);
+  assert.match(repeat.message, /same check still fails/);
+  assert.equal(repeat.probe, true);
+  const next = learning.runAdvice(metadata, "get_object", { status: "FAIL", check: {
+    line: 105, expression: 'assert exc.code == "NoSuchKey"' } }, secondSource, history);
+  assert.match(next.message, /different check/);
+  assert.match(next.message, /NoSuchKey/);
+  const passed = learning.runAdvice(metadata, "get_object", { status: "PASS" }, secondSource, history);
+  assert.match(passed.message, /latest change passed/);
 });
 
 test("a lookup error receives the stage's specific focus", () => {
