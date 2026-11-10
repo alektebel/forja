@@ -161,6 +161,12 @@ STAGES = {
     "lbo-model-from-scratch": [
         (25, 4), (22, 4), (17, 4), (18, 3), (23, 3),
         (14, 3), (26, 3), (16, 3), (15, 2), (21, 4)],
+    # Measured 2026-11-11: `tests` is the assert/raise count inside each check;
+    # `mutants` is the one-per-stage battery in `_build/mutations.py`, run with
+    # `python3 _build/run_mutations.py` (MISSED: 0/11).
+    "sas-lgd-from-scratch": [
+        (3, 1), (3, 1), (2, 1), (2, 1), (2, 1), (3, 1),
+        (2, 1), (1, 1), (3, 1), (2, 1), (2, 1)],
     "blockchain-from-scratch": [
         (31, 5), (16, 4), (10, 2), (12, 3), (11, 3),
         (11, 4), (8, 3), (10, 3), (11, 5), (16, 5)],

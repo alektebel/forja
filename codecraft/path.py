@@ -1257,6 +1257,25 @@ PHASES = [
                 "away. Author lbo-model-from-scratch; M5 values the claim "
                 "on the way down, M6 buys the whole company on the way in \u2014 "
                 "two prices, one discipline: the cash flows decide."},
+        {"id": "M7", "title": "SAS and LGD",
+         "course": "sas-lgd-from-scratch", "kind": "ready", "prereq": [],
+         "why": "The LGD calculation as a SAS analyst actually writes it, over "
+                "a small defaulted book: EAD as drawn plus the undrawn part "
+                "that converts at its CCF, the partial recoveries (MRP) "
+                "accumulated with RETAIN and FIRST/LAST rather than one row "
+                "per payment, added expenses capitalised only when they were "
+                "not already in the drawn balance, passed-on expenses counted "
+                "as recovery only when collected, the one-to-one MERGE that "
+                "attaches MRP without multiplying EAD, the net recovery and "
+                "the 0..10000 bp cap, each recovery flow discounted with its "
+                "own factor, collateral after haircut and execution cost, "
+                "guarantor contagion when the guarantor is also in default, "
+                "cure versus write-off/sale, and the portfolio LGD weighted by "
+                "EAD rather than averaged across loans. Built over a minimal "
+                "deterministic SAS interpreter and eleven self-contained "
+                "fixture tables in cents and basis points; every stage is a "
+                "DATA step or PROC the checker executes, with a mutation "
+                "battery that plants one business error per stage."},
     ]),
     ("O", "AI Security Engineering", [
         {"id": "O1", "title": "Threat Modeling & Foundations",

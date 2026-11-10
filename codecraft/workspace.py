@@ -1,8 +1,9 @@
-"""Public starter files for the browser's Python workspaces.
+"""Public starter files for the browser's course workspaces.
 
-Each course is bundled on demand: its top-level templates, the checker and the
-local support modules they import. Reference solutions, local profiles and
-repository metadata never enter a bundle.
+Each course is bundled on demand: its top-level templates (`.py`, or `.sas` for
+the SAS course), the checker and the local support modules they import.
+Reference solutions, local profiles and repository metadata never enter a
+bundle.
 """
 
 from pathlib import Path
@@ -11,9 +12,9 @@ import re
 
 REPO = Path(__file__).resolve().parent.parent
 ROOT = REPO / "aws-from-scratch"
-TEXT_SUFFIXES = {".py", ".json", ".txt", ".csv", ".toml", ".yaml", ".yml", ".cfg", ".ini"}
+TEXT_SUFFIXES = {".py", ".sas", ".json", ".txt", ".csv", ".toml", ".yaml", ".yml", ".cfg", ".ini"}
 CHECKER_FILES = {"check.py", "course.py", "stage_checks.py", "validate_course.py", "conftest.py"}
-SKIP_DIRS = {"solutions", "__pycache__", ".git", ".pytest_cache", ".mypy_cache"}
+SKIP_DIRS = {"solutions", "_build", "__pycache__", ".git", ".pytest_cache", ".mypy_cache"}
 COURSE_RE = re.compile(r"^[a-z0-9][a-z0-9-]*$")
 
 
@@ -67,9 +68,14 @@ def bundle(course: str) -> dict:
 
     editable = [
         name for name in files
-        if "/" not in name and name.endswith(".py") and name not in CHECKER_FILES
-        and not re.match(r"^(check|mutate)_\d+\.py$|^(check|mutate|run)_all\.py$", name)
+        if "/" not in name and name.endswith(".sas")
     ]
+    if not editable:
+        editable = [
+            name for name in files
+            if "/" not in name and name.endswith(".py") and name not in CHECKER_FILES
+            and not re.match(r"^(check|mutate)_\d+\.py$|^(check|mutate|run)_all\.py$", name)
+        ]
     stage_files = {}
     if not editable:
         for name in files:
