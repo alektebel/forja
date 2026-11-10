@@ -81,12 +81,16 @@ def ead_base():
 
 
 def mrp_base():
-    """MRP acumulado por préstamo, ya sumado (una fila por préstamo)."""
+    """MRP acumulado por préstamo, ya sumado (una fila por préstamo).
+
+    Llega desordenado a propósito: la etapa 5 tiene que ordenar antes del
+    MERGE. Un MERGE posicional sobre estas filas empareja P3 con P1.
+    """
     return [
-        {"prestamo": "P1", "mrp_total_cents": 300_000},
-        {"prestamo": "P2", "mrp_total_cents": 0},
         {"prestamo": "P3", "mrp_total_cents": 1_500_000},
+        {"prestamo": "P1", "mrp_total_cents": 300_000},
         {"prestamo": "P4", "mrp_total_cents": 300_000},
+        {"prestamo": "P2", "mrp_total_cents": 0},
     ]
 
 

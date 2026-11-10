@@ -369,6 +369,12 @@ def _merge_tables(tables, names, by):
                     merged.update(table[index])
             rows.append(merged)
         return rows
+    for table in tables_in:
+        keys = [tuple(row.get(name) for name in by) for row in table]
+        ordered = sorted(keys, key=lambda key: tuple((value is None, value) for value in key))
+        if keys != ordered:
+            raise SasError(
+                "MERGE BY exige las tablas ordenadas por " + ", ".join(by))
     merged_by_key = {}
     order = []
     for table in tables_in:

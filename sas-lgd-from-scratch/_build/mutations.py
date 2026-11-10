@@ -44,11 +44,10 @@ MUTATIONS = [
      4),
 
     # --- etapa 5: MERGE -------------------------------------------------------
-    ("el MRP se suma al EAD después del MERGE, duplicando la exposición",
+    ("el MERGE se hace por posición sobre las tablas sin ordenar",
      "stage_05.sas",
-     "  by prestamo;\n  keep prestamo ead_cents mrp_total_cents;",
-     "  by prestamo;\n  ead_cents = ead_cents + mrp_total_cents;\n"
-     "  keep prestamo ead_cents mrp_total_cents;",
+     "  merge work.ead_sorted work.mrp_sorted;\n  by prestamo;",
+     "  merge ead_base mrp_base;",
      5),
 
     # --- etapa 6: LGD ---------------------------------------------------------
