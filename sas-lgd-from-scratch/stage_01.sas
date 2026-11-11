@@ -1,10 +1,8 @@
-/* Etapa 1 — EAD al default.
-   EAD = dispuesto + int(no_dispuesto * ccf_bp / 10000).
-   Filtra incumplido = 1 y deja prestamo, segmento y ead_cents.
-   TODO: sustituye el cero por la exposición calculada. */
-data work.ead;
-  set portfolio;
-  if incumplido = 1;
-  ead_cents = 0;
-  keep prestamo segmento ead_cents;
+/* Etapa 1 — La LGD más simple.
+   LGD en pb = (EAD - recuperación) / EAD * 10000.
+   TODO: calcula lgd_bp. Todavía no hay gastos, MRP ni garantías. */
+data work.lgd_simple;
+  set lgd_simple;
+  lgd_bp = 0;
+  keep prestamo lgd_bp;
 run;

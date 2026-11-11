@@ -63,12 +63,12 @@ def main():
     try:
         prepare(baseline)
         module = load_course(baseline)
-        for step in range(1, 12):
+        for step in range(1, 13):
             if not check(module, step):
                 sys.exit("baseline: la solución de la etapa %d no pasa" % step)
     finally:
         shutil.rmtree(baseline, ignore_errors=True)
-    print("baseline: 11/11 PASS")
+    print("baseline: 12/12 PASS")
 
     missed = []
     for name, filename, old, new, step in mutations:

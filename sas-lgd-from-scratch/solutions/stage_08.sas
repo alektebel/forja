@@ -1,10 +1,6 @@
-/* Etapa 8 — Garantía: haircut y coste de ejecución antes de recuperar. */
-data work.garantia;
-  set garantias;
-  recuperacion_cents = int(valor_garantia_cents * (10000 - haircut_bp) / 10000)
-    - coste_ejecucion_cents;
-  lgd_bp = 10000 - int(recuperacion_cents * 10000 / ead_cents);
-  if lgd_bp < 0 then lgd_bp = 0;
-  if lgd_bp > 10000 then lgd_bp = 10000;
-  keep prestamo recuperacion_cents lgd_bp;
+/* Etapa 8 — Descontar cada flujo por su propio factor, no el total. */
+data work.flujos_vp;
+  set flujos;
+  vp_cents = int(importe_cents * factor_bp / 10000);
+  keep prestamo periodo vp_cents;
 run;

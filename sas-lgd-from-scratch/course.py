@@ -1,6 +1,6 @@
 """SAS y LGD: del expediente al número que provisiona el banco.
 
-Curso de once etapas sobre una cartera pequeña, escrito para quien ya sabe
+Curso de doce etapas sobre una cartera pequeña, escrito para quien ya sabe
 mirar un balance pero todavía no ha tenido que defender una LGD delante de un
 comité. El lenguaje es SAS: cada etapa se resuelve con un DATA step o un PROC
 que el corrector ejecuta de verdad, no con una respuesta escrita en Python.
@@ -9,9 +9,10 @@ La regla del curso: una etapa, una decisión. El EAD no se mezcla con los
 gastos; los gastos añadidos no se mezclan con los repercutidos; el MRP no se
 resta dos veces; la garantía no vale lo mismo si el garante también cayó. Cada
 etapa tiene su propia tabla de entrada, así que se puede hacer en cualquier
-orden, aunque el orden propuesto cuenta la historia de un expediente.
+orden; el orden propuesto va de lo simple a lo complejo, de la LGD de un
+préstamo a la LGD de la cartera.
 
-Todo el dinero va en céntimos y todos los tipos en puntos básicos. No hay
+Todo el dinero va en céntimos y todas las tasas en puntos básicos. No hay
 float, no hay reloj, no hay red. El contrato de cada etapa está en `action`,
 `predict` y `hints`; la verdad está en las tablas de `world.py`.
 
@@ -31,10 +32,11 @@ import world
 from codecraft.api import stage
 
 TITLE = "SAS y LGD From Scratch"
+LANGUAGE = "es"
 DESCRIPTION = (
-    "Once etapas de SAS para calcular una LGD defendible: EAD, MRP, gastos "
-    "añadidos y repercutidos, merge uno a uno, recuperación neta, descuento "
-    "de flujos, garantías con haircut, contagio del garante, cura contra "
+    "Doce etapas de SAS para calcular una LGD defendible: EAD, MRP, gastos "
+    "añadidos y repercutidos, unión uno a uno, recuperación neta, descuento "
+    "de flujos, garantías con recorte, contagio del garante, cura contra "
     "castigo y LGD ponderada por EAD. Cada etapa es un DATA step o un PROC "
     "que se ejecuta; cada número está en céntimos y puntos básicos."
 )
@@ -61,7 +63,17 @@ def _table(result, name):
 
 
 def check_1():
-    rows = _table(_run("stage_01.sas", {"portfolio": world.portfolio()}), "ead")
+    rows = _table(_run("stage_01.sas", {"lgd_simple": world.lgd_simple()}),
+                  "lgd_simple")
+    got = {row["prestamo"]: row["lgd_bp"] for row in rows}
+    expected = {"S1": 7000, "S2": 0, "S3": 10000}
+    assert got == expected, f"LGD simple incorrecta: {got!r}; esperado {expected!r}"
+    assert got["S2"] == 0, "S2 recupera todo su EAD: no hay pérdida"
+    assert got["S3"] == 10000, "S3 no recupera nada: la LGD es el 100% del EAD"
+
+
+def check_2():
+    rows = _table(_run("stage_02.sas", {"portfolio": world.portfolio()}), "ead")
     assert len(rows) == 4, f"esperaba cuatro préstamos incumplidos, hay {len(rows)}"
     got = {row["prestamo"]: row["ead_cents"] for row in rows}
     expected = {"P1": 14_000_000, "P2": 8_000_000,
@@ -70,8 +82,8 @@ def check_1():
     assert "P5" not in got, "P5 no está incumplido: el filtro debe excluirlo"
 
 
-def check_2():
-    rows = _table(_run("stage_02.sas", {"cashflows_mrp": world.cashflows_mrp()}),
+def check_3():
+    rows = _table(_run("stage_03.sas", {"cashflows_mrp": world.cashflows_mrp()}),
                   "mrp_total")
     got = {row["prestamo"]: row["mrp_total_cents"] for row in rows}
     expected = {"P1": 300_000, "P2": 0, "P3": 1_500_000, "P4": 300_000}
@@ -80,8 +92,8 @@ def check_2():
     assert got["P1"] == 300_000, "P1 tiene tres pagos: 100k + 150k + 50k"
 
 
-def check_3():
-    rows = _table(_run("stage_03.sas", {"ead_con_gastos": world.ead_con_gastos()}),
+def check_4():
+    rows = _table(_run("stage_04.sas", {"ead_con_gastos": world.ead_con_gastos()}),
                   "ead_gastos")
     got = {row["prestamo"]: row["ead_final_cents"] for row in rows}
     expected = {"P1": 14_200_000, "P2": 8_000_000,
@@ -91,8 +103,8 @@ def check_3():
         "P3 ya tenía el gasto dentro del dispuesto: sumarlo otra vez lo duplica")
 
 
-def check_4():
-    rows = _table(_run("stage_04.sas", {"repercutidos": world.repercutidos()}),
+def check_5():
+    rows = _table(_run("stage_05.sas", {"repercutidos": world.repercutidos()}),
                   "repercutido_cobrado")
     got = [(row["prestamo"], row["recuperado_cents"]) for row in rows]
     expected = [("P1", 100_000), ("P1", 0), ("P2", 0), ("P3", 200_000), ("P4", 0)]
@@ -101,8 +113,8 @@ def check_4():
         "solo lo cobrado recupera: P1 deja 50k impagados y P4 deja 75k")
 
 
-def check_5():
-    rows = _table(_run("stage_05.sas", {
+def check_6():
+    rows = _table(_run("stage_06.sas", {
         "ead_base": world.ead_base(), "mrp_base": world.mrp_base(),
     }), "merge_ead_mrp")
     assert len(rows) == 4, f"el MERGE duplicó filas: hay {len(rows)}"
@@ -115,8 +127,8 @@ def check_5():
     assert got == expected, f"merge incorrecto: {got!r}; esperado {expected!r}"
 
 
-def check_6():
-    rows = _table(_run("stage_06.sas", {"lgd_base": world.lgd_base()}), "lgd")
+def check_7():
+    rows = _table(_run("stage_07.sas", {"lgd_base": world.lgd_base()}), "lgd")
     got = {row["prestamo"]: row["lgd_bp"] for row in rows}
     expected = {"P1": 4226, "P2": 7625, "P3": 2291,
                 "P4": 3637, "P5": 0, "P6": 10000}
@@ -125,8 +137,8 @@ def check_6():
     assert got["P6"] == 10000, "P6 no recupera nada: la LGD no puede pasar de 10000 pb"
 
 
-def check_7():
-    rows = _table(_run("stage_07.sas", {"flujos": world.flujos()}), "flujos_vp")
+def check_8():
+    rows = _table(_run("stage_08.sas", {"flujos": world.flujos()}), "flujos_vp")
     got = {(row["prestamo"], row["periodo"]): row["vp_cents"] for row in rows}
     expected = {
         ("P1", 1): 95_000, ("P1", 2): 180_000,
@@ -137,8 +149,8 @@ def check_7():
         "sumar los flujos sin descontar daría 2.8M: el tiempo importa")
 
 
-def check_8():
-    rows = _table(_run("stage_08.sas", {"garantias": world.garantias()}), "garantia")
+def check_9():
+    rows = _table(_run("stage_09.sas", {"garantias": world.garantias()}), "garantia")
     got = {row["prestamo"]: (row["recuperacion_cents"], row["lgd_bp"])
            for row in rows}
     expected = {
@@ -149,19 +161,19 @@ def check_8():
     assert got == expected, f"garantía incorrecta: {got!r}; esperado {expected!r}"
 
 
-def check_9():
-    rows = _table(_run("stage_09.sas", {
+def check_10():
+    rows = _table(_run("stage_10.sas", {
         "garantias_contagio": world.garantias_contagio(),
     }), "contagio")
     got = {row["prestamo"]: row["recuperacion_cents"] for row in rows}
     expected = {"P1": 5_600_000, "P2": 4_500_000, "P3": 1_400_000}
     assert got == expected, f"contagio incorrecto: {got!r}; esperado {expected!r}"
-    assert got["P1"] < 8_000_000, "P1 tiene garante incumplido: el haircut no basta"
-    assert got["P2"] == 4_500_000, "P2 no tiene contagio: el haircut es el único ajuste"
+    assert got["P1"] < 8_000_000, "P1 tiene garante incumplido: el recorte no basta"
+    assert got["P2"] == 4_500_000, "P2 no tiene contagio: el recorte es el único ajuste"
 
 
-def check_10():
-    rows = _table(_run("stage_10.sas", {"estados": world.estados()}), "estados_lgd")
+def check_11():
+    rows = _table(_run("stage_11.sas", {"estados": world.estados()}), "estados_lgd")
     got = {row["prestamo"]: row["lgd_bp"] for row in rows}
     expected = {"P1": 0, "P2": 7500, "P3": 2500, "P4": 0, "P5": 2000}
     assert got == expected, f"cura/castigo incorrecto: {got!r}; esperado {expected!r}"
@@ -169,8 +181,8 @@ def check_10():
         "una cura devuelve el préstamo a cumplimiento: no genera LGD")
 
 
-def check_11():
-    rows = _table(_run("stage_11.sas", {"cartera": world.cartera()}), "cartera_lgd")
+def check_12():
+    rows = _table(_run("stage_12.sas", {"cartera": world.cartera()}), "cartera_lgd")
     got = {row["segmento"]: row["lgd_bp"] for row in rows}
     expected = {"Hipoteca": 2949, "Consumo": 5821}
     assert got == expected, f"LGD ponderada incorrecta: {got!r}; esperado {expected!r}"
@@ -181,21 +193,34 @@ def check_11():
 STAGES = [
     stage(
         1, file="stage_01.sas",
+        title="La LGD más simple: pérdida sobre EAD",
+        tags=["sas", "paso-data", "lgd"],
+        action="Escribe stage_01.sas: para cada préstamo calcula "
+               "lgd_bp = int((ead_cents - recuperacion_cents) * 10000 / ead_cents). "
+               "Deja prestamo y lgd_bp. Todavía no hay gastos, MRP ni garantías.",
+        predict="Un préstamo de 10M recupera 3M. ¿Qué LGD en puntos básicos tiene?",
+        hints=["La LGD es la parte del EAD que no vuelve, no la recuperación.",
+               "Multiplica por 10000 antes de dividir para expresar el resultado en pb.",
+               "S2 recupera todo (LGD 0) y S3 no recupera nada (LGD 10000): son los extremos."],
+        check=check_1,
+    ),
+    stage(
+        2, file="stage_02.sas",
         title="EAD: lo dispuesto y lo que aún puede disponerse",
-        tags=["sas", "data-step", "ead", "ccf"],
-        action="Escribe stage_01.sas: filtra los incumplidos y calcula ead_cents = "
+        tags=["sas", "paso-data", "ead", "ccf"],
+        action="Escribe stage_02.sas: filtra los incumplidos y calcula ead_cents = "
                "dispuesto_cents + int(no_dispuesto_cents * ccf_bp / 10000). "
                "Deja prestamo, segmento y ead_cents.",
         predict="¿Cuánto EAD tiene P1, que debe 12M y puede disponer 4M con CCF 50%?",
         hints=["El CCF convierte el no dispuesto en exposición: 5000 pb son la mitad.",
                "int() trunca; no uses round() para el EAD.",
                "if incumplido = 1; no es una asignación: es un filtro de filas."],
-        check=check_1,
+        check=check_2,
     ),
     stage(
-        2, file="stage_02.sas",
+        3, file="stage_03.sas",
         title="MRP: pagos parciales con RETAIN y LAST",
-        tags=["sas", "retain", "by-group", "mrp"],
+        tags=["sas", "retain", "grupo-by", "mrp"],
         action="Ordena cashflows_mrp por prestamo y periodo. Acumula mrp_cents en "
                "mrp_total_cents con RETAIN; reinicia en FIRST.prestamo y emite solo "
                "en LAST.prestamo. Una fila por préstamo.",
@@ -203,12 +228,12 @@ STAGES = [
         hints=["RETAIN conserva el valor entre iteraciones; sin él, cada fila empieza de cero.",
                "FIRST.prestamo y LAST.prestamo existen solo si declaras BY prestamo.",
                "La suma automática `total + importe;` ya implica RETAIN."],
-        check=check_2,
+        check=check_3,
     ),
     stage(
-        3, file="stage_03.sas",
+        4, file="stage_04.sas",
         title="Gastos añadidos: capitalizar sin duplicar",
-        tags=["sas", "if-then-else", "gastos", "ead"],
+        tags=["sas", "si-entonces-sino", "gastos", "ead"],
         action="Calcula ead_final_cents. Si ya_en_dispuesto = 0, suma el gasto "
                "añadido; si ya estaba dentro del dispuesto, no lo sumes. Conserva "
                "prestamo y ead_final_cents.",
@@ -216,22 +241,22 @@ STAGES = [
         hints=["El gasto añadido no es un ingreso ni una recuperación: es más exposición.",
                "ya_en_dispuesto es la bandera que evita contar dos veces el mismo gasto.",
                "IF/THEN/ELSE en SAS termina con punto y coma; el ELSE mira la misma fila."],
-        check=check_3,
+        check=check_4,
     ),
     stage(
-        4, file="stage_04.sas",
+        5, file="stage_05.sas",
         title="Gastos repercutidos: solo lo cobrado recupera",
-        tags=["sas", "if", "gastos", "recovery"],
+        tags=["sas", "if", "gastos", "recuperacion"],
         action="Asigna recuperado_cents: si cobrado = 1, el gasto repercutido; si "
                "no, cero. Conserva una fila por flujo, con prestamo y recuperado_cents.",
         predict="P1 repercute 100k cobrados y 50k impagados. ¿Cuánto entra en la LGD?",
         hints=["Repercutir no es cobrar: el derecho a cobrar no mueve caja.",
                "La recuperación es caja cobrada, no factura emitida.",
-               "No sumes las filas de P1 aquí: la etapa 2 ya enseñó a acumular."],
-        check=check_4,
+               "No sumes las filas de P1 aquí: la etapa 3 ya enseñó a acumular."],
+        check=check_5,
     ),
     stage(
-        5, file="stage_05.sas",
+        6, file="stage_06.sas",
         title="MERGE uno a uno: el MRP no multiplica el EAD",
         tags=["sas", "merge", "by", "mrp"],
         action="Ordena ead_base y mrp_base por prestamo y haz un MERGE por esa clave. "
@@ -241,12 +266,12 @@ STAGES = [
         hints=["MERGE sin BY pega por posición; con BY pega por clave.",
                "El MRP se une al EAD, no se suma al EAD: son dos columnas distintas.",
                "Comprueba el número de filas: un MERGE mal hecho lo delata."],
-        check=check_5,
+        check=check_6,
     ),
     stage(
-        6, file="stage_06.sas",
+        7, file="stage_07.sas",
         title="La LGD: recuperación neta sobre EAD",
-        tags=["sas", "lgd", "arithmetic", "caps"],
+        tags=["sas", "lgd", "aritmetica", "topes"],
         action="Calcula recuperacion_neta_cents = MRP + recuperación final + "
                "repercutido cobrado - coste directo. Luego lgd_bp = 10000 - "
                "int(recuperacion_neta_cents * 10000 / ead_cents), con topes 0 y 10000.",
@@ -254,63 +279,63 @@ STAGES = [
         hints=["El coste directo resta de la recuperación; no se suma al EAD.",
                "Multiplica por 10000 antes de dividir para no perder los pb.",
                "P5 recupera de más y P6 no recupera: los topes existen para esos dos."],
-        check=check_6,
+        check=check_7,
     ),
     stage(
-        7, file="stage_07.sas",
+        8, file="stage_08.sas",
         title="Descontar cada flujo a su fecha",
-        tags=["sas", "discounting", "cashflow", "lgd"],
+        tags=["sas", "descuento", "flujo", "lgd"],
         action="Calcula vp_cents = int(importe_cents * factor_bp / 10000) para cada "
                "flujo, conservando prestamo, periodo y vp_cents. No sumes el nominal.",
         predict="Un flujo de 200k con factor 9000 pb y otro de 100k con 9500: ¿suman 300k?",
         hints=["El factor ya viene del área de tesorería: no lo recalcules con tipos.",
                "Cada periodo tiene su factor; descontar el total una sola vez es el error.",
                "El valor presente se suma después, cuando la etapa lo pida."],
-        check=check_7,
-    ),
-    stage(
-        8, file="stage_08.sas",
-        title="Garantía: haircut y coste de ejecución",
-        tags=["sas", "collateral", "haircut", "lgd"],
-        action="Calcula recuperacion_cents = int(valor_garantia_cents * "
-               "(10000 - haircut_bp) / 10000) - coste_ejecucion_cents. Después "
-               "lgd_bp = 10000 - int(recuperacion_cents * 10000 / ead_cents), con topes.",
-        predict="Una garantía de 10M con haircut 20% y coste 200k: ¿cuánto recupera?",
-        hints=["El haircut se aplica al valor de la garantía, no al EAD.",
-               "Ejecutar la garantía cuesta: ese coste reduce la recuperación.",
-               "El coste no puede llevar la LGD fuera de 0..10000."],
         check=check_8,
     ),
     stage(
         9, file="stage_09.sas",
-        title="Contagio del garante: la misma garantía vale menos",
-        tags=["sas", "contagion", "guarantee", "if"],
-        action="Aplica primero el haircut. Si garante_incumplido = 1, aplica también "
-               "contagio_bp a la recuperación; si no, déjala en el valor con haircut. "
-               "Deja prestamo y recuperacion_cents.",
-        predict="P1 tiene garantía de 10M, haircut 20% y contagio 30%. ¿Recupera 8M u 5.6M?",
-        hints=["El contagio no es un gasto: es una caída del valor esperado de la garantía.",
-               "Aplica los dos porcentajes en secuencia; no los sumes.",
-               "Solo el garante incumplido activa el segundo ajuste."],
+        title="Garantía: recorte y coste de ejecución",
+        tags=["sas", "garantia", "recorte", "lgd"],
+        action="Calcula recuperacion_cents = int(valor_garantia_cents * "
+               "(10000 - haircut_bp) / 10000) - coste_ejecucion_cents. Después "
+               "lgd_bp = 10000 - int(recuperacion_cents * 10000 / ead_cents), con topes.",
+        predict="Una garantía de 10M con recorte 20% y coste 200k: ¿cuánto recupera?",
+        hints=["El recorte se aplica al valor de la garantía, no al EAD.",
+               "Ejecutar la garantía cuesta: ese coste reduce la recuperación.",
+               "El coste no puede llevar la LGD fuera de 0..10000."],
         check=check_9,
     ),
     stage(
         10, file="stage_10.sas",
+        title="Contagio del garante: la misma garantía vale menos",
+        tags=["sas", "contagio", "garantia", "si"],
+        action="Aplica primero el recorte. Si garante_incumplido = 1, aplica también "
+               "contagio_bp a la recuperación; si no, déjala en el valor con recorte. "
+               "Deja prestamo y recuperacion_cents.",
+        predict="P1 tiene garantía de 10M, recorte 20% y contagio 30%. ¿Recupera 8M u 5.6M?",
+        hints=["El contagio no es un gasto: es una caída del valor esperado de la garantía.",
+               "Aplica los dos porcentajes en secuencia; no los sumes.",
+               "Solo el garante incumplido activa el segundo ajuste."],
+        check=check_10,
+    ),
+    stage(
+        11, file="stage_11.sas",
         title="Cura contra castigo: no toda salida es pérdida",
-        tags=["sas", "cure", "write-off", "lgd"],
+        tags=["sas", "cura", "castigo", "lgd"],
         action="Si estado = 'CURA', lgd_bp = 0. En cualquier otro estado, calcula "
                "lgd_bp = 10000 - int(recuperacion_cents * 10000 / ead_cents). "
                "Conserva prestamo y lgd_bp.",
         predict="P1 está en CURA y solo ha recuperado 9M de 10M. ¿Su LGD es 1000 pb o 0?",
         hints=["CURA devuelve el préstamo a cumplimiento: la pérdida esperada se extingue.",
-               "CASTIGO y VENTA sí se miden contra la recuperación cash.",
+               "CASTIGO y VENTA sí se miden contra la recuperación en efectivo.",
                "IF/THEN/ELSE compara texto con comillas simples: 'CURA'."],
-        check=check_10,
+        check=check_11,
     ),
     stage(
-        11, file="stage_11.sas",
+        12, file="stage_12.sas",
         title="LGD de cartera: ponderar por EAD",
-        tags=["sas", "proc-means", "weighted", "portfolio"],
+        tags=["sas", "proc-means", "ponderada", "cartera"],
         action="Suma ead_cents y perdida_cents por segmento con PROC MEANS y calcula "
                "lgd_bp = int(perdida_total_cents * 10000 / ead_total_cents). "
                "Deja segmento y lgd_bp.",
@@ -319,6 +344,6 @@ STAGES = [
         hints=["La LGD de cartera es pérdida total sobre EAD total, no media de ratios.",
                "PROC MEANS puede sumar varias variables y sacar una fila por CLASE.",
                "Revisa que el OUTPUT nombre las columnas que usará el DATA step."],
-        check=check_11,
+        check=check_12,
     ),
 ]

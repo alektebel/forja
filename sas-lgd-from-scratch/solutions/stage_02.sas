@@ -1,12 +1,7 @@
-/* Etapa 2 — MRP: pagos parciales acumulados por préstamo. */
-proc sort data=cashflows_mrp out=work.cf; by prestamo periodo; run;
-
-data work.mrp_total;
-  set work.cf;
-  by prestamo;
-  retain mrp_total_cents 0;
-  if first.prestamo then mrp_total_cents = 0;
-  mrp_total_cents + mrp_cents;
-  if last.prestamo then output;
-  keep prestamo mrp_total_cents;
+/* Etapa 2 — EAD: lo dispuesto más la parte no dispuesta que se convierte. */
+data work.ead;
+  set portfolio;
+  if incumplido = 1;
+  ead_cents = dispuesto_cents + int(no_dispuesto_cents * ccf_bp / 10000);
+  keep prestamo segmento ead_cents;
 run;

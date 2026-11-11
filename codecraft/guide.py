@@ -37,54 +37,79 @@ def render_stage(course: dict, stage_id: int) -> str:
     hints = meta.get("hints") or []
 
     tag_line = ", ".join(tags) if tags else "—"
+    es = course.get("language") == "es"
     lines = [
-        f"# Stage {stage_id}: {title}",
+        f"# {'Etapa' if es else 'Stage'} {stage_id}: {title}",
         "",
-        f"**Course:** {course['title']} (`{course['name']}`)",
-        f"**File:** `{file}`",
-        f"**Tags:** {tag_line}",
+        (f"**Curso:** {course['title']} (`{course['name']}`)" if es
+         else f"**Course:** {course['title']} (`{course['name']}`)"),
+        f"**{'Archivo' if es else 'File'}:** `{file}`",
+        f"**{'Etiquetas' if es else 'Tags'}:** {tag_line}",
         "",
-        "## The mechanism",
+        "## El mecanismo" if es else "## The mechanism",
         "",
     ]
     if action:
         lines.append(action)
+    elif es:
+        lines.append(
+            f"Implementa lo que pide `{file}`. El corrector nombra el fallo "
+            "concreto cuando no cuadra.")
     else:
         lines.append(
             f"Implement what `{file}` asks for. The checker names the failure "
             "mode when you get it wrong.")
     if why:
-        lines.extend(["", "## Why the requirement is what it is", "", why, ""])
-    lines.extend(["", "## Tests", "",
-                  "The tester runs your code like this:", "",
-                  "```bash",
-                  f"forja test {course['name']} --stage {stage_id}",
-                  "# same as:",
-                  f"python3 codecraft/cli.py run {course['name']} --stage {stage_id}",
-                  "```", "",
-                  "It imports **your** module (never `solutions/`) and asserts "
-                  "the behaviour this stage defines. A red failure names the "
-                  "likely cause — read that before rewriting.", ""])
+        lines.extend(["", "## Por qué se pide así" if es
+                      else "## Why the requirement is what it is", "", why, ""])
+    if es:
+        lines.extend(["", "## Pruebas", "",
+                      "El corrector ejecuta tu archivo así:", "",
+                      "```bash",
+                      f"forja test {course['name']} --stage {stage_id}",
+                      "# equivalente a:",
+                      f"python3 codecraft/cli.py run {course['name']} --stage {stage_id}",
+                      "```", "",
+                      f"Ejecuta **tu** `{file}` (nunca `solutions/`) y comprueba "
+                      "la conducta que define esta etapa. Un fallo rojo nombra la "
+                      "causa probable; léela antes de reescribir.", ""])
+    else:
+        lines.extend(["", "## Tests", "",
+                      "The tester runs your code like this:", "",
+                      "```bash",
+                      f"forja test {course['name']} --stage {stage_id}",
+                      "# same as:",
+                      f"python3 codecraft/cli.py run {course['name']} --stage {stage_id}",
+                      "```", "",
+                      "It imports **your** module (never `solutions/`) and asserts "
+                      "the behaviour this stage defines. A red failure names the "
+                      "likely cause — read that before rewriting.", ""])
     if predict:
-        lines.extend(["## Predict before you look", "",
+        lines.extend(["## Predice antes de mirar" if es
+                      else "## Predict before you look", "",
                       f"> {predict}", "",
-                      "Commit to a number (or outcome) *before* the check "
-                      "prints. That is where the learning consolidates.", ""])
+                      ("Compromete un número (o un resultado) *antes* de que el "
+                       "corrector imprima. Ahí consolida el aprendizaje." if es else
+                       "Commit to a number (or outcome) *before* the check "
+                       "prints. That is where the learning consolidates."), ""])
     if hints:
-        lines.extend(["## Notes", ""])
+        lines.extend(["## Pistas" if es else "## Notes", ""])
         for hint in hints:
             lines.append(f"- {hint}")
         lines.append("")
-    lines.extend([
-        "## Next",
-        "",
-        "When this stage is green:",
-        "",
-        "```bash",
-        f"forja stage {course['name']} {stage_id + 1}",
-        "```",
-        "",
-    ])
+    if stage_id < max(course["stages"]):
+        lines.extend([
+            "## Siguiente" if es else "## Next",
+            "",
+            "Cuando esta etapa esté en verde:" if es else "When this stage is green:",
+            "",
+            "```bash",
+            f"forja stage {course['name']} {stage_id + 1}",
+            "```",
+            "",
+        ])
+    else:
+        lines.extend(["Terminaste el curso." if es else "You finished the course.", ""])
     return "\n".join(lines)
 
 
@@ -156,6 +181,48 @@ def render_start(course: dict) -> str:
             f"forja test {course['name']} --stage 1", "```", "",
         ])
         return "\n".join(lines)
+    if course.get("language") == "es":
+        return "\n".join([
+            f"# {course['title']}",
+            "",
+            course.get("description") or "",
+            "",
+            f"**{n} etapas.** Escribe código en tu editor. Ejecuta el corrector "
+            "en local. Sin IDE de juguete.",
+            "",
+            "## Etapa 0 — humo (menos de 30 segundos)",
+            "",
+            "Confirma que el curso corre antes de escribir nada:",
+            "",
+            "```bash",
+            f"forja smoke {course['name']}",
+            "```",
+            "",
+            "Deberías ver `smoke OK`. Es tu primer verde.",
+            "",
+            "## Etapa 1 — primer trabajo real",
+            "",
+            f"**Archivo:** `{first.get('file', '')}` — {first.get('title', '')}",
+            "",
+            first.get("action") or "Abre el archivo e implementa lo que falta.",
+            "",
+            "```bash",
+            f"forja guide {course['name']} 1     # la página completa de la etapa",
+            f"forja test {course['name']} --stage 1",
+            "```",
+            "",
+            "## El bucle",
+            "",
+            "1. Lee la guía de la etapa",
+            "2. Edita el archivo en tu editor",
+            "3. `forja test` (alias de `cz run`)",
+            "4. Lee la causa o la pista",
+            "5. Predice y vuelve a ejecutar",
+            "",
+            f"Atascado: `forja hint {course['name']}` · "
+            f"`forja explain {course['name']}`",
+            "",
+        ])
     return "\n".join([
         f"# {course['title']}",
         "",

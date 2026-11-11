@@ -1,7 +1,9 @@
-/* Etapa 4 — Gasto repercutido: solo es recuperación si se cobró. */
-data work.repercutido_cobrado;
-  set repercutidos;
-  if cobrado = 1 then recuperado_cents = gasto_repercutido_cents;
-  else recuperado_cents = 0;
-  keep prestamo recuperado_cents;
+/* Etapa 4 — Gasto añadido: se capitaliza solo si no estaba ya en el dispuesto. */
+data work.ead_gastos;
+  set ead_con_gastos;
+  if ya_en_dispuesto = 0 then
+    ead_final_cents = ead_cents + gasto_anadido_cents;
+  else
+    ead_final_cents = ead_cents;
+  keep prestamo ead_final_cents;
 run;

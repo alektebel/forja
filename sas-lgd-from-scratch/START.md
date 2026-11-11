@@ -1,10 +1,12 @@
 # SAS y LGD From Scratch
 
-Once etapas de SAS para calcular una LGD defendible: EAD, MRP, gastos
-añadidos y repercutidos, unión uno a uno, recuperación neta, descuento de
-flujos, garantías, contagio, cura contra castigo y LGD ponderada por EAD.
+Doce etapas de SAS para calcular una LGD defendible, de lo simple a lo
+complejo: primero la pérdida sobre EAD; después EAD, MRP, gastos añadidos y
+repercutidos, unión uno a uno, recuperación neta, descuento de flujos,
+garantías, contagio, cura contra castigo y, al final, la LGD ponderada de la
+cartera.
 
-**11 etapas.** Edita un `.sas` por etapa. El corrector ejecuta tu SAS.
+**12 etapas.** Edita un `.sas` por etapa. El corrector ejecuta tu SAS.
 
 ## Etapa 0 — humo (menos de un minuto)
 
@@ -17,11 +19,11 @@ el primer fallo es de negocio, no de sintaxis.
 
 ## Etapa 1 — el primer cálculo
 
-**Archivo:** `stage_01.sas` — el EAD y el filtro de incumplidos
+**Archivo:** `stage_01.sas` — la LGD más simple
 
-Filtra los préstamos incumplidos y calcula
-`ead_cents = dispuesto_cents + int(no_dispuesto_cents * ccf_bp / 10000)`.
-Deja `prestamo`, `segmento` y `ead_cents`.
+Para cada préstamo, calcula
+`lgd_bp = int((ead_cents - recuperacion_cents) * 10000 / ead_cents)`.
+Deja `prestamo` y `lgd_bp`. Todavía no hay gastos, MRP ni garantías.
 
 ```bash
 python3 codecraft/cli.py run sas-lgd-from-scratch
@@ -35,12 +37,12 @@ python3 codecraft/cli.py run sas-lgd-from-scratch
 4. Lee la causa del fallo.
 5. Predice el número antes de volver a ejecutar.
 
-Cada etapa tiene su propia tabla: puedes hacer la 9 sin haber hecho la 5. El
-orden propuesto cuenta la historia completa de un expediente.
+Cada etapa tiene su propia tabla: puedes hacer la 10 sin haber hecho la 6. El
+orden propuesto va de la idea más simple a la cartera completa.
 
 ## Convenciones
 
 - Céntimos y puntos básicos; nunca `float`.
-- `int()` trunca; los checks fijan el valor exacto.
+- `int()` trunca; el corrector fija el valor exacto.
 - MRP significa **monto recuperado parcial** en este curso.
 - No edites `world.py`: es el contrato de datos.

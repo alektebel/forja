@@ -4,7 +4,7 @@ Todo va en céntimos y puntos básicos. El alumno nunca edita este archivo: es e
 contrato de datos que el corrector entrega a cada etapa. Cada tabla está
 diseñada para que el caso límite sea visible:
 
-- P5 está fuera de default en la etapa 1 y no debe aparecer.
+- P5 está fuera de incumplimiento en la etapa 2 y no debe aparecer.
 - P3 ya lleva el gasto añadido dentro del dispuesto: capitalizarlo otra vez es
   el error clásico.
 - El gasto repercutido de P1 tiene una parte cobrada y otra no; solo la cobrada
@@ -14,8 +14,21 @@ diseñada para que el caso límite sea visible:
 """
 
 
+def lgd_simple():
+    """Tres préstamos, una sola idea: qué parte del EAD no vuelve.
+
+    S1 recupera una parte, S2 recupera todo y S3 no recupera nada. No hay
+    gastos, MRP, garantías ni descuento: la etapa 1 solo enseña el cociente.
+    """
+    return [
+        {"prestamo": "S1", "ead_cents": 10_000_000, "recuperacion_cents": 3_000_000},
+        {"prestamo": "S2", "ead_cents": 5_000_000, "recuperacion_cents": 5_000_000},
+        {"prestamo": "S3", "ead_cents": 2_000_000, "recuperacion_cents": 0},
+    ]
+
+
 def portfolio():
-    """Exposición al default: dispuesto, no dispuesto y CCF."""
+    """Exposición al incumplimiento: dispuesto, no dispuesto y CCF."""
     return [
         {"prestamo": "P1", "segmento": "Hipoteca", "incumplido": 1,
          "dispuesto_cents": 12_000_000, "no_dispuesto_cents": 4_000_000, "ccf_bp": 5000},
@@ -83,7 +96,7 @@ def ead_base():
 def mrp_base():
     """MRP acumulado por préstamo, ya sumado (una fila por préstamo).
 
-    Llega desordenado a propósito: la etapa 5 tiene que ordenar antes del
+    Llega desordenado a propósito: la etapa 6 tiene que ordenar antes del
     MERGE. Un MERGE posicional sobre estas filas empareja P3 con P1.
     """
     return [
@@ -119,7 +132,7 @@ def lgd_base():
 
 
 def flujos():
-    """Flujos de recuperación con su factor de descuento al default, en pb."""
+    """Flujos de recuperación con su factor de descuento al incumplimiento, en pb."""
     return [
         {"prestamo": "P1", "periodo": 1, "importe_cents": 100_000, "factor_bp": 9500},
         {"prestamo": "P1", "periodo": 2, "importe_cents": 200_000, "factor_bp": 9000},
@@ -130,7 +143,7 @@ def flujos():
 
 
 def garantias():
-    """Garantía, haircut y coste de ejecución."""
+    """Garantía, recorte y coste de ejecución."""
     return [
         {"prestamo": "P1", "ead_cents": 14_200_000, "valor_garantia_cents": 10_000_000,
          "haircut_bp": 2000, "coste_ejecucion_cents": 200_000},

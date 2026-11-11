@@ -1,8 +1,9 @@
-/* Etapa 7 — Valor presente de cada flujo.
-   vp_cents = int(importe_cents * factor_bp / 10000).
-   TODO: descuenta cada fila con su propio factor. */
-data work.flujos_vp;
-  set flujos;
-  vp_cents = importe_cents;
-  keep prestamo periodo vp_cents;
+/* Etapa 7 — LGD por préstamo.
+   recuperacion_neta = MRP + recuperación final + repercutido cobrado - coste.
+   LGD en pb = 10000 - int(recuperacion_neta * 10000 / ead).
+   TODO: calcula y aplica los topes 0..10000. */
+data work.lgd;
+  set lgd_base;
+  lgd_bp = 0;
+  keep prestamo lgd_bp;
 run;

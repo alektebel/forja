@@ -1257,25 +1257,27 @@ PHASES = [
                 "away. Author lbo-model-from-scratch; M5 values the claim "
                 "on the way down, M6 buys the whole company on the way in \u2014 "
                 "two prices, one discipline: the cash flows decide."},
-        {"id": "M7", "title": "SAS and LGD",
+        {"id": "M7", "title": "SAS y LGD",
          "course": "sas-lgd-from-scratch", "kind": "ready", "prereq": [],
-         "why": "The LGD calculation as a SAS analyst actually writes it, over "
-                "a small defaulted book: EAD as drawn plus the undrawn part "
-                "that converts at its CCF, the partial recoveries (MRP) "
-                "accumulated with RETAIN and FIRST/LAST rather than one row "
-                "per payment, added expenses capitalised only when they were "
-                "not already in the drawn balance, passed-on expenses counted "
-                "as recovery only when collected, the one-to-one MERGE that "
-                "attaches MRP without multiplying EAD, the net recovery and "
-                "the 0..10000 bp cap, each recovery flow discounted with its "
-                "own factor, collateral after haircut and execution cost, "
-                "guarantor contagion when the guarantor is also in default, "
-                "cure versus write-off/sale, and the portfolio LGD weighted by "
-                "EAD rather than averaged across loans. Built over a minimal "
-                "deterministic SAS interpreter and eleven self-contained "
-                "fixture tables in cents and basis points; every stage is a "
-                "DATA step or PROC the checker executes, with a mutation "
-                "battery that plants one business error per stage."},
+         "why": "La LGD tal como la escribe un analista de SAS, sobre una "
+                "cartera pequeña de préstamos incumplidos: la LGD simple como "
+                "pérdida sobre EAD, el EAD como dispuesto más la parte no "
+                "dispuesta que convierte su CCF, el MRP (monto recuperado "
+                "parcial) acumulado con RETAIN y FIRST/LAST en vez de una fila "
+                "por pago, los gastos añadidos capitalizados solo cuando no "
+                "estaban ya en el dispuesto, los gastos repercutidos contados "
+                "como recuperación solo cuando se cobran, el MERGE uno a uno "
+                "que une el MRP sin multiplicar el EAD, la recuperación neta "
+                "con topes 0..10000 pb, cada flujo descontado con su propio "
+                "factor, la garantía después del recorte y del coste de "
+                "ejecución, el contagio cuando el garante también incumplió, "
+                "la cura frente al castigo o la venta, y la LGD de cartera "
+                "ponderada por EAD en lugar del promedio de LGD. Construido "
+                "sobre un intérprete SAS mínimo y determinista, con doce "
+                "tablas de entrada independientes en céntimos y puntos "
+                "básicos; cada etapa es un DATA step o un PROC que el "
+                "corrector ejecuta, con una batería de mutaciones que planta "
+                "un error de negocio por etapa."},
     ]),
     ("O", "AI Security Engineering", [
         {"id": "O1", "title": "Threat Modeling & Foundations",

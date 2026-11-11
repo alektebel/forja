@@ -1,14 +1,10 @@
-/* Etapa 2 — MRP: pagos parciales.
-   Ordena por prestamo y periodo, acumula con RETAIN y emite al LAST.
-   TODO: completa la acumulación; hoy el total siempre vale cero. */
-proc sort data=cashflows_mrp out=work.cf; by prestamo periodo; run;
-
-data work.mrp_total;
-  set work.cf;
-  by prestamo;
-  retain mrp_total_cents 0;
-  if first.prestamo then mrp_total_cents = 0;
-  /* TODO: suma mrp_cents al total */
-  if last.prestamo then output;
-  keep prestamo mrp_total_cents;
+/* Etapa 2 — EAD al default.
+   EAD = dispuesto + int(no_dispuesto * ccf_bp / 10000).
+   Filtra incumplido = 1 y deja prestamo, segmento y ead_cents.
+   TODO: sustituye el cero por la exposición calculada. */
+data work.ead;
+  set portfolio;
+  if incumplido = 1;
+  ead_cents = 0;
+  keep prestamo segmento ead_cents;
 run;

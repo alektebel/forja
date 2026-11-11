@@ -1,9 +1,7 @@
-/* Etapa 5 — MERGE uno a uno: el MRP se une al EAD, no lo multiplica. */
-proc sort data=ead_base out=work.ead_sorted; by prestamo; run;
-proc sort data=mrp_base out=work.mrp_sorted; by prestamo; run;
-
-data work.merge_ead_mrp;
-  merge work.ead_sorted work.mrp_sorted;
-  by prestamo;
-  keep prestamo ead_cents mrp_total_cents;
+/* Etapa 5 — Gasto repercutido: solo es recuperación si se cobró. */
+data work.repercutido_cobrado;
+  set repercutidos;
+  if cobrado = 1 then recuperado_cents = gasto_repercutido_cents;
+  else recuperado_cents = 0;
+  keep prestamo recuperado_cents;
 run;

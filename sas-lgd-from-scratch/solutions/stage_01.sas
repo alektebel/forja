@@ -1,7 +1,6 @@
-/* Etapa 1 — EAD: lo dispuesto más la parte no dispuesta que se convierte. */
-data work.ead;
-  set portfolio;
-  if incumplido = 1;
-  ead_cents = dispuesto_cents + int(no_dispuesto_cents * ccf_bp / 10000);
-  keep prestamo segmento ead_cents;
+/* Etapa 1 — La LGD más simple: pérdida sobre EAD, sin adornos. */
+data work.lgd_simple;
+  set lgd_simple;
+  lgd_bp = int((ead_cents - recuperacion_cents) * 10000 / ead_cents);
+  keep prestamo lgd_bp;
 run;

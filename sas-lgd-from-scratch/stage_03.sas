@@ -1,8 +1,14 @@
-/* Etapa 3 — Gastos añadidos.
-   Si ya_en_dispuesto = 0, el gasto se capitaliza; si no, ya estaba dentro.
-   TODO: calcula ead_final_cents sin duplicar el gasto. */
-data work.ead_gastos;
-  set ead_con_gastos;
-  ead_final_cents = ead_cents;
-  keep prestamo ead_final_cents;
+/* Etapa 3 — MRP: pagos parciales.
+   Ordena por prestamo y periodo, acumula con RETAIN y emite al LAST.
+   TODO: completa la acumulación; hoy el total siempre vale cero. */
+proc sort data=cashflows_mrp out=work.cf; by prestamo periodo; run;
+
+data work.mrp_total;
+  set work.cf;
+  by prestamo;
+  retain mrp_total_cents 0;
+  if first.prestamo then mrp_total_cents = 0;
+  /* TODO: suma mrp_cents al total */
+  if last.prestamo then output;
+  keep prestamo mrp_total_cents;
 run;

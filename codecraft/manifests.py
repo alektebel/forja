@@ -52,6 +52,7 @@ def load(name: str):
             "name": base, "dir": candidate, "mode": contract.MODE_COURSE,
             "title": getattr(module, "TITLE", base.replace("-", " ").title()),
             "description": getattr(module, "DESCRIPTION", ""),
+            "language": getattr(module, "LANGUAGE", "en"),
             "level": getattr(module, "LEVEL", "custom"),
             "order": getattr(module, "ORDER", 99),
             "stages": stages,
